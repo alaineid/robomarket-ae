@@ -120,7 +120,6 @@ export const products: Product[] = [
         author: "James Peterson",
         date: "April 5, 2025",
         rating: 3,
-        rating: 3,
         comment: "Good utility robot overall, but the kitchen assistance features need improvement. Sometimes struggles with identifying ingredients correctly."
       },
       {
