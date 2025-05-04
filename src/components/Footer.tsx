@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaMapMarkerAlt, FaPhone, FaEnvelope } from "react-icons/fa";
+import Logo from './Logo';
 
 export default function Footer() {
   return (
@@ -12,7 +13,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-xl font-bold mb-4">RoboMarket</h3>
+            <Logo inFooter={true} className="mb-4" />
             <p className="text-gray-400 mb-4">
               Your trusted marketplace for premium humanoid robots and accessories.
             </p>

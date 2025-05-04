@@ -102,9 +102,8 @@ export default function ShopPage() {
       <div className={commonLayoutStyles.heroSection}>
         <div className={commonLayoutStyles.section}>
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl font-bold text-gray-800 mb-4">Robot <span className="text-[#4DA9FF] relative inline-block">
+            <h1 className="text-5xl font-bold text-gray-800 mb-4">Robot <span className="text-[#4DA9FF]">
               Marketplace
-              <span className="absolute bottom-0 left-0 w-full h-1 bg-[#4DA9FF] rounded-full transform -translate-y-1"></span>
             </span></h1>
             <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">Discover the future of robotics with our premium selection of companion and utility robots</p>
             

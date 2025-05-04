@@ -199,9 +199,6 @@ export default function ProductDetail() {
                 
                 {/* Image Carousel */}
                 <div className="grid grid-cols-4 gap-3">
-                  {/* Log the number of images to help debug */}
-                  {console.log("Rendering images:", productData.images?.length)}
-                  
                   {/* Explicitly render each image with a key */}
                   {productData.images && productData.images.length > 0 && (
                     <>
