@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FaStar, FaStarHalfAlt, FaShoppingCart } from 'react-icons/fa';
 import { useCart } from '@/utils/cartContext';
 import { products } from '@/utils/productData';
@@ -64,9 +65,16 @@ export default function FeaturedRobots() {
             >
               <Link href={`/product/${robot.id}`} className="block">
                 <div className="relative h-56 w-full overflow-hidden">
-                  {/* Placeholder for robot image */}
-                  <div className="absolute inset-0 bg-gray-200 flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
-                    <span className="text-gray-500 font-medium">[{robot.name}]</span>
+                  {/* Display actual robot image */}
+                  <div className="absolute inset-0 flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
+                    <Image
+                      src={robot.image}
+                      alt={robot.name}
+                      width={300}
+                      height={300}
+                      className="object-contain w-full h-full"
+                      priority={robot.id === 1}
+                    />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <button 

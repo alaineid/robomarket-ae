@@ -12,12 +12,12 @@ export default function HeroSection() {
         aria-hidden="true"
       ></div>
       
-      {/* Background image placeholder - in production we'd use a real image */}
+      {/* Background hero image */}
       <div 
-        className="absolute inset-0 bg-[url('/vercel.svg')] bg-center bg-cover opacity-30"
+        className="absolute inset-0 bg-center bg-cover opacity-30"
         aria-hidden="true"
         style={{ 
-          backgroundImage: `url('/vercel.svg')`,
+          backgroundImage: `url('/images/hero.png')`,
           filter: 'blur(3px)'
         }}
       ></div>

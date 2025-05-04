@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { FaStar, FaStarHalfAlt, FaShoppingCart, FaFilter, FaTimes, FaChevronDown, FaSearch, FaCheck } from 'react-icons/fa';
 import Header from '@/components/Header';
@@ -265,14 +266,22 @@ export default function ShopPage() {
                       className={commonCardStyles.container}
                     >
                       <div className={commonCardStyles.imageContainer}>
-                        {/* Placeholder for robot image */}
-                        <div className={commonCardStyles.imagePlaceholder}>
-                          <span className="text-gray-500 font-medium">[{product.name}]</span>
-                        </div>
+                        {/* Display actual robot image with link to product details */}
+                        <Link href={`/product/${product.id}`} className="block absolute inset-0 z-10">
+                          <div className={`${commonCardStyles.imagePlaceholder} bg-white`}>
+                            <Image
+                              src={product.image}
+                              alt={product.name}
+                              width={300}
+                              height={300}
+                              className="object-contain w-full h-full"
+                            />
+                          </div>
+                        </Link>
                         <div className={commonCardStyles.imageOverlay}></div>
                         <button 
                           onClick={(e) => handleAddToCart(e, product.id)}
-                          className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer transform translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
+                          className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer transform translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 z-20"
                         >
                           {addedProductId === product.id ? (
                             <FaCheck size={16} />

@@ -24,7 +24,8 @@ export interface Product {
     rating: number;
     comment: string;
   }[];
-  image: string;
+  image: string; // Main image (for backwards compatibility)
+  images: string[]; // Array of all product images
 }
 
 // Sample categories and brands for filters
@@ -80,7 +81,8 @@ export const products: Product[] = [
         comment: "My elderly father has found a new companion in the X-2000. The robot has been helping him with medication reminders and keeping him engaged with conversation and games."
       }
     ],
-    image: "/robot1.jpg"
+    image: "/images/robot1.png",
+    images: ["/images/robot1.png", "/images/robot1.png", "/images/robot1.png", "/images/robot1.png"]
   },
   {
     id: 2,
@@ -129,7 +131,8 @@ export const products: Product[] = [
         comment: "Very reliable for home management. The security features give me peace of mind when I'm away, and it integrates well with all my existing smart devices."
       }
     ],
-    image: "/robot2.jpg"
+    image: "/images/robot2.png",
+    images: ["/images/robot2.png", "/images/robot2.png", "/images/robot2.png", "/images/robot2.png"]
   },
   {
     id: 3,
@@ -178,7 +181,8 @@ export const products: Product[] = [
         comment: "We've deployed five EduMates in our elementary school. Test scores have improved by 28% on average, and student engagement is noticeably higher. Would give 5 stars but there are occasional connectivity issues."
       }
     ],
-    image: "/robot3.jpg"
+    image: "/images/robot3.png",
+    images: ["/images/robot3.png", "/images/robot3.png", "/images/robot3.png", "/images/robot3.png"]
   },
   {
     id: 4,
@@ -227,7 +231,8 @@ export const products: Product[] = [
         comment: "We've implemented three Guardians across our client's 15-acre estate. The coordination between units is impressive, and the mobile app control gives us complete oversight."
       }
     ],
-    image: "/robot4.jpg"
+    image: "/images/robot4.png",
+    images: ["/images/robot4.png", "/images/robot4.png", "/images/robot4.png", "/images/robot4.png"]
   },
   {
     id: 5,
@@ -276,7 +281,8 @@ export const products: Product[] = [
         comment: "Excellent for patient monitoring and consistent therapy reminders. The mobility assistance features are particularly valuable for our recovering stroke patients."
       }
     ],
-    image: "/robot5.jpg"
+    image: "/images/robot5.png",
+    images: ["/images/robot5.png", "/images/robot5.png", "/images/robot5.png", "/images/robot5.png"]
   },
   {
     id: 6,
@@ -325,7 +331,8 @@ export const products: Product[] = [
         comment: "The IndustriBot has revolutionized how we handle heavy materials on our construction sites. Workplace injuries are down and we're completing projects ahead of schedule."
       }
     ],
-    image: "/robot6.jpg"
+    image: "/images/robot6.png",
+    images: ["/images/robot6.png", "/images/robot6.png", "/images/robot6.png", "/images/robot6.png"]
   }
 ];
 

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { FaStar, FaStarHalfAlt, FaShoppingCart, FaHeart, FaRegHeart, FaArrowRight, FaCheck } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -34,10 +35,28 @@ export default function ProductDetail() {
     if (product) {
       setProductData(product);
       setRelatedProducts(related);
+      // We're not modifying the images array anymore, using the original data
     }
     
     setLoading(false);
   }, [productId]);
+
+  // Reset activeImage when product changes
+  useEffect(() => {
+    // Reset to the first image when navigating between products
+    setActiveImage(0);
+  }, [productId]);
+
+  // Add effect to monitor activeImage changes
+  useEffect(() => {
+    console.log("Active image changed to:", activeImage);
+  }, [activeImage]);
+
+  // Main image and thumbnail handling function
+  const handleThumbnailClick = (index: number) => {
+    console.log(`Clicking thumbnail ${index}`);
+    setActiveImage(index);
+  };
 
   // Function to render star ratings
   const renderRatingStars = (rating: number) => {
@@ -165,30 +184,98 @@ export default function ProductDetail() {
               {/* Left Side - Product Images */}
               <div className="p-6 lg:p-8">
                 {/* Main Image */}
-                <div className="relative h-[400px] mb-5 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-r from-gray-100 to-gray-200">
-                    <div className="text-center">
-                      <div className="w-32 h-32 mx-auto mb-4 bg-gray-300 rounded-full flex items-center justify-center">
-                        <span className="text-gray-500 font-bold text-2xl">ROBOT</span>
-                      </div>
-                      <p className="text-gray-500 font-medium">[{productData.name}]</p>
-                    </div>
+                <div className="relative h-[400px] mb-5 rounded-lg overflow-hidden bg-white border border-gray-200">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Image
+                      src={productData.images?.[activeImage] || productData.image}
+                      alt={`${productData.name} - View ${activeImage + 1}`}
+                      width={600}
+                      height={600}
+                      className="object-contain w-full h-full"
+                      priority
+                    />
                   </div>
                 </div>
                 
                 {/* Image Carousel */}
                 <div className="grid grid-cols-4 gap-3">
-                  {[0, 1, 2, 3].map((index) => (
-                    <button 
-                      key={index}
-                      onClick={() => setActiveImage(index)}
-                      className={`relative h-20 rounded-md overflow-hidden bg-gray-100 border ${activeImage === index ? 'border-[#4DA9FF]' : 'border-gray-200'} hover:border-[#4DA9FF] transition-all`}
-                    >
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-r from-gray-100 to-gray-200">
-                        <span className="text-xs text-gray-500">[View {index + 1}]</span>
-                      </div>
-                    </button>
-                  ))}
+                  {/* Log the number of images to help debug */}
+                  {console.log("Rendering images:", productData.images?.length)}
+                  
+                  {/* Explicitly render each image with a key */}
+                  {productData.images && productData.images.length > 0 && (
+                    <>
+                      <button 
+                        key="img-0"
+                        onClick={() => handleThumbnailClick(0)}
+                        className={`relative h-20 rounded-md overflow-hidden bg-white border ${activeImage === 0 ? 'border-[#4DA9FF]' : 'border-gray-200'} hover:border-[#4DA9FF] transition-all cursor-pointer`}
+                      >
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Image
+                            src={productData.images[0]}
+                            alt={`${productData.name} thumbnail 1`}
+                            width={100}
+                            height={100}
+                            className="object-contain w-full h-full"
+                          />
+                        </div>
+                      </button>
+                      
+                      {productData.images[1] && (
+                        <button 
+                          key="img-1"
+                          onClick={() => handleThumbnailClick(1)}
+                          className={`relative h-20 rounded-md overflow-hidden bg-white border ${activeImage === 1 ? 'border-[#4DA9FF]' : 'border-gray-200'} hover:border-[#4DA9FF] transition-all cursor-pointer`}
+                        >
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Image
+                              src={productData.images[1]}
+                              alt={`${productData.name} thumbnail 2`}
+                              width={100}
+                              height={100}
+                              className="object-contain w-full h-full"
+                            />
+                          </div>
+                        </button>
+                      )}
+                      
+                      {productData.images[2] && (
+                        <button 
+                          key="img-2"
+                          onClick={() => handleThumbnailClick(2)}
+                          className={`relative h-20 rounded-md overflow-hidden bg-white border ${activeImage === 2 ? 'border-[#4DA9FF]' : 'border-gray-200'} hover:border-[#4DA9FF] transition-all cursor-pointer`}
+                        >
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Image
+                              src={productData.images[2]}
+                              alt={`${productData.name} thumbnail 3`}
+                              width={100}
+                              height={100}
+                              className="object-contain w-full h-full"
+                            />
+                          </div>
+                        </button>
+                      )}
+                      
+                      {productData.images[3] && (
+                        <button 
+                          key="img-3"
+                          onClick={() => handleThumbnailClick(3)}
+                          className={`relative h-20 rounded-md overflow-hidden bg-white border ${activeImage === 3 ? 'border-[#4DA9FF]' : 'border-gray-200'} hover:border-[#4DA9FF] transition-all cursor-pointer`}
+                        >
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Image
+                              src={productData.images[3]}
+                              alt={`${productData.name} thumbnail 4`}
+                              width={100}
+                              height={100}
+                              className="object-contain w-full h-full"
+                            />
+                          </div>
+                        </button>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
               
@@ -462,9 +549,15 @@ export default function ProductDetail() {
                   className={commonCardStyles.container}
                 >
                   <div className={commonCardStyles.imageContainer}>
-                    {/* Placeholder for robot image */}
-                    <div className={commonCardStyles.imagePlaceholder}>
-                      <span className="text-gray-500 font-medium">[{product.name}]</span>
+                    {/* Display actual robot image */}
+                    <div className={`${commonCardStyles.imagePlaceholder} bg-white`}>
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        width={300}
+                        height={300}
+                        className="object-contain w-full h-full"
+                      />
                     </div>
                     <div className={commonCardStyles.imageOverlay}></div>
                     <button 

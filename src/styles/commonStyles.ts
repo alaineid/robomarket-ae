@@ -20,7 +20,7 @@ export const commonCardStyles = {
   container: "bg-white border border-gray-100 rounded-lg shadow-sm overflow-hidden hover:shadow transition-all duration-300",
   imageContainer: "relative h-56 w-full overflow-hidden group",
   imageOverlay: "absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-  imagePlaceholder: "absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center transition-transform duration-500 group-hover:scale-110",
+  imagePlaceholder: "absolute inset-0 bg-white flex items-center justify-center transition-transform duration-500 group-hover:scale-110",
   content: "p-5",
   categoryBadge: "inline-block px-3 py-1 text-xs font-medium text-[#4DA9FF] bg-blue-50 rounded-full mb-2"
 };

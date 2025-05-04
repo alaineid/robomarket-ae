@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // Add Image import
 import { motion } from 'framer-motion';
 import { FaShoppingCart, FaTrash, FaArrowLeft, FaArrowRight, FaInfoCircle } from 'react-icons/fa';
 import Header from '@/components/Header';
@@ -126,9 +127,19 @@ export default function CartPage() {
                     <div key={index} className="p-5 border-b border-gray-100 last:border-b-0 grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
                       {/* Product Info */}
                       <div className="col-span-6 flex items-center space-x-4">
-                        {/* Product Image Placeholder */}
-                        <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-200">
-                          <span className="text-xs text-gray-500">[{item.product?.name?.substring(0, 15) || 'Robot'}]</span>
+                        {/* Product Image - Updated from placeholder */}
+                        <div className="w-20 h-20 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-200 overflow-hidden">
+                          {item.product?.image ? (
+                            <Image
+                              src={item.product.image}
+                              alt={item.product?.name || 'Product image'}
+                              width={80}
+                              height={80}
+                              className="object-contain w-full h-full"
+                            />
+                          ) : (
+                            <span className="text-xs text-gray-500">[{item.product?.name?.substring(0, 15) || 'Robot'}]</span>
+                          )}
                         </div>
                         
                         <div className="flex-1 min-w-0">

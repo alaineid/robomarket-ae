@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // Add Image import
 import { motion } from 'framer-motion';
 import { 
   FaArrowLeft, 
@@ -660,9 +661,19 @@ export default function CheckoutPage() {
                           <div className="border rounded-lg overflow-hidden">
                             {cartItems.map((item, index) => (
                               <div key={index} className="p-4 flex items-center border-b last:border-b-0">
-                                {/* Product Image Placeholder */}
-                                <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-200">
-                                  <span className="text-xs text-gray-500">[{item.product?.name?.substring(0, 8) || 'Robot'}]</span>
+                                {/* Product Image - Updated from placeholder */}
+                                <div className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-200 overflow-hidden">
+                                  {item.product?.image ? (
+                                    <Image
+                                      src={item.product.image}
+                                      alt={item.product?.name || 'Product image'}
+                                      width={64}
+                                      height={64}
+                                      className="object-contain w-full h-full"
+                                    />
+                                  ) : (
+                                    <span className="text-xs text-gray-500">[{item.product?.name?.substring(0, 8) || 'Robot'}]</span>
+                                  )}
                                 </div>
                                 
                                 <div className="ml-4 flex-grow">
@@ -805,11 +816,25 @@ export default function CheckoutPage() {
                     <div className="space-y-3 mb-6">
                       {cartItems.map((item, index) => (
                         <div key={index} className="flex justify-between text-sm">
-                          <span className="text-gray-700">
-                            {item.quantity}x {item.product?.name && item.product.name.length > 25 
-                              ? `${item.product.name.substring(0, 25)}...` 
-                              : item.product?.name || 'Product'}
-                          </span>
+                          <div className="flex items-center">
+                            {/* Small image thumbnail in the order summary */}
+                            {item.product?.image && (
+                              <div className="w-8 h-8 mr-2 rounded overflow-hidden border border-gray-200 flex-shrink-0">
+                                <Image 
+                                  src={item.product.image}
+                                  alt={item.product?.name || 'Product thumbnail'}
+                                  width={32}
+                                  height={32}
+                                  className="object-contain w-full h-full"
+                                />
+                              </div>
+                            )}
+                            <span className="text-gray-700">
+                              {item.quantity}x {item.product?.name && item.product.name.length > 20 
+                                ? `${item.product.name.substring(0, 20)}...` 
+                                : item.product?.name || 'Product'}
+                            </span>
+                          </div>
                           <span className="font-medium">${((item.product?.price || 0) * item.quantity).toLocaleString()}</span>
                         </div>
                       ))}
