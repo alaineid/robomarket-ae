@@ -14,5 +14,13 @@
       "dev": true,
       "preview": false
     }
+  },
+  "environments": {
+    "production": {
+      "source": ["main"]
+    },
+    "preview": {
+      "source": ["dev"]
+    }
   }
 }
