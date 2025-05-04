@@ -440,25 +440,36 @@ export default function ProductDetail() {
                     </button>
                   </div>
                   
-                  <div className={commonCardStyles.content}>
-                    <div className="flex justify-between items-start">
-                      <div>
+                  <div className={`${commonCardStyles.content} flex flex-col h-[200px]`}>
+                    <div className="flex justify-between items-start mb-auto">
+                      <div className="flex-1 min-w-0">
                         <span className={commonCardStyles.categoryBadge}>
                           {product.category}
                         </span>
                         <Link href={`/product/${product.id}`}>
-                          <h3 className="font-bold text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors">
+                          <h3 className="font-bold text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors truncate">
                             {product.name}
                           </h3>
                         </Link>
+                        <p className="text-gray-600 text-sm mt-1">{product.brand}</p>
                       </div>
-                      <span className="font-bold text-lg text-[#4DA9FF]">${product.price.toLocaleString()}</span>
+                      <span className="font-bold text-lg text-[#4DA9FF] ml-2 whitespace-nowrap">${product.price.toLocaleString()}</span>
                     </div>
                     
                     <div className="flex items-center mt-3">
                       <div className="flex">
                         {renderRatingStars(product.rating)}
                       </div>
+                      <span className="text-gray-500 text-xs ml-2">({product.reviews.length})</span>
+                    </div>
+                    
+                    <div className="mt-auto pt-4 pb-2">
+                      <Link 
+                        href={`/product/${product.id}`}
+                        className={`w-full text-center ${commonButtonStyles.secondary}`}
+                      >
+                        View Details
+                      </Link>
                     </div>
                   </div>
                 </motion.div>

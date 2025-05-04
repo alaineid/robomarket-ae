@@ -250,23 +250,23 @@ export default function ShopPage() {
                           <span className="text-gray-500 font-medium">[{product.name}]</span>
                         </div>
                         <div className={commonCardStyles.imageOverlay}></div>
-                        <button className="absolute bottom-4 right-4 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer transform translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
-                          <FaShoppingCart size={18} />
+                        <button className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer transform translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
+                          <FaShoppingCart size={16} />
                         </button>
                       </div>
                       
-                      <div className={commonCardStyles.content}>
-                        <div className="flex justify-between items-start">
-                          <div>
+                      <div className={`${commonCardStyles.content} flex flex-col h-[200px]`}>
+                        <div className="flex justify-between items-start mb-auto">
+                          <div className="flex-1 min-w-0">
                             <span className={commonCardStyles.categoryBadge}>
                               {product.category}
                             </span>
-                            <h3 className="font-bold text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors">
+                            <h3 className="font-bold text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors truncate">
                               {product.name}
                             </h3>
                             <p className="text-gray-600 text-sm mt-1">{product.brand}</p>
                           </div>
-                          <span className="font-bold text-lg text-[#4DA9FF]">${product.price.toLocaleString()}</span>
+                          <span className="font-bold text-lg text-[#4DA9FF] ml-2 whitespace-nowrap">${product.price.toLocaleString()}</span>
                         </div>
                         
                         <div className="flex items-center mt-3">
@@ -276,7 +276,7 @@ export default function ShopPage() {
                           <span className="text-gray-500 text-xs ml-2">({product.reviews.length})</span>
                         </div>
                         
-                        <div className="mt-4 flex justify-center">
+                        <div className="mt-auto pt-4 pb-2">
                           <Link 
                             href={`/product/${product.id}`}
                             className={`w-full text-center ${commonButtonStyles.secondary}`}
