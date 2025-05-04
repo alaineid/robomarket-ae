@@ -262,7 +262,7 @@ export default function ProductDetail() {
                   </div>
                   
                   {/* Action Buttons */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <motion.button 
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -270,14 +270,6 @@ export default function ProductDetail() {
                     >
                       <FaShoppingCart className="mr-2" />
                       Add to Cart
-                    </motion.button>
-                    
-                    <motion.button 
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`flex items-center justify-center ${commonButtonStyles.secondary}`}
-                    >
-                      Request Quote
                     </motion.button>
                   </div>
                 </div>
