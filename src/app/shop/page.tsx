@@ -2,20 +2,40 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { FaStar, FaStarHalfAlt, FaShoppingCart, FaFilter, FaTimes, FaChevronDown, FaSearch } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaStar, FaStarHalfAlt, FaShoppingCart, FaFilter, FaTimes, FaChevronDown, FaSearch, FaCheck } from 'react-icons/fa';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { commonButtonStyles, commonCardStyles, commonFormStyles, commonLayoutStyles } from '@/styles/commonStyles';
 import { products, categories, brands } from '@/utils/productData';
+import { useCart } from '@/utils/cartContext';
 
 export default function ShopPage() {
+  const { addToCart } = useCart();
+  // State for tracking which product was added to cart
+  const [addedProductId, setAddedProductId] = useState<number | null>(null);
+  
   // State for filters and pagination
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Function to handle adding a product to cart
+  const handleAddToCart = (e: React.MouseEvent, productId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(productId, 1);
+    
+    // Set the added product ID to show confirmation
+    setAddedProductId(productId);
+    
+    // Reset after a short delay
+    setTimeout(() => {
+      setAddedProductId(null);
+    }, 1500);
+  };
   
   // Function to handle category filter changes
   const toggleCategory = (category: string) => {
@@ -250,8 +270,15 @@ export default function ShopPage() {
                           <span className="text-gray-500 font-medium">[{product.name}]</span>
                         </div>
                         <div className={commonCardStyles.imageOverlay}></div>
-                        <button className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer transform translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
-                          <FaShoppingCart size={16} />
+                        <button 
+                          onClick={(e) => handleAddToCart(e, product.id)}
+                          className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer transform translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
+                        >
+                          {addedProductId === product.id ? (
+                            <FaCheck size={16} />
+                          ) : (
+                            <FaShoppingCart size={16} />
+                          )}
                         </button>
                       </div>
                       
