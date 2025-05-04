@@ -92,7 +92,7 @@ export default function ShopPage() {
       <Header />
       
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-50 via-white to-indigo-50 py-16">
+      <div className="bg-gradient-to-r from-blue-50 via-white to-blue-100 py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl font-bold text-gray-800 mb-4">Robot <span className="text-[#4DA9FF] relative inline-block">
