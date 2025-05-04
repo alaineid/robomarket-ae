@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { FaStar, FaStarHalfAlt, FaShoppingCart, FaHeart, FaRegHeart, FaArrowRight, FaCheck } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/Header';
@@ -13,7 +13,6 @@ import { useCart } from '@/utils/cartContext';
 
 export default function ProductDetail() {
   const params = useParams();
-  const router = useRouter();
   const productId = parseInt(params?.id as string ?? '0');
   const { addToCart } = useCart();
   

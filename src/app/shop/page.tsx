@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { FaStar, FaStarHalfAlt, FaShoppingCart, FaFilter, FaTimes, FaChevronDown, FaSearch, FaCheck } from 'react-icons/fa';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';

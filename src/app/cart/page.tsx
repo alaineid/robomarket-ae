@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { FaShoppingCart, FaTrash, FaArrowLeft, FaArrowRight, FaInfoCircle } from 'react-icons/fa';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { commonButtonStyles, commonCardStyles, commonLayoutStyles } from '@/styles/commonStyles';
+import { commonButtonStyles } from '@/styles/commonStyles';
 import { useCart } from '@/utils/cartContext';
 
 export default function CartPage() {
@@ -80,7 +80,7 @@ export default function CartPage() {
                 <FaShoppingCart size={36} className="text-gray-300" />
               </div>
               <h1 className="text-2xl font-bold text-gray-800 mb-4">Your Cart is Empty</h1>
-              <p className="text-gray-600 mb-8">Looks like you haven't added any robots to your cart yet.</p>
+              <p className="text-gray-600 mb-8">Looks like you haven&apos;t added any robots to your cart yet.</p>
               <Link href="/shop" className={commonButtonStyles.primary}>
                 Start Shopping
               </Link>
@@ -294,7 +294,7 @@ export default function CartPage() {
                       {promoCodeValid === false && (
                         <p className="mt-2 text-sm text-red-600 flex items-center">
                           <FaInfoCircle size={12} className="mr-1" />
-                          Invalid promo code. Try "ROBO20" for demo.
+                          Invalid promo code. Try &quot;ROBO20&quot; for demo.
                         </p>
                       )}
                     </form>
@@ -302,13 +302,15 @@ export default function CartPage() {
                   
                   {/* Checkout Button */}
                   <div className="mt-6">
-                    <motion.button 
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`w-full flex items-center justify-center ${commonButtonStyles.primary}`}
-                    >
-                      Proceed to Checkout <FaArrowRight className="ml-2" />
-                    </motion.button>
+                    <Link href="/checkout">
+                      <motion.button 
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className={`w-full flex items-center justify-center ${commonButtonStyles.primary}`}
+                      >
+                        Proceed to Checkout <FaArrowRight className="ml-2" />
+                      </motion.button>
+                    </Link>
                   </div>
                   
                   {/* Security Notice */}
