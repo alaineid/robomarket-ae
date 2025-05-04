@@ -311,7 +311,7 @@ export default function ShopPage() {
                       <FaSearch size={36} className="text-gray-300" />
                     </div>
                     <h3 className="text-2xl font-medium text-gray-700 mb-2">No robots found</h3>
-                    <p className="text-gray-500 max-w-md mx-auto">Try adjusting your filters or search terms to find what you're looking for.</p>
+                    <p className="text-gray-500 max-w-md mx-auto">Try adjusting your filters or search terms to find what you&apos;re looking for.</p>
                   </div>
                 )}
               </div>

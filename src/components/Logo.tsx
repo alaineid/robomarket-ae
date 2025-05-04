@@ -12,7 +12,6 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ 
-  variant = 'default',
   href = '/',
   onClick,
   className = '',

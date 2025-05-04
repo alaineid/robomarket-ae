@@ -3,7 +3,6 @@ import HeroSection from "@/components/HeroSection";
 import FeaturedRobots from "@/components/FeaturedRobots";
 import ValueProposition from "@/components/ValueProposition";
 import Footer from "@/components/Footer";
-import { FaShieldAlt, FaBolt, FaHeadset } from "react-icons/fa";
 
 export default function Home() {
   return (
