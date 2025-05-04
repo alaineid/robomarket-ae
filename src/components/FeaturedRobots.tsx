@@ -67,9 +67,11 @@ export default function FeaturedRobots() {
   return (
     <section id="featured-robots" className="py-16 bg-gray-50 px-4 lg:px-8">
       <div className="container mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Robots</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-gray-800">
+            Featured <span className="text-[#4DA9FF]">Robots</span>
+          </h2>
+          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
             Discover our most popular humanoid robot models trusted by customers worldwide
           </p>
         </div>
