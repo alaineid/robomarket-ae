@@ -11,16 +11,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
-      "dev": true,
-      "preview": false
-    }
-  },
-  "environments": {
-    "production": {
-      "source": ["main"]
-    },
-    "preview": {
-      "source": ["dev"]
+      "dev": true
     }
   }
 }
