@@ -7,6 +7,7 @@ import { FaStar, FaStarHalfAlt, FaShoppingCart, FaFilter, FaTimes, FaChevronDown
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { commonButtonStyles, commonCardStyles, commonFormStyles, commonLayoutStyles } from '@/styles/commonStyles';
+import { products, categories, brands } from '@/utils/productData';
 
 export default function ShopPage() {
   // State for filters and pagination
@@ -16,22 +17,6 @@ export default function ShopPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   
-  // Sample categories and brands for filters
-  const categories = ["Companion", "Utility", "Security", "Education", "Healthcare", "Industrial"];
-  const brands = ["RoboTech", "AIMasters", "Synthia", "MechWorks", "QuantumBots"];
-  
-  // Sample product data (would be fetched from API in a real app)
-  const products = Array.from({ length: 12 }, (_, i) => ({
-    id: i + 1,
-    name: `${['Advanced', 'Smart', 'Intelligent', 'Next-Gen'][i % 4]} ${['Robot', 'Companion', 'Assistant', 'Helper'][i % 4]} ${i + 1}`,
-    price: Math.floor(Math.random() * 8000) + 2000,
-    rating: Math.floor(Math.random() * 2) + 3 + (Math.random() > 0.5 ? 0.5 : 0),
-    image: `/images/robot${(i % 4) + 1}.jpg`,
-    category: categories[i % categories.length],
-    brand: brands[i % brands.length],
-    features: ["AI Learning", "Voice Control", "Autonomous Navigation"]
-  }));
-
   // Function to handle category filter changes
   const toggleCategory = (category: string) => {
     if (selectedCategories.includes(category)) {
@@ -288,12 +273,12 @@ export default function ShopPage() {
                           <div className="flex">
                             {renderRatingStars(product.rating)}
                           </div>
-                          <span className="text-gray-500 text-xs ml-2">({Math.floor(Math.random() * 100) + 10})</span>
+                          <span className="text-gray-500 text-xs ml-2">({product.reviews.length})</span>
                         </div>
                         
                         <div className="mt-4 flex justify-center">
                           <Link 
-                            href={`/robot/${product.id}`}
+                            href={`/product/${product.id}`}
                             className={`w-full text-center ${commonButtonStyles.secondary}`}
                           >
                             View Details

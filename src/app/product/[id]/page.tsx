@@ -1,74 +1,41 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { FaStar, FaStarHalfAlt, FaShoppingCart, FaHeart, FaRegHeart, FaArrowRight, FaCheck } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { commonButtonStyles, commonCardStyles, commonLayoutStyles } from '@/styles/commonStyles';
-
-// Mock product data (this would come from an API in a real application)
-const productData = {
-  id: 1,
-  name: "Syntho X-2000 Humanoid Assistant",
-  price: 4999.99,
-  rating: 4.5,
-  brand: "RoboTech",
-  category: "Companion",
-  description: "The Syntho X-2000 is our most advanced humanoid assistant robot, designed to seamlessly integrate into your home or office environment. With advanced AI capabilities, natural language processing, and fluid movement, the X-2000 can assist with daily tasks, provide companionship, and serve as a personal assistant.",
-  features: [
-    "Advanced natural language processing",
-    "Facial recognition and emotional response",
-    "24/7 operation with quick-charging capability",
-    "Adaptive learning AI system",
-    "Human-like movement and gestures",
-    "Voice command recognition from up to 20 feet away",
-    "Multi-language support"
-  ],
-  specifications: {
-    height: "5'7\" (170 cm)",
-    weight: "165 lbs (75 kg)",
-    battery: "Lithium-ion, 16 hours operation",
-    processor: "Quantum Neural Processor X12",
-    memory: "1 TB solid state",
-    connectivity: "Wi-Fi 6, Bluetooth 5.2, 5G",
-    sensors: "LiDAR, infrared, temperature, pressure, audio array"
-  },
-  stock: 12,
-  reviews: [
-    {
-      author: "Alex Johnson",
-      date: "April 15, 2025",
-      rating: 5,
-      comment: "The X-2000 has completely transformed how I manage my home office. The assistance with scheduling and communications alone is worth the investment!"
-    },
-    {
-      author: "Maya Patel",
-      date: "March 28, 2025",
-      rating: 4,
-      comment: "Impressive AI capabilities and very human-like interactions. Battery life could be better, but otherwise it's been a great addition to our family."
-    },
-    {
-      author: "Carlos Rodriguez",
-      date: "April 2, 2025",
-      rating: 5,
-      comment: "My elderly father has found a new companion in the X-2000. The robot has been helping him with medication reminders and keeping him engaged with conversation and games."
-    }
-  ],
-  relatedProducts: [
-    { id: 2, name: "HomeBot Pro", price: 3299.99, category: "Utility", rating: 4.0 },
-    { id: 3, name: "EduMate Teaching Assistant", price: 3799.99, category: "Education", rating: 4.8 },
-    { id: 4, name: "Guardian Security Bot", price: 4599.99, category: "Security", rating: 4.7 }
-  ]
-};
+import { getProductById, getRelatedProducts, Product } from '@/utils/productData';
 
 export default function ProductDetail() {
+  const params = useParams();
+  const productId = parseInt(params.id as string);
+  
+  const [productData, setProductData] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState('description');
+  const [loading, setLoading] = useState(true);
+
+  // Load product data based on ID
+  useEffect(() => {
+    // In a real app, this would be an API call
+    const product = getProductById(productId);
+    const related = getRelatedProducts(productId, 4);
+    
+    if (product) {
+      setProductData(product);
+      setRelatedProducts(related);
+    }
+    
+    setLoading(false);
+  }, [productId]);
 
   // Array of placeholder images for the carousel
   const imageUrls = [
@@ -101,6 +68,8 @@ export default function ProductDetail() {
   };
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!productData) return;
+    
     const value = parseInt(e.target.value);
     if (!isNaN(value) && value > 0 && value <= productData.stock) {
       setQuantity(value);
@@ -108,6 +77,8 @@ export default function ProductDetail() {
   };
 
   const increaseQuantity = () => {
+    if (!productData) return;
+    
     if (quantity < productData.stock) {
       setQuantity(quantity + 1);
     }
@@ -118,6 +89,44 @@ export default function ProductDetail() {
       setQuantity(quantity - 1);
     }
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-t-4 border-[#4DA9FF] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading product...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Product not found
+  if (!productData) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-grow flex items-center justify-center bg-gray-50">
+          <div className="text-center max-w-md mx-auto p-6">
+            <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-gray-500 text-3xl">?</span>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Product Not Found</h1>
+            <p className="text-gray-600 mb-8">We couldn't find the robot you're looking for. It may have been moved or doesn't exist.</p>
+            <Link href="/shop" className={commonButtonStyles.primary}>
+              Browse All Robots
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -148,7 +157,7 @@ export default function ProductDetail() {
                       <div className="w-32 h-32 mx-auto mb-4 bg-gray-300 rounded-full flex items-center justify-center">
                         <span className="text-gray-500 font-bold text-2xl">ROBOT</span>
                       </div>
-                      <p className="text-gray-500 font-medium">[Main Product Image]</p>
+                      <p className="text-gray-500 font-medium">[{productData.name}]</p>
                     </div>
                   </div>
                 </div>
@@ -285,8 +294,8 @@ export default function ProductDetail() {
                 {/* Additional Info */}
                 <div className="mt-8 border-t border-gray-200 pt-6">
                   <div className="flex justify-between items-center text-sm text-gray-600 mb-3">
-                    <div>Model: <span className="text-gray-800 font-medium">X2000-HMN-AST</span></div>
-                    <div>SKU: <span className="text-gray-800 font-medium">RT-X2000-238</span></div>
+                    <div>Model: <span className="text-gray-800 font-medium">{productData.name.replace(/\s+/g, '-').toUpperCase()}</span></div>
+                    <div>SKU: <span className="text-gray-800 font-medium">{productData.brand.substring(0, 2).toUpperCase()}-{productData.id}00{Math.floor(Math.random() * 900) + 100}</span></div>
                   </div>
                   <p className="text-sm text-gray-600">Free 30-day returns & 2-year warranty included</p>
                 </div>
@@ -336,10 +345,16 @@ export default function ProductDetail() {
                   <div className="prose max-w-none">
                     <p className="mb-4">{productData.description}</p>
                     <p className="mb-4">
-                      Experience the future of home and office assistance with the Syntho X-2000. This advanced humanoid robot combines cutting-edge artificial intelligence with elegant design to provide an unparalleled user experience. Whether you need help managing your schedule, controlling smart home devices, or simply want a companion, the X-2000 adapts to your unique needs.
+                      Experience the future with the {productData.name}. This advanced {productData.category.toLowerCase()} robot 
+                      combines cutting-edge artificial intelligence with elegant design to provide an unparalleled user experience.
+                      Whether you need help managing your schedule, controlling smart home devices, or simply want a companion, 
+                      the {productData.name} adapts to your unique needs.
                     </p>
                     <p className="mb-4">
-                      With its advanced mobility system, the X-2000 can navigate smoothly through your home or office environment, avoiding obstacles and learning the layout over time to optimize its movement patterns. The robot's expressive face and fluid gestures create a natural interaction experience that feels intuitive and comfortable.
+                      With its advanced mobility system, the {productData.name} can navigate smoothly through your 
+                      environment, avoiding obstacles and learning the layout over time to optimize its movement patterns. 
+                      The robot's expressive interface and intuitive interactions create a natural experience that feels 
+                      comfortable from day one.
                     </p>
                     <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">All Features</h3>
                     <ul className="space-y-3">
@@ -417,9 +432,9 @@ export default function ProductDetail() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {productData.relatedProducts.map((product, index) => (
+              {relatedProducts.map((product) => (
                 <motion.div 
-                  key={index} 
+                  key={product.id} 
                   whileHover={{ y: -3 }}
                   className={commonCardStyles.container}
                 >
@@ -440,9 +455,11 @@ export default function ProductDetail() {
                         <span className={commonCardStyles.categoryBadge}>
                           {product.category}
                         </span>
-                        <h3 className="font-bold text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors">
-                          {product.name}
-                        </h3>
+                        <Link href={`/product/${product.id}`}>
+                          <h3 className="font-bold text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors">
+                            {product.name}
+                          </h3>
+                        </Link>
                       </div>
                       <span className="font-bold text-lg text-[#4DA9FF]">${product.price.toLocaleString()}</span>
                     </div>
