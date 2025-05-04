@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Logo from './Logo';
+import { FaSearch, FaUserCircle, FaShoppingCart, FaBars, FaTimes } from 'react-icons/fa';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const handleResize = () => {
@@ -57,25 +59,26 @@ export default function Header() {
             </Link>
             
             {/* Search Bar */}
-            <div className="bg-gray-100 rounded-full px-3 py-2 w-64 flex items-center">
-              <input 
-                type="text" 
-                placeholder="Search robots..." 
-                className="bg-transparent w-full focus:outline-none text-sm"
+            <div className="relative hidden sm:block">
+              <input
+                type="text"
+                placeholder="Search robots..."
+                className="pl-10 pr-4 py-2 rounded-full bg-gray-100 text-gray-700 w-56 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:bg-white transition-all duration-200"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button aria-label="Search">
-                <i className="fas fa-search text-gray-500"></i>
-              </button>
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
             </div>
 
             {/* Account & Cart */}
             <div className="flex space-x-4 ml-4">
-              <button aria-label="User Account" className="text-gray-700 hover:text-[#4DA9FF] transition-colors">
-                <i className="fas fa-user text-xl"></i>
-              </button>
-              <button aria-label="Shopping Cart" className="text-gray-700 hover:text-[#4DA9FF] transition-colors">
-                <i className="fas fa-shopping-cart text-xl"></i>
-              </button>
+              <Link href="/account" className="text-gray-700 hover:text-[#4DA9FF] transition-colors duration-200">
+                <FaUserCircle className="text-2xl" />
+              </Link>
+              <Link href="/cart" className="text-gray-700 hover:text-[#4DA9FF] transition-colors duration-200 relative">
+                <FaShoppingCart className="text-2xl" />
+                <span className="absolute -top-2 -right-2 bg-[#4DA9FF] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+              </Link>
             </div>
           </div>
 
@@ -88,9 +91,9 @@ export default function Header() {
               onClick={toggleMobileMenu}
             >
               {isMobileMenuOpen ? (
-                <i className="fas fa-times text-xl"></i>
+                <FaTimes className="text-xl" />
               ) : (
-                <i className="fas fa-bars text-xl"></i>
+                <FaBars className="text-xl" />
               )}
             </button>
           </div>
@@ -125,11 +128,11 @@ export default function Header() {
             
             <div className="flex space-x-4 pt-2">
               <Link href="/account" className="flex items-center text-gray-600 hover:text-[#4DA9FF]">
-                <i className="fas fa-user mr-2"></i>
+                <FaUserCircle className="mr-2" />
                 My Account
               </Link>
               <Link href="/cart" className="flex items-center text-gray-600 hover:text-[#4DA9FF]">
-                <i className="fas fa-shopping-cart mr-2"></i>
+                <FaShoppingCart className="mr-2" />
                 Cart
               </Link>
             </div>

@@ -3,105 +3,115 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-
-type ProductCardProps = {
-  id: number;
-  name: string;
-  image: string;
-  feature: string;
-  price: string;
-};
-
-// Product Card Component
-const ProductCard: React.FC<ProductCardProps> = ({ id, name, image, feature, price }) => {
-  return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col">
-      <div className="relative h-64 bg-gray-100 flex items-center justify-center p-6">
-        <Image
-          src={image}
-          alt={`${name} robot`}
-          width={200}
-          height={200}
-          className="object-contain max-h-full transition-transform hover:scale-105 duration-300"
-        />
-        <div className="absolute top-4 right-4 bg-[#4DA9FF]/90 text-white text-xs px-2 py-1 rounded-full">
-          New Model
-        </div>
-      </div>
-      <div className="p-5 flex flex-col flex-grow border-t">
-        <h3 className="font-bold text-xl mb-1 text-gray-800">{name}</h3>
-        <p className="text-gray-600 text-sm mb-4">{feature}</p>
-        <div className="mt-auto flex justify-between items-center pt-4">
-          <span className="font-bold text-lg text-gray-900">{price}</span>
-          <Link 
-            href={`/product/${id}`}
-            className="text-[#4DA9FF] hover:text-[#3B8CD9] font-medium flex items-center transition-colors"
-          >
-            View Details
-            <i className="fas fa-chevron-right ml-1 text-sm"></i>
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-};
+import { FaStar, FaStarHalfAlt, FaShoppingCart } from 'react-icons/fa';
 
 export default function FeaturedRobots() {
-  // Sample featured products data
-  const featuredProducts = [
+  // Sample featured robots data
+  const featuredRobots = [
     {
       id: 1,
-      name: "HomeBot Pro",
-      image: "/vercel.svg", // Placeholder image
-      feature: "Advanced home assistance with intuitive AI learning capabilities",
-      price: "$2,499",
+      name: "Companion X1",
+      price: 5999,
+      rating: 4.5,
+      image: "/images/robot1.jpg",
+      category: "Companion"
     },
     {
       id: 2,
-      name: "CompanionX",
-      image: "/vercel.svg", // Placeholder image
-      feature: "Emotional intelligence and personalized companionship features",
-      price: "$3,299",
+      name: "TaskMaster Pro",
+      price: 8999,
+      rating: 5,
+      image: "/images/robot2.jpg",
+      category: "Utility"
     },
     {
       id: 3,
-      name: "TaskMaster 3000",
-      image: "/vercel.svg", // Placeholder image
-      feature: "Professional task automation with industry-leading precision",
-      price: "$4,199",
+      name: "HomeGuard 360",
+      price: 7499,
+      rating: 4,
+      image: "/images/robot3.jpg",
+      category: "Security"
     },
     {
       id: 4,
-      name: "ElderlyCare Bot",
-      image: "/vercel.svg", // Placeholder image
-      feature: "24/7 senior monitoring and assistance with medical alerts",
-      price: "$3,799",
-    },
+      name: "EduBot Teacher",
+      price: 6499,
+      rating: 4.5,
+      image: "/images/robot4.jpg",
+      category: "Education"
+    }
   ];
 
+  // Function to render star ratings using React Icons
+  const renderRatingStars = (rating: number) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+    
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<FaStar key={`full-${i}`} className="text-yellow-400" />);
+    }
+    
+    if (hasHalfStar) {
+      stars.push(<FaStarHalfAlt key="half" className="text-yellow-400" />);
+    }
+    
+    const remainingStars = 5 - stars.length;
+    for (let i = 0; i < remainingStars; i++) {
+      stars.push(<FaStar key={`empty-${i}`} className="text-gray-300" />);
+    }
+    
+    return stars;
+  };
+
   return (
-    <section id="featured" className="py-16 px-4 lg:px-8 bg-gray-50">
+    <section id="featured-robots" className="py-16 bg-gray-50 px-4 lg:px-8">
       <div className="container mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Robots</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Explore our most popular humanoid robots, designed for various needs from home assistance to specialized tasks.
+            Discover our most popular humanoid robot models trusted by customers worldwide
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} {...product} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {featuredRobots.map(robot => (
+            <div key={robot.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+              <div className="relative h-48 w-full">
+                {/* Replace with actual robot images */}
+                <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-500">[Robot Image]</span>
+                </div>
+              </div>
+              
+              <div className="p-5">
+                <span className="text-sm text-[#4DA9FF] font-medium">{robot.category}</span>
+                <h3 className="font-bold text-lg mt-1">{robot.name}</h3>
+                
+                <div className="flex items-center mt-2">
+                  <div className="flex">
+                    {renderRatingStars(robot.rating)}
+                  </div>
+                  <span className="text-gray-500 text-sm ml-2">({Math.floor(Math.random() * 100) + 50})</span>
+                </div>
+                
+                <div className="mt-4 flex justify-between items-center">
+                  <span className="font-bold text-lg">${robot.price.toLocaleString()}</span>
+                  <button className="w-10 h-10 rounded-full bg-[#4DA9FF]/10 flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-colors duration-200">
+                    <FaShoppingCart />
+                  </button>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
-
-        <div className="mt-12 text-center">
+        
+        <div className="text-center mt-10">
           <Link 
-            href="/shop"
-            className="border-2 border-[#4DA9FF] text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white font-semibold px-8 py-3 rounded-lg transition-colors duration-300 inline-flex items-center"
+            href="/shop" 
+            className="inline-block bg-white border-2 border-[#4DA9FF] text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200"
           >
-            View All Products
-            <i className="fas fa-long-arrow-alt-right ml-2"></i>
+            View All Robots
           </Link>
         </div>
       </div>

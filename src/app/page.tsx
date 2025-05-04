@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import FeaturedRobots from "@/components/FeaturedRobots";
 import Footer from "@/components/Footer";
+import { FaShieldAlt, FaBolt, FaHeadset } from "react-icons/fa";
 
 export default function Home() {
   return (
@@ -26,7 +27,7 @@ export default function Home() {
               {/* Value Prop 1 */}
               <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
                 <div className="w-14 h-14 bg-[#4DA9FF]/10 rounded-full flex items-center justify-center mb-4">
-                  <i className="fas fa-shield-alt text-2xl text-[#4DA9FF]"></i>
+                  <FaShieldAlt className="text-2xl text-[#4DA9FF]" />
                 </div>
                 <h3 className="font-bold text-xl mb-3">Verified Quality</h3>
                 <p className="text-gray-600">
@@ -37,7 +38,7 @@ export default function Home() {
               {/* Value Prop 2 */}
               <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
                 <div className="w-14 h-14 bg-[#4DA9FF]/10 rounded-full flex items-center justify-center mb-4">
-                  <i className="fas fa-bolt text-2xl text-[#4DA9FF]"></i>
+                  <FaBolt className="text-2xl text-[#4DA9FF]" />
                 </div>
                 <h3 className="font-bold text-xl mb-3">Advanced Technology</h3>
                 <p className="text-gray-600">
@@ -48,7 +49,7 @@ export default function Home() {
               {/* Value Prop 3 */}
               <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
                 <div className="w-14 h-14 bg-[#4DA9FF]/10 rounded-full flex items-center justify-center mb-4">
-                  <i className="fas fa-headset text-2xl text-[#4DA9FF]"></i>
+                  <FaHeadset className="text-2xl text-[#4DA9FF]" />
                 </div>
                 <h3 className="font-bold text-xl mb-3">Dedicated Support</h3>
                 <p className="text-gray-600">
@@ -68,10 +69,9 @@ export default function Home() {
             </p>
             <a 
               href="/shop" 
-              className="bg-[#4DA9FF] hover:bg-[#3B8CD9] text-white font-bold py-3 px-10 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center"
+              className="bg-[#4DA9FF] hover:bg-[#3B8CD9] text-white font-bold py-3 px-10 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all duration-300"
             >
               Shop Now
-              <i className="fas fa-robot ml-2"></i>
             </a>
           </div>
         </section>

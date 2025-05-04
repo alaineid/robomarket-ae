@@ -1,51 +1,38 @@
-"use client";
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+import ClientLayout from '@/components/ClientLayout'
 
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { useEffect, useState } from "react";
+const inter = Inter({ subsets: ['latin'] })
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+export const metadata: Metadata = {
+  title: 'RoboMarket AE - Premium Humanoid Robots',
+  description: 'Shop for premium humanoid robots with advanced AI capabilities',
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  // Use a client-side only attribute approach to avoid hydration mismatch
-  const [,setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html 
-      lang="en" 
-      data-arp=""  // Add the data-arp attribute to match what's being injected
-    >
+    <html lang="en">
       <head>
-        {/* Add Font Awesome for icons */}
+        {/* Remove any Font Awesome CDN links if they exist, such as:
         <link
           rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/..."
+          integrity="..."
           crossOrigin="anonymous"
           referrerPolicy="no-referrer"
         />
+        */}
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={inter.className}>
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
-  );
+  )
 }

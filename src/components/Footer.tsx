@@ -2,75 +2,93 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaMapMarkerAlt, FaPhone, FaEnvelope } from "react-icons/fa";
 import Logo from './Logo';
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-800 text-white py-8 px-6 md:px-10">
-      <div className="container mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          {/* About Us Column */}
+    <footer className="bg-gray-900 text-white">
+      {/* Footer content with React Icons instead of Font Awesome */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Company Info */}
           <div>
-            <h3 className="font-bold text-lg mb-4">About Us</h3>
+            <h3 className="text-xl font-bold mb-4">RoboMarket</h3>
+            <p className="text-gray-400 mb-4">
+              Your trusted marketplace for premium humanoid robots and accessories.
+            </p>
+            <div className="flex space-x-4">
+              <a href="#" className="text-gray-400 hover:text-white">
+                <FaFacebookF />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-white">
+                <FaTwitter />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-white">
+                <FaInstagram />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-white">
+                <FaLinkedinIn />
+              </a>
+            </div>
+          </div>
+          
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-xl font-bold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><Link href="/about" className="hover:underline text-gray-300 hover:text-white transition-colors">Our Story</Link></li>
-              <li><Link href="/team" className="hover:underline text-gray-300 hover:text-white transition-colors">Our Team</Link></li>
-              <li><Link href="/careers" className="hover:underline text-gray-300 hover:text-white transition-colors">Careers</Link></li>
+              <li><Link href="/shop" className="text-gray-400 hover:text-white">Shop</Link></li>
+              <li><Link href="/about" className="text-gray-400 hover:text-white">About Us</Link></li>
+              <li><Link href="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
+              <li><Link href="/blog" className="text-gray-400 hover:text-white">Blog</Link></li>
             </ul>
           </div>
-
-          {/* Contact Column */}
+          
+          {/* Contact Info */}
           <div>
-            <h3 className="font-bold text-lg mb-4">Contact</h3>
+            <h3 className="text-xl font-bold mb-4">Contact Us</h3>
             <ul className="space-y-2">
-              <li><Link href="/help" className="hover:underline text-gray-300 hover:text-white transition-colors">Help Center</Link></li>
-              <li><Link href="/contact" className="hover:underline text-gray-300 hover:text-white transition-colors">Contact Us</Link></li>
-              <li><Link href="/feedback" className="hover:underline text-gray-300 hover:text-white transition-colors">Feedback</Link></li>
+              <li className="flex items-center">
+                <FaMapMarkerAlt className="mr-2 text-[#4DA9FF]" />
+                <span className="text-gray-400">Dubai, UAE</span>
+              </li>
+              <li className="flex items-center">
+                <FaPhone className="mr-2 text-[#4DA9FF]" />
+                <span className="text-gray-400">+971 5X XXX XXXX</span>
+              </li>
+              <li className="flex items-center">
+                <FaEnvelope className="mr-2 text-[#4DA9FF]" />
+                <span className="text-gray-400">info@robomarket.ae</span>
+              </li>
             </ul>
           </div>
-
-          {/* FAQs Column */}
+          
+          {/* Newsletter */}
           <div>
-            <h3 className="font-bold text-lg mb-4">FAQs</h3>
-            <ul className="space-y-2">
-              <li><Link href="/faq" className="hover:underline text-gray-300 hover:text-white transition-colors">Common Questions</Link></li>
-              <li><Link href="/shipping" className="hover:underline text-gray-300 hover:text-white transition-colors">Shipping Info</Link></li>
-              <li><Link href="/returns" className="hover:underline text-gray-300 hover:text-white transition-colors">Returns & Warranty</Link></li>
-            </ul>
-          </div>
-
-          {/* Policies Column */}
-          <div>
-            <h3 className="font-bold text-lg mb-4">Policies</h3>
-            <ul className="space-y-2">
-              <li><Link href="/privacy" className="hover:underline text-gray-300 hover:text-white transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:underline text-gray-300 hover:text-white transition-colors">Terms of Service</Link></li>
-              <li><Link href="/accessibility" className="hover:underline text-gray-300 hover:text-white transition-colors">Accessibility</Link></li>
-            </ul>
+            <h3 className="text-xl font-bold mb-4">Newsletter</h3>
+            <p className="text-gray-400 mb-4">
+              Subscribe to our newsletter for the latest updates and offers.
+            </p>
+            <form>
+              <div className="flex">
+                <input 
+                  type="email" 
+                  placeholder="Your Email" 
+                  className="bg-gray-800 text-white p-2 rounded-l focus:outline-none flex-grow"
+                />
+                <button 
+                  type="submit" 
+                  className="bg-[#4DA9FF] hover:bg-[#3B8CD9] text-white p-2 rounded-r"
+                >
+                  Subscribe
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-
-        <div className="border-t border-gray-700 pt-6 flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">
-            <Logo inFooter={true} variant="default" />
-            <p className="text-sm text-gray-400 mt-2">&copy; {new Date().getFullYear()} RoboMarket. All rights reserved.</p>
-          </div>
-
-          {/* Social Media Icons */}
-          <div className="flex space-x-4">
-            <a href="#" aria-label="Facebook" className="p-2 rounded-full bg-gray-700 hover:bg-[#4DA9FF] text-white transition-colors">
-              <i className="fab fa-facebook-f"></i>
-            </a>
-            <a href="#" aria-label="Twitter" className="p-2 rounded-full bg-gray-700 hover:bg-[#4DA9FF] text-white transition-colors">
-              <i className="fab fa-twitter"></i>
-            </a>
-            <a href="#" aria-label="Instagram" className="p-2 rounded-full bg-gray-700 hover:bg-[#4DA9FF] text-white transition-colors">
-              <i className="fab fa-instagram"></i>
-            </a>
-            <a href="#" aria-label="YouTube" className="p-2 rounded-full bg-gray-700 hover:bg-[#4DA9FF] text-white transition-colors">
-              <i className="fab fa-youtube"></i>
-            </a>
-          </div>
+        
+        <div className="border-t border-gray-800 mt-12 pt-6 text-center text-gray-400">
+          <p>© {new Date().getFullYear()} RoboMarket. All rights reserved.</p>
         </div>
       </div>
     </footer>
