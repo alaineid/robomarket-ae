@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { FaStar, FaStarHalfAlt, FaShoppingCart, FaFilter, FaTimes, FaChevronDown } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import { FaStar, FaStarHalfAlt, FaShoppingCart, FaFilter, FaTimes, FaChevronDown, FaSearch } from 'react-icons/fa';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -90,35 +91,82 @@ export default function ShopPage() {
       {/* Header */}
       <Header />
       
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-5xl font-bold text-gray-800 mb-4">Robot <span className="text-[#4DA9FF] relative">
+              Marketplace
+              <span className="absolute bottom-0 left-0 w-full h-1 bg-[#4DA9FF] rounded-full transform -translate-y-1"></span>
+            </span></h1>
+            <p className="text-lg text-gray-600 mb-8">Discover the future of robotics with our premium selection of companion and utility robots</p>
+            
+            {/* Search Bar */}
+            <div className="relative max-w-xl mx-auto mb-4">
+              <input 
+                type="text" 
+                placeholder="Search for robots..." 
+                className="w-full py-3 px-5 pr-12 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:border-transparent"
+              />
+              <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#4DA9FF]">
+                <FaSearch size={18} />
+              </button>
+            </div>
+            
+            {/* Quick category buttons */}
+            <div className="flex flex-wrap justify-center gap-3 mt-6">
+              {categories.map((category, index) => (
+                <button 
+                  key={index}
+                  onClick={() => toggleCategory(category)} 
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    selectedCategories.includes(category) 
+                      ? 'bg-[#4DA9FF] text-white shadow-md' 
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      
       {/* Main Content */}
-      <div className="flex-grow bg-gray-50">
+      <div className="flex-grow bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4 py-12">
-          <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">Robot <span className="text-[#4DA9FF]">Marketplace</span></h1>
-          
-          {/* Mobile filter toggle button */}
-          <div className="lg:hidden mb-4">
-            <button 
+          {/* Filter toggle button */}
+          <div className="mb-6">
+            <motion.button 
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center justify-center w-full py-3 bg-white border border-gray-300 rounded-lg shadow-sm"
+              className="flex items-center justify-center py-3 px-6 bg-white border border-gray-200 rounded-lg shadow-sm mx-auto hover:shadow-md transition-all duration-200"
             >
-              {showFilters ? <FaTimes className="mr-2" /> : <FaFilter className="mr-2" />}
-              {showFilters ? "Hide Filters" : "Show Filters"}
-            </button>
+              {showFilters ? <FaTimes className="mr-2 text-red-500" /> : <FaFilter className="mr-2 text-[#4DA9FF]" />}
+              <span className="font-medium">{showFilters ? "Hide Filters" : "Show Filters"}</span>
+            </motion.button>
           </div>
           
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Filters Sidebar */}
-            <aside className={`lg:w-1/4 ${showFilters ? 'block' : 'hidden'} lg:block`}>
-              <div className="bg-white rounded-xl shadow-md p-6 sticky top-8">
-                <h2 className="font-bold text-2xl mb-6 text-gray-800">Filters</h2>
+            <motion.aside 
+              className={`lg:w-1/4 ${showFilters ? 'block' : 'hidden'}`}
+              initial={false}
+              animate={{ opacity: showFilters ? 1 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="bg-white rounded-xl shadow-lg p-6 sticky top-8 border border-gray-100">
+                <h2 className="font-bold text-2xl mb-6 text-gray-800 border-b border-gray-100 pb-4">Filters</h2>
                 
                 {/* Categories filter */}
                 <div className="mb-6">
-                  <h3 className="font-semibold text-lg mb-3 flex justify-between items-center">
-                    Categories
-                    <FaChevronDown className="text-gray-400" />
-                  </h3>
-                  <div className="space-y-2">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-semibold text-lg text-gray-800">Categories</h3>
+                    <FaChevronDown className="text-gray-400 text-sm" />
+                  </div>
+                  <div className="space-y-2 pl-1">
                     {categories.map((category, index) => (
                       <div key={index} className="flex items-center">
                         <input
@@ -128,7 +176,7 @@ export default function ShopPage() {
                           onChange={() => toggleCategory(category)}
                           className="w-4 h-4 accent-[#4DA9FF]"
                         />
-                        <label htmlFor={`category-${index}`} className="ml-2 text-gray-700">
+                        <label htmlFor={`category-${index}`} className="ml-3 text-gray-700 hover:text-[#4DA9FF] cursor-pointer">
                           {category}
                         </label>
                       </div>
@@ -138,11 +186,11 @@ export default function ShopPage() {
                 
                 {/* Brands filter */}
                 <div className="mb-6">
-                  <h3 className="font-semibold text-lg mb-3 flex justify-between items-center">
-                    Brands
-                    <FaChevronDown className="text-gray-400" />
-                  </h3>
-                  <div className="space-y-2">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-semibold text-lg text-gray-800">Brands</h3>
+                    <FaChevronDown className="text-gray-400 text-sm" />
+                  </div>
+                  <div className="space-y-2 pl-1">
                     {brands.map((brand, index) => (
                       <div key={index} className="flex items-center">
                         <input
@@ -152,7 +200,7 @@ export default function ShopPage() {
                           onChange={() => toggleBrand(brand)}
                           className="w-4 h-4 accent-[#4DA9FF]"
                         />
-                        <label htmlFor={`brand-${index}`} className="ml-2 text-gray-700">
+                        <label htmlFor={`brand-${index}`} className="ml-3 text-gray-700 hover:text-[#4DA9FF] cursor-pointer">
                           {brand}
                         </label>
                       </div>
@@ -161,8 +209,8 @@ export default function ShopPage() {
                 </div>
                 
                 {/* Price Range Slider */}
-                <div className="mb-6">
-                  <h3 className="font-semibold text-lg mb-3">Price Range</h3>
+                <div className="mb-8">
+                  <h3 className="font-semibold text-lg mb-4 text-gray-800">Price Range</h3>
                   <div className="px-2">
                     <input
                       type="range"
@@ -171,29 +219,33 @@ export default function ShopPage() {
                       step="500"
                       value={priceRange[1]}
                       onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                      className="w-full accent-[#4DA9FF]"
+                      className="w-full h-2 bg-gray-200 rounded-md appearance-none cursor-pointer accent-[#4DA9FF]"
                     />
-                    <div className="flex justify-between mt-2">
-                      <span className="text-gray-600">${priceRange[0].toLocaleString()}</span>
-                      <span className="text-gray-600">${priceRange[1].toLocaleString()}</span>
+                    <div className="flex justify-between mt-3">
+                      <span className="bg-gray-100 px-3 py-1 rounded text-gray-600 font-medium">${priceRange[0].toLocaleString()}</span>
+                      <span className="bg-gray-100 px-3 py-1 rounded text-gray-600 font-medium">${priceRange[1].toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
                 
-                <button className="w-full bg-[#4DA9FF] hover:bg-[#3D99FF] text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg"
+                >
                   Apply Filters
-                </button>
+                </motion.button>
               </div>
-            </aside>
+            </motion.aside>
             
             {/* Products Grid */}
-            <main className="lg:w-3/4">
-              <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-                <div className="flex justify-between items-center mb-6">
-                  <p className="text-gray-600"><span className="font-medium">{filteredProducts.length}</span> robots found</p>
+            <main className={`${showFilters ? 'lg:w-3/4' : 'w-full'} transition-all duration-300`}>
+              <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-100">
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+                  <p className="text-gray-700"><span className="font-semibold text-[#4DA9FF]">{filteredProducts.length}</span> robots found</p>
                   <div className="flex items-center">
-                    <label htmlFor="sort" className="mr-2 text-gray-600">Sort by:</label>
-                    <select id="sort" className="border border-gray-300 rounded py-1 px-2 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF]">
+                    <label htmlFor="sort" className="mr-3 text-gray-600">Sort by:</label>
+                    <select id="sort" className="border border-gray-300 rounded-md py-2 px-4 bg-white focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:border-transparent shadow-sm">
                       <option>Newest</option>
                       <option>Price: Low to High</option>
                       <option>Price: High to Low</option>
@@ -205,22 +257,26 @@ export default function ShopPage() {
                 {/* Products grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {currentProducts.map(product => (
-                    <div key={product.id} className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden hover:shadow-md transform hover:-translate-y-1 transition-all duration-300">
-                      <div className="relative h-48 w-full overflow-hidden group">
+                    <motion.div 
+                      key={product.id} 
+                      whileHover={{ y: -5 }}
+                      className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300"
+                    >
+                      <div className="relative h-56 w-full overflow-hidden group">
                         {/* Placeholder for robot image */}
-                        <div className="absolute inset-0 bg-gray-200 flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
+                        <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
                           <span className="text-gray-500 font-medium">[{product.name}]</span>
                         </div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <button className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer">
-                          <FaShoppingCart size={16} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <button className="absolute bottom-4 right-4 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer transform translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
+                          <FaShoppingCart size={18} />
                         </button>
                       </div>
                       
-                      <div className="p-4">
+                      <div className="p-5">
                         <div className="flex justify-between items-start">
                           <div>
-                            <span className="inline-block px-2 py-1 text-xs font-medium text-[#4DA9FF] bg-blue-50 rounded-full mb-2">
+                            <span className="inline-block px-3 py-1 text-xs font-medium text-[#4DA9FF] bg-blue-50 rounded-full mb-2">
                               {product.category}
                             </span>
                             <h3 className="font-bold text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors">
@@ -228,46 +284,49 @@ export default function ShopPage() {
                             </h3>
                             <p className="text-gray-600 text-sm mt-1">{product.brand}</p>
                           </div>
-                          <span className="font-bold text-lg text-gray-800">${product.price.toLocaleString()}</span>
+                          <span className="font-bold text-lg text-[#4DA9FF]">${product.price.toLocaleString()}</span>
                         </div>
                         
-                        <div className="flex items-center mt-2">
+                        <div className="flex items-center mt-3">
                           <div className="flex">
                             {renderRatingStars(product.rating)}
                           </div>
                           <span className="text-gray-500 text-xs ml-2">({Math.floor(Math.random() * 100) + 10})</span>
                         </div>
                         
-                        <div className="mt-3 flex justify-center">
+                        <div className="mt-4 flex justify-center">
                           <Link 
                             href={`/robot/${product.id}`}
-                            className="w-full text-center bg-white border border-[#4DA9FF] text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white text-sm font-medium py-2 px-4 rounded transition-all duration-300"
+                            className="w-full text-center bg-white border-2 border-[#4DA9FF] text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300"
                           >
                             View Details
                           </Link>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
                 
                 {/* Empty state */}
                 {currentProducts.length === 0 && (
-                  <div className="text-center py-12">
-                    <h3 className="text-xl font-medium text-gray-700 mb-2">No robots found</h3>
-                    <p className="text-gray-500">Try adjusting your filters to find what you're looking for.</p>
+                  <div className="text-center py-16">
+                    <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <FaSearch size={36} className="text-gray-300" />
+                    </div>
+                    <h3 className="text-2xl font-medium text-gray-700 mb-2">No robots found</h3>
+                    <p className="text-gray-500 max-w-md mx-auto">Try adjusting your filters or search terms to find what you're looking for.</p>
                   </div>
                 )}
               </div>
               
               {/* Pagination controls */}
               {filteredProducts.length > 0 && (
-                <div className="flex justify-center mt-8">
-                  <div className="flex space-x-2">
+                <div className="flex justify-center mt-10">
+                  <div className="inline-flex rounded-lg shadow-sm">
                     <button 
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
                       disabled={currentPage === 1}
-                      className={`px-4 py-2 rounded-lg ${currentPage === 1 ? 'bg-gray-200 text-gray-600' : 'bg-white text-gray-700 hover:bg-[#4DA9FF] hover:text-white'}`}
+                      className={`px-5 py-3 rounded-l-lg font-medium ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-[#4DA9FF] hover:text-white'} transition-colors border border-gray-200`}
                     >
                       Previous
                     </button>
@@ -276,7 +335,7 @@ export default function ShopPage() {
                       <button 
                         key={page}
                         onClick={() => setCurrentPage(page)}
-                        className={`w-10 h-10 rounded-lg ${currentPage === page ? 'bg-[#4DA9FF] text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                        className={`w-12 h-12 ${currentPage === page ? 'bg-[#4DA9FF] text-white font-bold' : 'bg-white text-gray-700 hover:bg-gray-50'} transition-colors border-t border-b border-gray-200`}
                       >
                         {page}
                       </button>
@@ -285,7 +344,7 @@ export default function ShopPage() {
                     <button 
                       onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
                       disabled={currentPage === totalPages}
-                      className={`px-4 py-2 rounded-lg ${currentPage === totalPages ? 'bg-gray-200 text-gray-600' : 'bg-white text-gray-700 hover:bg-[#4DA9FF] hover:text-white'}`}
+                      className={`px-5 py-3 rounded-r-lg font-medium ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-[#4DA9FF] hover:text-white'} transition-colors border border-gray-200`}
                     >
                       Next
                     </button>
