@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { FaStar, FaStarHalfAlt, FaShoppingCart, FaHeart, FaRegHeart, FaArrowRight, FaCheck } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { commonButtonStyles, commonCardStyles, commonLayoutStyles } from '@/styles/commonStyles';
+import { commonButtonStyles, commonCardStyles } from '@/styles/commonStyles';
 import { getProductById, getRelatedProducts, Product } from '@/utils/productData';
 
 export default function ProductDetail() {
@@ -36,14 +35,6 @@ export default function ProductDetail() {
     
     setLoading(false);
   }, [productId]);
-
-  // Array of placeholder images for the carousel
-  const imageUrls = [
-    "/placeholder-main.jpg",
-    "/placeholder-angle1.jpg",
-    "/placeholder-angle2.jpg",
-    "/placeholder-detail.jpg",
-  ];
 
   // Function to render star ratings
   const renderRatingStars = (rating: number) => {
@@ -117,7 +108,7 @@ export default function ProductDetail() {
               <span className="text-gray-500 text-3xl">?</span>
             </div>
             <h1 className="text-2xl font-bold text-gray-800 mb-4">Product Not Found</h1>
-            <p className="text-gray-600 mb-8">We couldn't find the robot you're looking for. It may have been moved or doesn't exist.</p>
+            <p className="text-gray-600 mb-8">We couldn&apos;t find the robot you&apos;re looking for. It may have been moved or doesn&apos;t exist.</p>
             <Link href="/shop" className={commonButtonStyles.primary}>
               Browse All Robots
             </Link>
@@ -353,7 +344,7 @@ export default function ProductDetail() {
                     <p className="mb-4">
                       With its advanced mobility system, the {productData.name} can navigate smoothly through your 
                       environment, avoiding obstacles and learning the layout over time to optimize its movement patterns. 
-                      The robot's expressive interface and intuitive interactions create a natural experience that feels 
+                      The robot&apos;s expressive interface and intuitive interactions create a natural experience that feels 
                       comfortable from day one.
                     </p>
                     <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">All Features</h3>
