@@ -2,17 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { FaStar, FaStarHalfAlt, FaShoppingCart, FaHeart, FaRegHeart, FaArrowRight, FaCheck } from 'react-icons/fa';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { commonButtonStyles, commonCardStyles } from '@/styles/commonStyles';
 import { getProductById, getRelatedProducts, Product } from '@/utils/productData';
+import { useCart } from '@/utils/cartContext';
 
 export default function ProductDetail() {
   const params = useParams();
-  const productId = parseInt(params.id as string);
+  const router = useRouter();
+  const productId = parseInt(params?.id as string ?? '0');
+  const { addToCart } = useCart();
   
   const [productData, setProductData] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -21,6 +24,7 @@ export default function ProductDetail() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState('description');
   const [loading, setLoading] = useState(true);
+  const [addedToCart, setAddedToCart] = useState(false);
 
   // Load product data based on ID
   useEffect(() => {
@@ -79,6 +83,26 @@ export default function ProductDetail() {
     if (quantity > 1) {
       setQuantity(quantity - 1);
     }
+  };
+  
+  // Handle add to cart
+  const handleAddToCart = () => {
+    if (productData) {
+      addToCart(productData.id, quantity);
+      setAddedToCart(true);
+      
+      // Reset the flag after 2 seconds
+      setTimeout(() => {
+        setAddedToCart(false);
+      }, 2500);
+    }
+  };
+  
+  // Handle quick add to cart for related products
+  const handleQuickAddToCart = (e: React.MouseEvent, productId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(productId, 1);
   };
 
   // Loading state
@@ -262,11 +286,28 @@ export default function ProductDetail() {
                   </div>
                   
                   {/* Action Buttons */}
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-4 relative">
+                    <AnimatePresence>
+                      {addedToCart ? (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute inset-0 z-10"
+                        >
+                          <div className="bg-green-500 text-white rounded-lg py-3 px-4 shadow-lg flex items-center justify-center w-full h-full">
+                            <FaCheck className="mr-2" size={18} />
+                            <span className="font-medium">Added to Cart!</span>
+                          </div>
+                        </motion.div>
+                      ) : null}
+                    </AnimatePresence>
+                    
                     <motion.button 
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className={`flex items-center justify-center ${commonButtonStyles.primary}`}
+                      onClick={handleAddToCart}
                     >
                       <FaShoppingCart className="mr-2" />
                       Add to Cart
@@ -427,7 +468,10 @@ export default function ProductDetail() {
                       <span className="text-gray-500 font-medium">[{product.name}]</span>
                     </div>
                     <div className={commonCardStyles.imageOverlay}></div>
-                    <button className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer transform translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
+                    <button 
+                      onClick={(e) => handleQuickAddToCart(e, product.id)}
+                      className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer transform translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
+                    >
                       <FaShoppingCart size={16} />
                     </button>
                   </div>

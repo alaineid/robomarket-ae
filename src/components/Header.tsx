@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Logo from './Logo';
 import { FaSearch, FaUserCircle, FaShoppingCart, FaBars, FaTimes } from 'react-icons/fa';
+import { useCart } from '@/utils/cartContext';
 
 export default function Header() {
+  const { cartCount } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -102,7 +104,11 @@ export default function Header() {
               <Link href="/cart" className="text-gray-700 hover:text-[#4DA9FF] transition-colors duration-200 relative group">
                 <div className="relative">
                   <FaShoppingCart className="text-2xl transform group-hover:scale-110 transition-transform duration-200" />
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-500 to-[#4DA9FF] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shadow-md transition-transform duration-200 group-hover:scale-110">0</span>
+                  {cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-500 to-[#4DA9FF] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shadow-md transition-transform duration-200 group-hover:scale-110">
+                      {cartCount}
+                    </span>
+                  )}
                   <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full group-hover:left-0 transition-all duration-300"></span>
                 </div>
               </Link>
@@ -164,7 +170,11 @@ export default function Header() {
               <Link href="/cart" className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors px-3 py-2 rounded-full hover:bg-blue-50">
                 <div className="relative mr-2">
                   <FaShoppingCart />
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-500 to-[#4DA9FF] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">0</span>
+                  {cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-500 to-[#4DA9FF] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
                 </div>
                 Cart
               </Link>
