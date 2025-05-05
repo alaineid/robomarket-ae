@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { FaStar, FaStarHalfAlt, FaShoppingCart, FaFilter, FaTimes, FaChevronDown, FaSearch, FaCheck } from 'react-icons/fa';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { commonButtonStyles, commonCardStyles, commonFormStyles, commonLayoutStyles } from '@/styles/commonStyles';
 import { products, categories, brands } from '@/utils/productData';
 import { useCart } from '@/utils/cartContext';
@@ -138,6 +139,12 @@ export default function ShopPage() {
       {/* Main Content */}
       <div className={commonLayoutStyles.mainContent}>
         <div className={commonLayoutStyles.section}>
+          {/* Page Title & Breadcrumb */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-800 mb-3">Shop Our Robots</h1>
+            <Breadcrumbs />
+          </div>
+          
           {/* Filter toggle button */}
           <div className="mb-6">
             <motion.button 

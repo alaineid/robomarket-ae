@@ -16,6 +16,7 @@ import {
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CallToAction from '@/components/CallToAction';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 export default function AboutPage() {
   return (
@@ -28,6 +29,7 @@ export default function AboutPage() {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-5xl font-bold text-gray-800 mb-6">About <span className="text-[#4DA9FF]">RoboMarket</span></h1>
+              <Breadcrumbs className="justify-center" />
               <p className="text-xl text-gray-600 mb-8">
                 Your trusted destination for next-generation robotics technology in the UAE and beyond.
               </p>

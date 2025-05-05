@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { commonButtonStyles } from '@/styles/commonStyles';
 
 export default function SupportPage() {
@@ -15,6 +16,19 @@ export default function SupportPage() {
       <Header />
       
       <main className="flex-grow">
+        {/* Hero Section */}
+        <div className="bg-gradient-to-r from-gray-50 to-blue-50 py-20">
+          <div className="container mx-auto px-4">
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">Customer Support</h1>
+              <Breadcrumbs className="justify-center" />
+              <p className="text-xl text-gray-600 mt-6">
+                How can we assist you today? Find answers to common questions or contact our support team.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Get in Touch Section */}
         <section className="py-20">
           <div className="container mx-auto px-4">

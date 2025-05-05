@@ -8,6 +8,7 @@ import { FaStar, FaStarHalfAlt, FaShoppingCart, FaHeart, FaRegHeart, FaArrowRigh
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Breadcrumbs, { BreadcrumbItem } from '@/components/Breadcrumbs';
 import { commonButtonStyles, commonCardStyles } from '@/styles/commonStyles';
 import { getProductById, getRelatedProducts, Product } from '@/utils/productData';
 import { useCart } from '@/utils/cartContext';
@@ -25,6 +26,7 @@ export default function ProductDetail() {
   const [activeTab, setActiveTab] = useState('description');
   const [loading, setLoading] = useState(true);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
 
   // Load product data based on ID
   useEffect(() => {
@@ -35,7 +37,14 @@ export default function ProductDetail() {
     if (product) {
       setProductData(product);
       setRelatedProducts(related);
-      // We're not modifying the images array anymore, using the original data
+      
+      // Build custom breadcrumbs including the product name
+      setBreadcrumbs([
+        { label: 'Home', path: '/', isCurrent: false },
+        { label: 'Shop', path: '/shop', isCurrent: false },
+        { label: product.category, path: `/shop?category=${encodeURIComponent(product.category)}`, isCurrent: false },
+        { label: product.name, path: `/product/${product.id}`, isCurrent: true }
+      ]);
     }
     
     setLoading(false);
@@ -168,14 +177,8 @@ export default function ProductDetail() {
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4">
           {/* Breadcrumb Navigation */}
-          <div className="mb-6 flex items-center text-sm">
-            <Link href="/" className="text-gray-500 hover:text-[#4DA9FF]">Home</Link>
-            <span className="mx-2 text-gray-400">/</span>
-            <Link href="/shop" className="text-gray-500 hover:text-[#4DA9FF]">Shop</Link>
-            <span className="mx-2 text-gray-400">/</span>
-            <Link href={`/shop?category=${productData.category}`} className="text-gray-500 hover:text-[#4DA9FF]">{productData.category}</Link>
-            <span className="mx-2 text-gray-400">/</span>
-            <span className="text-[#4DA9FF]">{productData.name}</span>
+          <div className="mb-6">
+            <Breadcrumbs items={breadcrumbs} />
           </div>
           
           {/* Product Details Section */}

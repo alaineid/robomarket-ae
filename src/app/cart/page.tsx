@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { FaShoppingCart, FaTrash, FaArrowLeft, FaArrowRight, FaInfoCircle } from 'react-icons/fa';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { commonButtonStyles } from '@/styles/commonStyles';
 import { useCart } from '@/utils/cartContext';
 
@@ -102,11 +103,7 @@ export default function CartPage() {
           {/* Page Title & Breadcrumb */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-3">Your Shopping Cart</h1>
-            <div className="flex items-center text-sm">
-              <Link href="/" className="text-gray-500 hover:text-[#4DA9FF]">Home</Link>
-              <span className="mx-2 text-gray-400">/</span>
-              <span className="text-[#4DA9FF]">Cart</span>
-            </div>
+            <Breadcrumbs />
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

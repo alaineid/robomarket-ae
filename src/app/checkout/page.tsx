@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fa';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { commonButtonStyles } from '@/styles/commonStyles';
 import { useCart } from '@/utils/cartContext';
 
@@ -197,13 +198,7 @@ export default function CheckoutPage() {
           {/* Page Title & Breadcrumb */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-3">Checkout</h1>
-            <div className="flex items-center text-sm">
-              <Link href="/" className="text-gray-500 hover:text-[#4DA9FF]">Home</Link>
-              <span className="mx-2 text-gray-400">/</span>
-              <Link href="/cart" className="text-gray-500 hover:text-[#4DA9FF]">Cart</Link>
-              <span className="mx-2 text-gray-400">/</span>
-              <span className="text-[#4DA9FF]">Checkout</span>
-            </div>
+            <Breadcrumbs />
           </div>
           
           {/* Checkout Progress Steps */}
