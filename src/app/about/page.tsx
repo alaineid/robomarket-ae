@@ -15,6 +15,7 @@ import {
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import CallToAction from '@/components/CallToAction';
 
 export default function AboutPage() {
   return (
@@ -291,21 +292,7 @@ export default function AboutPage() {
           </div>
         </section>
         
-        {/* Call to Action */}
-        <section className="py-20 bg-gradient-to-r from-blue-600 to-[#4DA9FF] text-white">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Welcome a Robot Into Your Life?</h2>
-            <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
-              Browse our collection of premium humanoid robots and find the perfect assistant for your needs.
-            </p>
-            <Link 
-              href="/shop" 
-              className="inline-block bg-white text-[#4DA9FF] hover:bg-gray-100 font-bold py-3 px-10 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              Shop Now
-            </Link>
-          </div>
-        </section>
+        <CallToAction />
       </main>
       
       <Footer />
