@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaMapMarkerAlt, FaPhone, FaEnvelope } from "react-icons/fa";
 import Logo from './Logo';
 
@@ -58,32 +59,37 @@ export default function Footer() {
               </li>
               <li className="flex items-center">
                 <FaEnvelope className="mr-2 text-[#4DA9FF]" />
-                <span className="text-gray-400">info@robomarket.ae</span>
+                <span className="text-gray-400">hello@robomarket.ae</span>
               </li>
             </ul>
-          </div>
+          </div>          
           
-          {/* Newsletter */}
-          <div>
-            <h3 className="text-xl font-bold mb-4">Newsletter</h3>
-            <p className="text-gray-400 mb-4">
-              Subscribe to our newsletter for the latest updates and offers.
-            </p>
-            <form>
-              <div className="flex">
-                <input 
-                  type="email" 
-                  placeholder="Your Email" 
-                  className="bg-gray-800 text-white p-2 rounded-l focus:outline-none flex-grow"
+          {/* Powered by Algorythm */}
+          <div className="flex flex-col items-end justify-center">
+            <a 
+              href="https://algorythm.ca" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex flex-col items-center hover:opacity-80 transition-opacity"
+            >
+              <p className="text-white mb-2">Powered by</p>
+              <div className="relative h-12 w-36">
+                <style jsx>{`
+                  .white-logo {
+                    filter: brightness(0) invert(1);
+                    -webkit-filter: brightness(0) invert(1);
+                  }
+                `}</style>
+                <Image 
+                  src="/images/Algorythm.png" 
+                  alt="Algorythm Logo" 
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  priority
+                  className="white-logo"
                 />
-                <button 
-                  type="submit" 
-                  className="bg-[#4DA9FF] hover:bg-[#3B8CD9] text-white p-2 rounded-r"
-                >
-                  Subscribe
-                </button>
               </div>
-            </form>
+            </a>
           </div>
         </div>
         
