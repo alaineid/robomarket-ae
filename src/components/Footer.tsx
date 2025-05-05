@@ -39,9 +39,18 @@ export default function Footer() {
             <h3 className="text-xl font-bold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li><Link href="/shop" className="text-gray-400 hover:text-white">Shop</Link></li>
+              <li><Link href="/signup" className="text-gray-400 hover:text-white">Sign Up</Link></li>
+              <li><Link href="/login" className="text-gray-400 hover:text-white">Account Login</Link></li>
+            </ul>
+          </div>
+          
+          {/* Company */}
+          <div>
+            <h3 className="text-xl font-bold mb-4">Company</h3>
+            <ul className="space-y-2">
               <li><Link href="/about" className="text-gray-400 hover:text-white">About Us</Link></li>
-              <li><Link href="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
-              <li><Link href="/blog" className="text-gray-400 hover:text-white">Blog</Link></li>
+              <li><Link href="/terms" className="text-gray-400 hover:text-white">Terms of Service</Link></li>
+              <li><Link href="/privacy" className="text-gray-400 hover:text-white">Privacy Policy</Link></li>
             </ul>
           </div>
           
@@ -55,46 +64,39 @@ export default function Footer() {
               </li>
               <li className="flex items-center">
                 <FaPhone className="mr-2 text-[#4DA9FF]" />
-                <span className="text-gray-400">+971 5X XXX XXXX</span>
+                <span className="text-gray-400">+971 58 563 6277</span>
               </li>
               <li className="flex items-center">
                 <FaEnvelope className="mr-2 text-[#4DA9FF]" />
                 <span className="text-gray-400">hello@robomarket.ae</span>
               </li>
             </ul>
-          </div>          
+          </div>
+        </div>
+        
+        <div className="border-t border-gray-800 mt-12 pt-6 flex flex-col items-center justify-center">
+          <p className="text-gray-400 mb-6">© {new Date().getFullYear()} RoboMarket. All rights reserved.</p>
           
-          {/* Powered by Algorythm */}
-          <div className="flex flex-col items-end justify-center">
+          {/* Powered by Algorythm - repositioned to bottom center */}
+          <div className="flex flex-col items-center mt-2">
+            <p className="text-gray-400 mb-2">Powered by</p>
             <a 
               href="https://algorythm.ca" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex flex-col items-center hover:opacity-80 transition-opacity"
+              className="hover:opacity-80 transition-opacity"
             >
-              <p className="text-white mb-2">Powered by</p>
-              <div className="relative h-12 w-36">
-                <style jsx>{`
-                  .white-logo {
-                    filter: brightness(0) invert(1);
-                    -webkit-filter: brightness(0) invert(1);
-                  }
-                `}</style>
+              <div className="relative h-10 w-36">
                 <Image 
                   src="/images/Algorythm.png" 
                   alt="Algorythm Logo" 
                   fill
                   style={{ objectFit: 'contain' }}
                   priority
-                  className="white-logo"
                 />
               </div>
             </a>
           </div>
-        </div>
-        
-        <div className="border-t border-gray-800 mt-12 pt-6 text-center text-gray-400">
-          <p>© {new Date().getFullYear()} RoboMarket. All rights reserved.</p>
         </div>
       </div>
     </footer>
