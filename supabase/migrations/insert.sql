@@ -121,3 +121,76 @@ VALUES
 (4, 5, 4),
 (6, 4, 5),
 (2, 4, 6);
+
+-- Create test customers for reviews
+INSERT INTO customers (id, email, first_name, last_name, is_guest) 
+VALUES
+  ('11111111-1111-1111-1111-111111111111', 'alex.johnson@example.com', 'Alex', 'Johnson', FALSE),
+  ('22222222-2222-2222-2222-222222222222', 'maya.patel@example.com', 'Maya', 'Patel', FALSE),
+  ('33333333-3333-3333-3333-333333333333', 'carlos.rodriguez@example.com', 'Carlos', 'Rodriguez', FALSE),
+  ('44444444-4444-4444-4444-444444444444', 'sarah.williams@example.com', 'Sarah', 'Williams', FALSE),
+  ('55555555-5555-5555-5555-555555555555', 'james.peterson@example.com', 'James', 'Peterson', FALSE),
+  ('66666666-6666-6666-6666-666666666666', 'emma.chen@example.com', 'Emma', 'Chen', FALSE),
+  ('77777777-7777-7777-7777-777777777777', 'robert.chen@example.com', 'Robert', 'Chen', FALSE),
+  ('88888888-8888-8888-8888-888888888888', 'lisa.montgomery@example.com', 'Lisa', 'Montgomery', FALSE),
+  ('99999999-9999-9999-9999-999999999999', 'guest.user@example.com', 'Guest', 'User', TRUE);
+
+-- Add product ratings - one entry per product
+INSERT INTO product_ratings (product_id, average_rating, rating_count, one_star_count, two_star_count, three_star_count, four_star_count, five_star_count)
+VALUES
+  (1, 4.8, 7, 0, 0, 0, 1, 6),  -- Syntho X-2000
+  (2, 4.3, 4, 0, 0, 1, 1, 2),  -- HomeBot Pro
+  (3, 4.9, 8, 0, 0, 0, 1, 7),  -- EduMate
+  (4, 4.7, 5, 0, 0, 0, 2, 3),  -- Guardian
+  (5, 5.0, 6, 0, 0, 0, 0, 6),  -- MediCare
+  (6, 4.6, 5, 0, 0, 1, 0, 4);  -- IndustriBot
+
+-- Add reviews for Syntho X-2000
+INSERT INTO product_reviews (product_id, customer_id, rating, title, comment, helpful_votes, verified_purchase, status)
+VALUES
+  (1, '11111111-1111-1111-1111-111111111111', 5, 'Absolutely Amazing Assistant', 'The X-2000 has completely transformed how I manage my home office. The assistance with scheduling and communications alone is worth the investment!', 12, TRUE, 'approved'),
+  (1, '22222222-2222-2222-2222-222222222222', 4, 'Great But Battery Could Be Better', 'Impressive AI capabilities and very human-like interactions. Battery life could be better, but otherwise it''s been a great addition to our family.', 8, TRUE, 'approved'),
+  (1, '33333333-3333-3333-3333-333333333333', 5, 'Perfect Companion', 'My elderly father has found a new companion in the X-2000. The robot has been helping him with medication reminders and keeping him engaged with conversation and games.', 15, TRUE, 'approved');
+
+-- Add reviews for HomeBot Pro
+INSERT INTO product_reviews (product_id, customer_id, rating, title, comment, helpful_votes, verified_purchase, status)
+VALUES
+  (2, '44444444-4444-4444-4444-444444444444', 5, 'Home Transformation Complete', 'The HomeBot Pro completely transformed our home. It handles cleaning, helps me cook, and manages all our smart devices seamlessly.', 7, TRUE, 'approved'),
+  (2, '55555555-5555-5555-5555-555555555555', 3, 'Kitchen Features Need Work', 'Good utility robot overall, but the kitchen assistance features need improvement. Sometimes struggles with identifying ingredients correctly.', 4, TRUE, 'approved'),
+  (2, '66666666-6666-6666-6666-666666666666', 4, 'Security Features Are Great', 'Very reliable for home management. The security features give me peace of mind when I''m away, and it integrates well with all my existing smart devices.', 9, TRUE, 'approved');
+
+-- Add reviews for EduMate
+INSERT INTO product_reviews (product_id, customer_id, rating, title, comment, helpful_votes, verified_purchase, status)
+VALUES
+  (3, '77777777-7777-7777-7777-777777777777', 5, 'Revolutionary Learning Tool', 'As an educator for 20 years, I''m impressed by EduMate''s ability to adapt to different learning styles. The personalization capabilities are far beyond what a single human teacher can provide.', 18, TRUE, 'approved'),
+  (3, '88888888-8888-8888-8888-888888888888', 5, 'My Kids Love Learning Now', 'My children have shown remarkable improvement in math and science since we got the EduMate. The way it presents complex concepts visually is incredible.', 11, TRUE, 'approved'),
+  (3, '99999999-9999-9999-9999-999999999999', 4, 'Great for Schools', 'We''ve deployed five EduMates in our elementary school. Test scores have improved by 28% on average, and student engagement is noticeably higher. Would give 5 stars but there are occasional connectivity issues.', 14, FALSE, 'approved');
+
+-- Add reviews for Guardian Security Bot
+INSERT INTO product_reviews (product_id, customer_id, rating, title, comment, helpful_votes, verified_purchase, status)
+VALUES
+  (4, '11111111-1111-1111-1111-111111111111', 5, 'Enterprise Security Excellence', 'Deployed across our corporate campus, the Guardian bots have significantly improved our security posture. The threat detection is impressively accurate with minimal false alarms.', 6, TRUE, 'approved'),
+  (4, '44444444-4444-4444-4444-444444444444', 4, 'Great for Large Properties', 'Excellent perimeter security and the integration with our existing systems was seamless. Only wish it had better battery life for our large facility.', 3, TRUE, 'approved'),
+  (4, '66666666-6666-6666-6666-666666666666', 5, 'Perfect for Estate Security', 'We''ve implemented three Guardians across our client''s 15-acre estate. The coordination between units is impressive, and the mobile app control gives us complete oversight.', 9, TRUE, 'approved');
+
+-- Add reviews for MediCare
+INSERT INTO product_reviews (product_id, customer_id, rating, title, comment, helpful_votes, verified_purchase, status)
+VALUES
+  (5, '22222222-2222-2222-2222-222222222222', 5, 'Revolutionary Healthcare Robot', 'The MediCare robots have transformed our nursing home. Staff are now able to focus on higher-level care while the robots handle routine monitoring and assistance. Patient satisfaction has increased dramatically.', 16, TRUE, 'approved'),
+  (5, '33333333-3333-3333-3333-333333333333', 5, 'Perfect for Home Care', 'I''ve prescribed MediCare robots to several elderly patients living independently. The combination of medical monitoring and companionship features has allowed many to safely remain in their homes longer.', 12, TRUE, 'approved'),
+  (5, '55555555-5555-5555-5555-555555555555', 5, 'Excellent for Rehabilitation', 'Excellent for patient monitoring and consistent therapy reminders. The mobility assistance features are particularly valuable for our recovering stroke patients.', 8, TRUE, 'approved');
+
+-- Add reviews for IndustriBot
+INSERT INTO product_reviews (product_id, customer_id, rating, title, comment, helpful_votes, verified_purchase, status)
+VALUES
+  (6, '77777777-7777-7777-7777-777777777777', 5, 'Manufacturing Game Changer', 'We''ve integrated six IndustriBots into our production line and seen a 35% increase in efficiency. The ability to work continuously alongside human workers without safety incidents has been impressive.', 7, TRUE, 'approved'),
+  (6, '88888888-8888-8888-8888-888888888888', 4, 'Great for High Volume', 'Great for our high-volume warehouse. The autonomous navigation is excellent even in our constantly changing environment. Only drawback is the initial programming complexity.', 5, TRUE, 'approved'),
+  (6, '99999999-9999-9999-9999-999999999999', 5, 'Worth Every Penny', 'The IndustriBot has revolutionized how we handle heavy materials on our construction sites. Workplace injuries are down and we''re completing projects ahead of schedule.', 11, FALSE, 'approved');
+
+-- Add some review images
+INSERT INTO review_images (review_id, url, caption, position)
+VALUES
+  (1, 'https://qkfqyhipifcronawvjkl.supabase.co/storage/v1/object/public/review-images/synx2000-review.jpg', 'My Syntho X-2000 helping with office tasks', 1),
+  (7, 'https://qkfqyhipifcronawvjkl.supabase.co/storage/v1/object/public/review-images/edumate-classroom.jpg', 'EduMate teaching in our classroom', 1),
+  (10, 'https://qkfqyhipifcronawvjkl.supabase.co/storage/v1/object/public/review-images/medicare-monitoring.jpg', 'MediCare monitoring vitals', 1),
+  (13, 'https://qkfqyhipifcronawvjkl.supabase.co/storage/v1/object/public/review-images/industribot-warehouse.jpg', 'IndustriBot in our warehouse', 1);
