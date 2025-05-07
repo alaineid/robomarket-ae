@@ -152,18 +152,6 @@ export default function Header() {
               Support
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full transition-all duration-300"></span>
             </Link>
-            
-            {/* Search Bar */}
-            <div className="relative hidden sm:block group">
-              <input
-                type="text"
-                placeholder="Search robots..."
-                className="pl-10 pr-4 py-2 rounded-full bg-gray-100 text-gray-700 w-56 group-hover:w-64 focus:w-72 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:bg-white transition-all duration-300 ease-in-out"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 group-hover:text-[#4DA9FF] transition-colors duration-300" />
-            </div>
 
             {/* Account & Cart */}
             <div className="flex space-x-6 ml-4">
@@ -219,17 +207,6 @@ export default function Header() {
           )}
           
           <div className="flex flex-col space-y-4 px-4 pt-4 pb-5">
-            <div className="bg-gray-100 rounded-lg px-3 py-2 mb-2 flex items-center">
-              <FaSearch className="text-gray-500 mr-2" />
-              <input 
-                type="text" 
-                placeholder="Search robots..." 
-                className="bg-transparent w-full focus:outline-none text-sm"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          
             <Link href="/shop" className="block text-gray-700 hover:text-[#4DA9FF] py-2 font-medium border-b border-gray-100">
               Shop Robots
             </Link>
