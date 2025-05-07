@@ -20,23 +20,6 @@ interface Product {
   position?: number;
 }
 
-// Define the shape of data coming from Supabase for featured products query
-interface FeaturedProductData {
-  position: number;
-  product_id: number;
-  products: Array<{
-    id: number;
-    name: string;
-    vendor_products?: Array<{ price: number }>;
-    product_categories?: Array<{ 
-      categories: Array<{ 
-        name: string 
-      }> 
-    }>;
-    product_images?: Array<{ url: string }>;
-  }>;
-}
-
 // Function to render star ratings using React Icons
 const renderRatingStars = (rating: number) => {
   const stars = [];
@@ -140,8 +123,9 @@ async function getFeaturedProducts(): Promise<Product[]> {
         id: product.id,
         name: product.name,
         price: product.vendor_products?.[0]?.price || 0,
-        category: product.product_categories?.[0]?.categories?.name || 'Unknown',
-        image_url: product.product_images?.[0]?.url || '/images/robot1.png', // Fallback image
+        // Fix category access for array structure
+        category: product.product_categories?.[0]?.categories?.[0]?.name || 'Unknown',
+        image_url: product.product_images?.[0]?.url, // Fallback image
         rating: ratingInfo.rating,
         review_count: ratingInfo.count,
         position: item.position

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Logo from './Logo';
 import { FaSearch, FaUserCircle, FaShoppingCart, FaBars, FaTimes } from 'react-icons/fa';
@@ -12,6 +12,11 @@ export default function Header() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
+  
+  // Touch gesture handling
+  const touchStartRef = useRef<number | null>(null);
+  const touchEndRef = useRef<number | null>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -34,6 +39,73 @@ export default function Header() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  // Use a dedicated effect for touch event handling
+  useEffect(() => {
+    if (!isMobileMenuOpen || !mobileMenuRef.current) return;
+    
+    let initialY = 0;
+    let isSwiping = false;
+    
+    // Using window-level event listeners instead of React's passive events
+    const handleTouchStart = (e: TouchEvent) => {
+      if (!mobileMenuRef.current?.contains(e.target as Node)) return;
+      
+      initialY = e.touches[0].clientY;
+      touchStartRef.current = initialY;
+      isSwiping = false;
+    };
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      // Only track touches that started inside our menu
+      if (!touchStartRef.current || !mobileMenuRef.current?.contains(e.target as Node)) return;
+      
+      const currentY = e.touches[0].clientY;
+      const touchDiff = touchStartRef.current - currentY;
+      
+      // Start detecting swipe at the beginning of the gesture
+      if (Math.abs(touchDiff) > 10 && !isSwiping) {
+        isSwiping = true;
+      }
+      
+      // Only try to prevent default if we've detected a clear upward swipe gesture
+      // and if the event is still cancelable (not already scrolling)
+      if (touchDiff > 10 && isSwiping && e.cancelable) {
+        e.preventDefault();
+      }
+    };
+    
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!touchStartRef.current || !mobileMenuRef.current?.contains(e.target as Node)) return;
+      
+      touchEndRef.current = e.changedTouches[0].clientY;
+      
+      // Calculate the distance of the swipe
+      const touchDiff = touchStartRef.current - touchEndRef.current;
+      
+      // If swipe distance is significant and direction is upward, close the menu
+      if (touchDiff > 30) {
+        setIsMobileMenuOpen(false);
+      }
+      
+      // Reset touch coordinates
+      touchStartRef.current = null;
+      touchEndRef.current = null;
+      isSwiping = false;
+    };
+    
+    // Add event listeners with the non-passive option for touchmove
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    
+    // Clean up
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isMobileMenuOpen]);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -132,14 +204,20 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu Panel */}
+        {/* Mobile Menu Panel with swipe gesture support */}
         <div 
+          ref={mobileMenuRef}
           className={`lg:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-sm shadow-lg border-t border-gray-200 overflow-hidden transition-all duration-300 ${
             isMobileMenuOpen 
               ? 'max-h-[500px] opacity-100' 
               : 'max-h-0 opacity-0'
           }`}
         >
+          {/* Swipe indicator when menu is open */}
+          {isMobileMenuOpen && (
+            <div className="w-20 h-1.5 bg-gray-300 rounded-full mx-auto mt-3 mb-3 animate-pulse" aria-hidden="true"></div>
+          )}
+          
           <div className="flex flex-col space-y-4 px-4 pt-4 pb-5">
             <div className="bg-gray-100 rounded-lg px-3 py-2 mb-2 flex items-center">
               <FaSearch className="text-gray-500 mr-2" />
@@ -179,6 +257,18 @@ export default function Header() {
                 Cart
               </Link>
             </div>
+            
+            {/* Swipe Up Indicator */}
+            {isMobileMenuOpen && (
+              <div className="flex flex-col items-center mt-6 pt-4 border-t border-gray-100">
+                <div className="flex items-center justify-center text-gray-500 text-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+                  </svg>
+                  <span>Swipe up to close menu</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </nav>

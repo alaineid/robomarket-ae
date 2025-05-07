@@ -22,18 +22,18 @@ export default function HeroSection() {
         }}
       ></div>
       
-      <div className="relative z-20 container mx-auto px-4 lg:px-6 py-24 md:py-36 lg:py-40">
+      <div className="relative z-20 container mx-auto px-4 lg:px-6 py-12 md:py-20 lg:py-32">
         <div className="max-w-4xl">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 leading-tight tracking-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 sm:mb-6 leading-tight tracking-tight">
             RoboMarket: <span className="text-[#4DA9FF]">Your Partner</span> in Advanced Assistance
           </h1>
-          <p className="text-lg md:text-xl text-gray-200 max-w-3xl mb-10">
-            Discover the next generation of humanoid robots designed to enhance your life and productivity. From home assistance to professional settings, our verified partners offer the most advanced robot companions.
+          <p className="text-base sm:text-lg md:text-xl text-gray-200 max-w-3xl mb-6 sm:mb-8">
+            Discover the next generation of humanoid robots designed to enhance your life and productivity.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link 
               href="/shop"
-              className="bg-[#4DA9FF] hover:bg-[#3B8CD9] text-white font-bold py-3 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
+              className="bg-[#4DA9FF] hover:bg-[#3B8CD9] text-white font-bold py-2 sm:py-3 px-6 sm:px-8 rounded-lg text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
             >
               Explore Our Robots
               <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
