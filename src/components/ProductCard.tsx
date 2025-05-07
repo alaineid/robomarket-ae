@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { FaStar, FaStarHalfAlt, FaEye, FaCheck, FaExchangeAlt } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { Product } from '@/utils/productData';
-import { useCart } from '@/utils/cartContext';
 import AddToCartButton from './ui/AddToCartButton';
 import WishlistButton from './ui/WishlistButton';
 import QuickView from './ui/QuickView';

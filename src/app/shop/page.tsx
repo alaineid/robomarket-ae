@@ -3,25 +3,19 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
-  FaStar, FaStarHalfAlt, FaShoppingCart, FaFilter, FaTimes, FaChevronDown, 
-  FaSearch, FaCheck, FaHeart, FaRegHeart, FaEye, FaExchangeAlt, 
-  FaHome, FaBoxOpen, FaShieldAlt, FaBrain, FaHeartbeat, FaIndustry,
-  FaSortAmountDown, FaSortAmountUp, FaBars
+  FaStar, FaFilter, FaTimes, FaChevronDown, 
+  FaSearch, FaCheck, FaHeart, FaBoxOpen, FaShieldAlt, FaBrain, FaHeartbeat, FaIndustry
 } from 'react-icons/fa';
-import { BiChevronRight } from 'react-icons/bi';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import ProductCard from '@/components/ProductCard';
-import { commonButtonStyles, commonCardStyles, commonFormStyles, commonLayoutStyles } from '@/styles/commonStyles';
+import { commonButtonStyles, commonFormStyles, commonLayoutStyles } from '@/styles/commonStyles';
 import { Product, products, categories, brands } from '@/utils/productData';
-import { useCart } from '@/utils/cartContext';
-import { useWishlist } from '@/utils/wishlistContext';
 
 export default function ShopPage() {
-  const { addToCart } = useCart();
   const [searchTerm, setSearchTerm] = useState('');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -30,10 +24,8 @@ export default function ShopPage() {
   const [showFilters, setShowFilters] = useState(true);
   const [sortBy, setSortBy] = useState('newest');
   const [comparingProducts, setComparingProducts] = useState<Product[]>([]);
-  const [showComparison, setShowComparison] = useState(false);
+  const [setShowComparison] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
-  const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(10000);
   const [ratingFilter, setRatingFilter] = useState(0);
 
   const CATEGORY_ICONS = {
@@ -56,7 +48,7 @@ export default function ShopPage() {
           .filter(Boolean)
           .slice(0, 4);
         setRecentlyViewed(viewedProducts);
-      } catch (e) {
+      } catch {
         console.error("Failed to parse recently viewed products from localStorage");
       }
     }
@@ -165,57 +157,8 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
-      
-      {/* Hero Section with Enhanced Search */}
-      <div className={commonLayoutStyles.heroSection}>
-        <div className={commonLayoutStyles.section}>
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl font-bold text-gray-800 mb-4">Robot <span className="text-[#4DA9FF]">
-              Marketplace
-            </span></h1>
-            <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">Discover the future of robotics with our premium selection of companion and utility robots</p>
-            
-            {/* Enhanced search bar */}
-            <div className="relative max-w-xl mx-auto">
-              <input 
-                type="text" 
-                placeholder="Search for robots by name, category, features..." 
-                className="w-full h-12 px-6 pr-12 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF]/40 focus:border-[#4DA9FF] transition-all duration-200 placeholder-gray-400 shadow-md"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-              />
-              <button className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#4DA9FF] transition-colors">
-                <FaSearch size={18} />
-              </button>
-            </div>
-            
-            {/* Quick category buttons with icons */}
-            <div className="flex flex-wrap justify-center gap-3 mt-6">
-              {categories.map((category, index) => (
-                <button 
-                  key={index}
-                  onClick={() => toggleCategory(category)} 
-                  className={`flex items-center py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-                    selectedCategories.includes(category) 
-                      ? 'bg-[#4DA9FF] text-white shadow-md' 
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
-                  }`}
-                >
-                  <span className="mr-2">
-                    {renderCategoryIcon(category)}
-                  </span>
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-      
+      <Header />    
+     
       {/* Main Content */}
       <div className={commonLayoutStyles.mainContent}>
         <div className={commonLayoutStyles.section}>
@@ -417,7 +360,7 @@ export default function ShopPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                   <p className="text-gray-700">
                     <span className="font-semibold text-[#4DA9FF]">{filteredProducts.length}</span> robots found
-                    {searchTerm && <span> for "<span className="italic">{searchTerm}</span>"</span>}
+                    {searchTerm && <span> for &quot;<span className="italic">{searchTerm}</span>&quot;</span>}
                   </p>
                   
                   <div className="flex items-center">
@@ -538,7 +481,7 @@ export default function ShopPage() {
                   </div>
                   <h3 className="text-2xl font-medium text-gray-700 mb-2">No robots found</h3>
                   <p className="text-gray-500 max-w-md mx-auto mb-6">
-                    We couldn't find any robots matching your current filters. Try adjusting your filters or search terms.
+                    We couldn&apos;t find any robots matching your current filters. Try adjusting your filters or search terms.
                   </p>
                   <button
                     onClick={clearFilters}
