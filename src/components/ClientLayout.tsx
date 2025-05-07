@@ -1,19 +1,16 @@
 "use client";
 
-import { useEffect } from 'react';
 import { CartProvider } from '@/utils/cartContext';
+import { WishlistProvider } from '@/utils/wishlistContext';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
-  // Any client-side functionality you need
-  useEffect(() => {
-    // Client-side effects
-  }, []);
-
   return (
     <CartProvider>
-      <div className="app-wrapper">
-        {children}
-      </div>
+      <WishlistProvider>
+        <div className="app-wrapper">
+          {children}
+        </div>
+      </WishlistProvider>
     </CartProvider>
   );
 }
