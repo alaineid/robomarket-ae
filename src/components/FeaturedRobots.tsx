@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FaStar, FaStarHalfAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
-import { supabase } from '@/utils/supabaseClient';
 import AddToCartButton from '@/components/ui/AddToCartButton';
+import { commonCardStyles } from '@/styles/commonStyles';
 
 // Define Product type based on our database schema
 interface Product {
@@ -44,93 +44,18 @@ const renderRatingStars = (rating: number) => {
 
 async function getFeaturedProducts(): Promise<Product[]> {
   try {
-    console.log('Starting to fetch featured products...');
-    // Modified query to directly get product ratings
-    const { data, error } = await supabase
-      .from('featured_products')
-      .select(`
-        position,
-        product_id,
-        products:product_id (
-          id,
-          name,
-          vendor_products (
-            price
-          ),
-          product_categories (
-            categories:category_id (
-              name
-            )
-          ),
-          product_images (
-            url
-          )
-        )
-      `)
-      .order('position')
-      .limit(6);
-
-    if (error) {
-      console.error('Error fetching featured products:', error);
-      return [];
-    }
-
-    if (!data || data.length === 0) {
-      console.log('No featured products found in database');
-      return [];
-    }
-
-    console.log('Featured products raw data:', data);
+    console.log('Starting to fetch featured products via API...');
     
-    // Get all product IDs to fetch ratings in a separate query
-    const productIds = data.map(item => item.product_id);
-
-    // Fetch ratings for all products in a single query
-    const { data: ratingsData, error: ratingsError } = await supabase
-      .from('product_ratings')
-      .select('product_id, average_rating, rating_count')
-      .in('product_id', productIds);
-
-    if (ratingsError) {
-      console.error('Error fetching ratings:', ratingsError);
+    const response = await fetch('/api/products/featured', {
+      next: { revalidate: 600 } // Cache for 10 minutes
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching featured products: ${response.status}`);
     }
-
-    // Create a map of product_id to ratings data for easy lookup
-    const ratingsMap = new Map();
-    if (ratingsData) {
-      ratingsData.forEach(rating => {
-        ratingsMap.set(rating.product_id, {
-          rating: parseFloat(rating.average_rating) || 0,
-          count: parseInt(rating.rating_count) || 0
-        });
-      });
-    }
-
-    // Transform the data to match our Product interface
-    return data.map(item => {
-      // Get rating and review count from our ratings map
-      const ratingInfo = ratingsMap.get(item.product_id) || { rating: 0, count: 0 };
-
-      // Check if products is an array or a direct object
-      const product = Array.isArray(item.products) ? item.products[0] : item.products;
-      
-      if (!product) {
-        console.warn(`No product data found for product_id: ${item.product_id}`);
-        return null;
-      }
-      
-      return {
-        id: product.id,
-        name: product.name,
-        price: product.vendor_products?.[0]?.price || 0,
-        // Fix category access for array structure
-        category: product.product_categories?.[0]?.categories?.[0]?.name || 'Unknown',
-        image_url: product.product_images?.[0]?.url, // Fallback image
-        rating: ratingInfo.rating,
-        review_count: ratingInfo.count,
-        position: item.position
-      };
-    }).filter(Boolean) as Product[]; // Filter out any null products
+    
+    const data = await response.json();
+    return data.products || [];
   } catch (error) {
     console.error('Error in getFeaturedProducts:', error);
     return [];
@@ -140,8 +65,10 @@ async function getFeaturedProducts(): Promise<Product[]> {
 export default function FeaturedRobots() {
   const [featuredRobots, setFeaturedRobots] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(3);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // Load featured products on component mount
   useEffect(() => {
@@ -160,53 +87,67 @@ export default function FeaturedRobots() {
     
     loadProducts();
   }, []);
-  
-  // Calculate how many items to show at once based on screen size
-  const [itemsPerView, setItemsPerView] = useState(4);
-  
+
+  // Update items per page based on screen size
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 640) {
-        setItemsPerView(2);
-      } else if (window.innerWidth < 1024) {
-        setItemsPerView(3);
+    const updateItemsPerPage = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const isLandscape = width > height;
+      
+      // Special handling for iPhone in landscape
+      if (isLandscape && height < 500) {
+        setItemsPerPage(2); // Force 2 items for iPhone landscape
+      } else if (width < 540) {
+        setItemsPerPage(1);
+      } else if (width < 768) {
+        setItemsPerPage(2);
+      } else if (width < 1024) {
+        setItemsPerPage(3);
       } else {
-        setItemsPerView(4);
+        setItemsPerPage(4);
       }
     };
-    
+
     // Set initial value
-    handleResize();
+    updateItemsPerPage();
     
-    // Add event listener
-    window.addEventListener('resize', handleResize);
+    // Add event listener for window resize
+    window.addEventListener('resize', updateItemsPerPage);
     
     // Clean up
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', updateItemsPerPage);
   }, []);
-  
-  // Navigate to previous slide
-  const prevSlide = () => {
-    setCurrentSlide((prev) => Math.max(prev - 1, 0));
+
+  // Calculate total pages
+  const totalPages = Math.ceil(featuredRobots.length / itemsPerPage);
+
+  // Navigate to previous page
+  const prevPage = () => {
+    setCurrentPage(prev => (prev > 0 ? prev - 1 : totalPages - 1));
   };
   
-  // Navigate to next slide
-  const nextSlide = () => {
-    setCurrentSlide((prev) => Math.min(prev + 1, Math.ceil(featuredRobots.length / itemsPerView) - 1));
+  // Navigate to next page
+  const nextPage = () => {
+    setCurrentPage(prev => (prev < totalPages - 1 ? prev + 1 : 0));
   };
 
-  // Scroll the carousel when currentSlide changes
-  useEffect(() => {
-    if (carouselRef.current) {
-      const scrollAmount = currentSlide * carouselRef.current.offsetWidth;
-      carouselRef.current.scrollTo({
-        left: scrollAmount,
-        behavior: 'smooth'
-      });
+  // Get current robots to display
+  const getCurrentRobots = () => {
+    const startIndex = currentPage * itemsPerPage;
+    if (featuredRobots.length <= itemsPerPage) {
+      return featuredRobots;
     }
-  }, [currentSlide, itemsPerView]);
+    
+    // Handle wrap-around for circular navigation
+    if (startIndex + itemsPerPage > featuredRobots.length) {
+      const firstPart = featuredRobots.slice(startIndex);
+      const secondPart = featuredRobots.slice(0, itemsPerPage - firstPart.length);
+      return [...firstPart, ...secondPart];
+    }
+    
+    return featuredRobots.slice(startIndex, startIndex + itemsPerPage);
+  };
 
   if (loading) {
     return (
@@ -224,60 +165,65 @@ export default function FeaturedRobots() {
       </section>
     );
   }
+
+  // If no products, don't render anything
+  if (featuredRobots.length === 0) {
+    return null;
+  }
+  
+  // Get robots to display in current view
+  const currentRobots = getCurrentRobots();
   
   return (
     <section id="featured-robots" className="py-16 bg-gray-50 px-4 lg:px-8">
       <div className="container mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-gray-800">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl md:text-5xl font-bold mb-3 text-gray-800">
             Featured <span className="text-[#4DA9FF]">Robots</span>
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+          <p className="text-gray-600 max-w-2xl mx-auto text-base md:text-lg">
             Discover our most popular humanoid robot models trusted by customers worldwide
           </p>
         </div>
         
-        <div className="relative">
-          {/* Carousel Navigation Buttons */}
-          <button 
-            onClick={prevSlide}
-            disabled={currentSlide === 0}
-            className={`absolute left-0 top-1/2 -translate-y-1/2 -ml-4 z-10 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-gray-800 hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 ${currentSlide === 0 ? 'opacity-50 cursor-not-allowed' : 'opacity-100 cursor-pointer'}`}
-            aria-label="Previous slide"
-          >
-            <FaChevronLeft />
-          </button>
+        {/* Multi-product carousel */}
+        <div ref={containerRef} className="relative max-w-6xl mx-auto">
+          {featuredRobots.length > itemsPerPage && (
+            <>
+              <button 
+                onClick={prevPage}
+                className="absolute -left-2 md:-left-6 top-1/3 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-md flex items-center justify-center text-gray-800 hover:bg-[#4DA9FF] hover:text-white transition-all duration-300"
+                aria-label="Previous page"
+              >
+                <FaChevronLeft className="text-xs sm:text-base" />
+              </button>
+              
+              <button 
+                onClick={nextPage}
+                className="absolute -right-2 md:-right-6 top-1/3 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-md flex items-center justify-center text-gray-800 hover:bg-[#4DA9FF] hover:text-white transition-all duration-300"
+                aria-label="Next page"
+              >
+                <FaChevronRight className="text-xs sm:text-base" />
+              </button>
+            </>
+          )}
           
-          <button 
-            onClick={nextSlide}
-            disabled={currentSlide >= Math.ceil(featuredRobots.length / itemsPerView) - 1}
-            className={`absolute right-0 top-1/2 -translate-y-1/2 -mr-4 z-10 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-gray-800 hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 ${currentSlide >= Math.ceil(featuredRobots.length / itemsPerView) - 1 ? 'opacity-50 cursor-not-allowed' : 'opacity-100 cursor-pointer'}`}
-            aria-label="Next slide"
-          >
-            <FaChevronRight />
-          </button>
-          
-          {/* Carousel Container */}
-          <div 
-            ref={carouselRef}
-            className="overflow-hidden"
-          >
-            <div 
-              className="flex transition-transform duration-300 gap-6"
-              style={{ 
-                width: `${(100 / itemsPerView) * featuredRobots.length}%`
-              }}
-            >
-              {featuredRobots.map(robot => (
+          <div ref={carouselRef} className="overflow-hidden px-2">
+            <div className={`grid gap-4 md:gap-6 ${
+              // Dynamic grid columns based on items per page
+              itemsPerPage === 1 ? 'grid-cols-1' : 
+              itemsPerPage === 2 ? 'grid-cols-2' : 
+              itemsPerPage === 3 ? 'grid-cols-3' : 
+              'grid-cols-4'
+            }`}>
+              {currentRobots.map((robot) => (
                 <div 
                   key={robot.id} 
-                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 group"
-                  style={{ width: `${100 / featuredRobots.length}%` }}
+                  className={`${commonCardStyles.container} transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg`}
                 >
                   <Link href={`/product/${robot.id}`} className="block">
-                    <div className="relative h-56 w-full overflow-hidden">
-                      {/* Display actual robot image */}
-                      <div className="absolute inset-0 flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
+                    <div className="relative h-36 sm:h-48 w-full overflow-hidden">
+                      <div className="absolute inset-0 flex items-center justify-center p-2">
                         <Image
                           src={robot.image_url}
                           alt={robot.name}
@@ -287,36 +233,43 @@ export default function FeaturedRobots() {
                           priority={robot.position === 1}
                         />
                       </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      <AddToCartButton productId={robot.id} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
                   </Link>
                   
-                  <div className="p-6">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <span className="inline-block px-3 py-1 text-xs font-medium text-[#4DA9FF] bg-blue-50 rounded-full mb-2">{robot.category}</span>
-                        <Link href={`/product/${robot.id}`}>
-                          <h3 className="font-bold text-xl text-gray-800 hover:text-[#4DA9FF] transition-colors">{robot.name}</h3>
-                        </Link>
-                      </div>
-                      <span className="font-bold text-xl text-gray-800">${robot.price.toLocaleString()}</span>
+                  <div className="p-3 sm:p-4">
+                    <span className="inline-block px-2 py-1 text-xs font-medium text-[#4DA9FF] bg-blue-50 rounded-full mb-1 sm:mb-2 mt-3">
+                      {robot.category}
+                    </span>
+                    
+                    <div className="flex flex-col mb-1 sm:mb-2">
+                      <Link href={`/product/${robot.id}`}>
+                        <h3 className="font-bold text-base sm:text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors line-clamp-1 sm:line-clamp-2">
+                          {robot.name}
+                        </h3>
+                      </Link>
+                      <span className="font-bold text-base sm:text-lg text-gray-800 mt-1">
+                        ${robot.price.toLocaleString()}
+                      </span>
                     </div>
                     
-                    <div className="flex items-center mt-3">
-                      <div className="flex">
+                    <div className="flex items-center mb-2 sm:mb-3">
+                      <div className="flex items-center text-xs sm:text-sm">
                         {renderRatingStars(robot.rating)}
                       </div>
-                      <span className="text-gray-500 text-sm ml-2">({robot.review_count} reviews)</span>
+                      <span className="text-gray-500 text-xs ml-1 sm:ml-2">
+                        ({robot.review_count})
+                      </span>
                     </div>
                     
-                    <div className="mt-4 flex justify-center">
-                      <Link 
+                    <div className="flex justify-between items-center">
+                      <Link
                         href={`/product/${robot.id}`}
-                        className="text-[#4DA9FF] text-sm font-medium hover:text-[#3D99FF] border-b border-transparent hover:border-[#4DA9FF] pb-0.5 transition-all duration-200"
+                        className="text-[#4DA9FF] text-xs sm:text-sm font-medium hover:text-[#3D99FF] border-b border-transparent hover:border-[#4DA9FF] pb-0.5 transition-all duration-200"
                       >
                         View Details
                       </Link>
+                      <AddToCartButton productId={robot.id} />
                     </div>
                   </div>
                 </div>
@@ -324,17 +277,21 @@ export default function FeaturedRobots() {
             </div>
           </div>
           
-          {/* Carousel Indicators */}
-          <div className="flex justify-center mt-8 gap-2">
-            {Array.from({ length: Math.ceil(featuredRobots.length / itemsPerView) }).map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-[#4DA9FF] w-8' : 'bg-gray-300'}`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
+          {/* Page Indicators */}
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-6 gap-2">
+              {[...Array(totalPages)].map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPage(index)}
+                  className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                    index === currentPage ? 'bg-[#4DA9FF] w-5' : 'bg-gray-300'
+                  }`}
+                  aria-label={`Go to page ${index + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
         
         <div className="text-center mt-12">
