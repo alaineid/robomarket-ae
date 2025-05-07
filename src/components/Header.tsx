@@ -3,14 +3,13 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Logo from './Logo';
-import { FaSearch, FaUserCircle, FaShoppingCart, FaBars, FaTimes } from 'react-icons/fa';
+import { FaUserCircle, FaShoppingCart, FaBars, FaTimes } from 'react-icons/fa';
 import { useCart } from '@/utils/cartContext';
 
 export default function Header() {
   const { cartCount } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
   
   // Touch gesture handling

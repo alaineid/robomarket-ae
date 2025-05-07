@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { 
-  FaStar, FaFilter, FaTimes, FaChevronDown, 
+  FaStar, FaFilter, FaTimes, FaChevronDown, FaChevronRight,
   FaSearch, FaCheck, FaHeart, FaBoxOpen, FaShieldAlt, FaBrain, FaHeartbeat, FaIndustry
 } from 'react-icons/fa';
 import Header from '@/components/Header';
@@ -21,10 +21,9 @@ export default function ShopPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showFilters, setShowFilters] = useState(true);
   const [sortBy, setSortBy] = useState('newest');
   const [comparingProducts, setComparingProducts] = useState<Product[]>([]);
-  const [setShowComparison] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   const [ratingFilter, setRatingFilter] = useState(0);
 
@@ -179,204 +178,245 @@ export default function ShopPage() {
                   • {selectedCategories.join(', ')}
                 </span>
               )}
-            </h1>
+            </h1>         
+           
+          </div>
+          
+          <div className="flex flex-col lg:flex-row gap-6 relative">
+            {/* Show Filter Button - Visible when filters are hidden */}
+            {!showFilters && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                onClick={() => setShowFilters(true)}
+                className="fixed left-0 top-1/2 transform -translate-y-1/2 bg-[#4DA9FF] text-white p-3 rounded-r-lg shadow-md z-10 hover:bg-blue-500 transition-colors"
+                style={{ transform: 'translateY(-50%)' }}
+              >
+                <FaChevronRight />
+              </motion.button>
+            )}
             
-            <div className="flex gap-2">
-              {sortedProducts.length > 0 && (
-                <motion.button 
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center justify-center rounded-lg border border-gray-200 px-4 py-2 text-gray-700 shadow-sm hover:bg-gray-50"
-                >
-                  {showFilters ? <FaTimes className="mr-2" /> : <FaFilter className="mr-2 text-[#4DA9FF]" />}
-                  <span className="font-medium">{showFilters ? "Hide Filters" : "Show Filters"}</span>
-                </motion.button>
-              )}
-              
-              {(selectedCategories.length > 0 || selectedBrands.length > 0 || ratingFilter > 0 || searchTerm) && (
+            {/* Filters Sidebar */}
+            <motion.aside 
+              className={`lg:w-1/4 ${!showFilters ? 'hidden' : ''}`}
+              initial={{ opacity: showFilters ? 1 : 0, x: showFilters ? 0 : -20 }}
+              animate={{ opacity: showFilters ? 1 : 0, x: showFilters ? 0 : -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="bg-white rounded-xl shadow-lg p-6 sticky top-8 border border-gray-100">
+                <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+                  <h2 className="font-bold text-xl text-gray-800">Filters</h2>
+                  <button 
+                    onClick={() => setShowFilters(false)} 
+                    className="text-gray-500 hover:text-gray-700"
+                    title="Hide filters"
+                  >
+                    <FaTimes size={16} />
+                  </button>
+                </div>
+                
+                {/* Categories filter with icons */}
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-semibold text-lg text-gray-800">Categories</h3>
+                    <FaChevronDown className="text-gray-400 text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    {categories.map((category, index) => (
+                      <div key={index} className="flex items-center">
+                        <input
+                          id={`category-${index}`}
+                          type="checkbox"
+                          checked={selectedCategories.includes(category)}
+                          onChange={() => toggleCategory(category)}
+                          className="w-4 h-4 accent-[#4DA9FF]"
+                        />
+                        <label htmlFor={`category-${index}`} className="ml-3 flex items-center text-gray-700 hover:text-[#4DA9FF] cursor-pointer">
+                          <span className="mr-2 text-sm text-gray-500">
+                            {renderCategoryIcon(category)}
+                          </span>
+                          {category}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Brands filter */}
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-semibold text-lg text-gray-800">Brands</h3>
+                    <FaChevronDown className="text-gray-400 text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    {brands.map((brand, index) => (
+                      <div key={index} className="flex items-center">
+                        <input
+                          id={`brand-${index}`}
+                          type="checkbox"
+                          checked={selectedBrands.includes(brand)}
+                          onChange={() => toggleBrand(brand)}
+                          className="w-4 h-4 accent-[#4DA9FF]"
+                        />
+                        <label htmlFor={`brand-${index}`} className="ml-3 text-gray-700 hover:text-[#4DA9FF] cursor-pointer">
+                          {brand}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Price Range Slider */}
+                <div className="mb-8">
+                  <h3 className="font-semibold text-lg mb-4 text-gray-800">Price Range</h3>
+                  <div className="px-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <input 
+                        type="number"
+                        value={priceRange[0]}
+                        onChange={(e) => handlePriceRangeChange(
+                          Math.min(Number(e.target.value), priceRange[1] - 100),
+                          priceRange[1]
+                        )}
+                        className="w-24 h-8 px-2 border border-gray-200 rounded text-sm"
+                      />
+                      <span className="mx-2 text-gray-400">to</span>
+                      <input 
+                        type="number"
+                        value={priceRange[1]}
+                        onChange={(e) => handlePriceRangeChange(
+                          priceRange[0],
+                          Math.max(Number(e.target.value), priceRange[0] + 100)
+                        )}
+                        className="w-24 h-8 px-2 border border-gray-200 rounded text-sm"
+                      />
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="10000"
+                      step="100"
+                      value={priceRange[1]}
+                      onChange={(e) => handlePriceRangeChange(priceRange[0], parseInt(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-md appearance-none cursor-pointer accent-[#4DA9FF]"
+                    />
+                    <div className="flex justify-between mt-2">
+                      <span className="text-xs text-gray-500">${priceRange[0].toLocaleString()}</span>
+                      <span className="text-xs text-gray-500">${priceRange[1].toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Ratings Filter */}
+                <div className="mb-8">
+                  <h3 className="font-semibold text-lg mb-3 text-gray-800">Rating</h3>
+                  <div className="space-y-2">
+                    {[5, 4, 3, 2, 1].map(rating => (
+                      <button
+                        key={rating}
+                        onClick={() => handleRatingChange(rating)}
+                        className={`flex items-center w-full p-2 rounded-lg transition-colors ${
+                          ratingFilter === rating ? 'bg-blue-50' : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex">
+                          {Array(rating).fill(0).map((_, i) => (
+                            <FaStar key={i} className="text-yellow-400" />
+                          ))}
+                          {Array(5-rating).fill(0).map((_, i) => (
+                            <FaStar key={i} className="text-gray-300" />
+                          ))}
+                        </div>
+                        <span className="ml-2 text-sm text-gray-700">& Up</span>
+                        {ratingFilter === rating && (
+                          <FaCheck className="ml-auto text-[#4DA9FF]" size={14} />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
                 <motion.button 
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={clearFilters}
-                  className="flex items-center justify-center rounded-lg border border-gray-200 px-4 py-2 text-gray-700 shadow-sm hover:bg-gray-50"
+                  className={commonButtonStyles.primary}
                 >
-                  <FaTimes className="mr-2" />
-                  <span className="font-medium">Clear Filters</span>
+                  Reset All Filters
                 </motion.button>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Filters Sidebar */}
-            {showFilters && (
-              <motion.aside 
-                className="lg:w-1/4"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="bg-white rounded-xl shadow-lg p-6 sticky top-8 border border-gray-100">
-                  <h2 className="font-bold text-xl mb-6 text-gray-800 border-b border-gray-100 pb-4">Filters</h2>
-                  
-                  {/* Categories filter with icons */}
-                  <div className="mb-6">
-                    <div className="flex justify-between items-center mb-3">
-                      <h3 className="font-semibold text-lg text-gray-800">Categories</h3>
-                      <FaChevronDown className="text-gray-400 text-sm" />
-                    </div>
-                    <div className="space-y-2">
-                      {categories.map((category, index) => (
-                        <div key={index} className="flex items-center">
-                          <input
-                            id={`category-${index}`}
-                            type="checkbox"
-                            checked={selectedCategories.includes(category)}
-                            onChange={() => toggleCategory(category)}
-                            className="w-4 h-4 accent-[#4DA9FF]"
-                          />
-                          <label htmlFor={`category-${index}`} className="ml-3 flex items-center text-gray-700 hover:text-[#4DA9FF] cursor-pointer">
-                            <span className="mr-2 text-sm text-gray-500">
-                              {renderCategoryIcon(category)}
-                            </span>
-                            {category}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {/* Brands filter */}
-                  <div className="mb-6">
-                    <div className="flex justify-between items-center mb-3">
-                      <h3 className="font-semibold text-lg text-gray-800">Brands</h3>
-                      <FaChevronDown className="text-gray-400 text-sm" />
-                    </div>
-                    <div className="space-y-2">
-                      {brands.map((brand, index) => (
-                        <div key={index} className="flex items-center">
-                          <input
-                            id={`brand-${index}`}
-                            type="checkbox"
-                            checked={selectedBrands.includes(brand)}
-                            onChange={() => toggleBrand(brand)}
-                            className="w-4 h-4 accent-[#4DA9FF]"
-                          />
-                          <label htmlFor={`brand-${index}`} className="ml-3 text-gray-700 hover:text-[#4DA9FF] cursor-pointer">
-                            {brand}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {/* Price Range Slider */}
-                  <div className="mb-8">
-                    <h3 className="font-semibold text-lg mb-4 text-gray-800">Price Range</h3>
-                    <div className="px-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <input 
-                          type="number"
-                          value={priceRange[0]}
-                          onChange={(e) => handlePriceRangeChange(
-                            Math.min(Number(e.target.value), priceRange[1] - 100),
-                            priceRange[1]
-                          )}
-                          className="w-24 h-8 px-2 border border-gray-200 rounded text-sm"
-                        />
-                        <span className="mx-2 text-gray-400">to</span>
-                        <input 
-                          type="number"
-                          value={priceRange[1]}
-                          onChange={(e) => handlePriceRangeChange(
-                            priceRange[0],
-                            Math.max(Number(e.target.value), priceRange[0] + 100)
-                          )}
-                          className="w-24 h-8 px-2 border border-gray-200 rounded text-sm"
-                        />
-                      </div>
-                      <input
-                        type="range"
-                        min="0"
-                        max="10000"
-                        step="100"
-                        value={priceRange[1]}
-                        onChange={(e) => handlePriceRangeChange(priceRange[0], parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-md appearance-none cursor-pointer accent-[#4DA9FF]"
-                      />
-                      <div className="flex justify-between mt-2">
-                        <span className="text-xs text-gray-500">${priceRange[0].toLocaleString()}</span>
-                        <span className="text-xs text-gray-500">${priceRange[1].toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Ratings Filter */}
-                  <div className="mb-8">
-                    <h3 className="font-semibold text-lg mb-3 text-gray-800">Rating</h3>
-                    <div className="space-y-2">
-                      {[5, 4, 3, 2, 1].map(rating => (
-                        <button
-                          key={rating}
-                          onClick={() => handleRatingChange(rating)}
-                          className={`flex items-center w-full p-2 rounded-lg transition-colors ${
-                            ratingFilter === rating ? 'bg-blue-50' : 'hover:bg-gray-50'
-                          }`}
-                        >
-                          <div className="flex">
-                            {Array(rating).fill(0).map((_, i) => (
-                              <FaStar key={i} className="text-yellow-400" />
-                            ))}
-                            {Array(5-rating).fill(0).map((_, i) => (
-                              <FaStar key={i} className="text-gray-300" />
-                            ))}
-                          </div>
-                          <span className="ml-2 text-sm text-gray-700">& Up</span>
-                          {ratingFilter === rating && (
-                            <FaCheck className="ml-auto text-[#4DA9FF]" size={14} />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={clearFilters}
-                    className={commonButtonStyles.primary}
-                  >
-                    Reset All Filters
-                  </motion.button>
-                </div>
-              </motion.aside>
-            )}
+              </div>
+            </motion.aside>
             
             {/* Main Products Area */}
-            <main className={showFilters ? 'lg:w-3/4' : 'w-full'}>
+            <main className={`${showFilters ? 'lg:w-3/4' : 'w-full'}`}>
               {/* Sort and Results Count */}
-              <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-gray-100">
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                  <p className="text-gray-700">
-                    <span className="font-semibold text-[#4DA9FF]">{filteredProducts.length}</span> robots found
-                    {searchTerm && <span> for &quot;<span className="italic">{searchTerm}</span>&quot;</span>}
-                  </p>
-                  
-                  <div className="flex items-center">
-                    <label htmlFor="sort" className="mr-3 text-gray-600">Sort by:</label>
-                    <select 
-                      id="sort" 
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      className={commonFormStyles.select}
-                    >
-                      <option value="newest">Newest</option>
-                      <option value="price-asc">Price: Low to High</option>
-                      <option value="price-desc">Price: High to Low</option>
-                      <option value="rating">Best Rated</option>
-                      <option value="popularity">Most Popular</option>
-                    </select>
+              <div className="bg-white rounded-xl shadow p-4 mb-6 border border-gray-100">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  {/* Results Count */}
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#E6F3FF] text-[#2196F3] font-semibold text-base">
+                      {filteredProducts.length}
+                    </span>
+                    <span className="text-gray-700 text-base font-medium">
+                      robots found
+                      {searchTerm && (
+                        <span> for &quot;<span className="italic">{searchTerm}</span>&quot;</span>
+                      )}
+                    </span>
+                  </div>
+                  {/* Controls: Search, Sort, Clear Filters */}
+                  <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full md:w-auto">
+                    {/* Search Bar */}
+                    <div className="relative w-full sm:w-64">
+                      <input
+                        type="text"
+                        placeholder="Search robots..."
+                        value={searchTerm}
+                        onChange={(e) => {
+                          setSearchTerm(e.target.value);
+                          setCurrentPage(1); // Reset to first page on search
+                        }}
+                        className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:border-transparent transition"
+                      />
+                      <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      {searchTerm && (
+                        <button 
+                          onClick={() => setSearchTerm('')}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <FaTimes size={14} />
+                        </button>
+                      )}
+                    </div>
+                    {/* Sort Dropdown */}
+                    <div className="flex items-center whitespace-nowrap">
+                      <label htmlFor="sort" className="mr-2 text-gray-600 hidden sm:inline text-sm">Sort by:</label>
+                      <select 
+                        id="sort" 
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] transition"
+                      >
+                        <option value="newest">Newest</option>
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                        <option value="rating">Best Rated</option>
+                        <option value="popularity">Most Popular</option>
+                      </select>
+                    </div>
+                    {/* Clear Filters Button */}
+                    {(selectedCategories.length > 0 || selectedBrands.length > 0 || ratingFilter > 0 || searchTerm) && (
+                      <motion.button 
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={clearFilters}
+                        className="flex items-center justify-center rounded-full border border-gray-200 px-4 py-2 text-gray-700 bg-white shadow-sm hover:bg-gray-50 transition"
+                      >
+                        <FaTimes className="mr-2" />
+                        <span className="font-medium">Clear Filters</span>
+                      </motion.button>
+                    )}
                   </div>
                 </div>
               </div>
