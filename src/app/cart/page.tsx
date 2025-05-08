@@ -11,8 +11,9 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import { commonButtonStyles } from '@/styles/commonStyles';
 import { useCart } from '@/utils/cartContext';
 
+// Fix the function name destructuring from useCart()
 export default function CartPage() {
-  const { cartItems, updateQuantity, removeItem, cartTotal } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, cartTotal } = useCart();
   const [loading, setLoading] = useState(true);
   const [promoCode, setPromoCode] = useState('');
   const [promoCodeValid, setPromoCodeValid] = useState<boolean | null>(null);
@@ -39,8 +40,8 @@ export default function CartPage() {
   const totalAmount = subtotal + shippingCost + taxAmount;
   
   // Handle quantity change via the context
-  const handleQuantityChange = (index: number, newQuantity: number) => {
-    updateQuantity(index, newQuantity);
+  const handleQuantityChange = (productId: number, newQuantity: number) => {
+    updateQuantity(productId, newQuantity);
   };
   
   // Handle promo code submit
@@ -156,7 +157,7 @@ export default function CartPage() {
                           
                           {/* Remove Button - Mobile Only */}
                           <button
-                            onClick={() => removeItem(index)} 
+                            onClick={() => removeFromCart(item.productId)} 
                             className="sm:hidden text-gray-500 hover:text-red-500 text-sm flex items-center"
                           >
                             <FaTrash size={12} className="mr-1" /> Remove
@@ -175,7 +176,7 @@ export default function CartPage() {
                         <span className="sm:hidden font-medium mr-2 text-gray-700">Quantity:</span>
                         <div className="flex items-center border border-gray-300 rounded-lg">
                           <button 
-                            onClick={() => handleQuantityChange(index, item.quantity - 1)}
+                            onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
                             className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-[#4DA9FF] hover:bg-gray-100 rounded-l-lg"
                           >
                             -
@@ -185,11 +186,11 @@ export default function CartPage() {
                             min="1"
                             max={item.product?.stock || 10}
                             value={item.quantity}
-                            onChange={(e) => handleQuantityChange(index, parseInt(e.target.value) || 1)}
+                            onChange={(e) => handleQuantityChange(item.productId, parseInt(e.target.value) || 1)}
                             className="w-12 text-center border-x border-gray-300 h-8 focus:outline-none focus:ring-0 focus:border-gray-300 text-gray-700"
                           />
                           <button 
-                            onClick={() => handleQuantityChange(index, item.quantity + 1)}
+                            onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
                             className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-[#4DA9FF] hover:bg-gray-100 rounded-r-lg"
                           >
                             +
@@ -207,7 +208,7 @@ export default function CartPage() {
                           
                           {/* Remove Button - Desktop Only */}
                           <button
-                            onClick={() => removeItem(index)} 
+                            onClick={() => removeFromCart(item.productId)} 
                             className="hidden sm:inline-block ml-4 text-gray-400 hover:text-red-500"
                             aria-label="Remove item"
                           >

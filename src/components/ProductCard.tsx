@@ -85,7 +85,7 @@ export default function ProductCard({
           
           {/* Mobile-friendly quick actions overlay */}
           <div className="absolute bottom-2 right-2 z-20 flex flex-col gap-2">
-            <WishlistButton productId={product.id} buttonStyle="icon-small" />
+            <WishlistButton productId={product.id} buttonStyle="icon" className="w-8 h-8" />
           </div>
         </div>
         
