@@ -292,16 +292,19 @@ export default function ShopPage() {
                 animate={showFilters ? { y: 0, opacity: 1 } : { opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="flex justify-between items-center p-4 lg:p-0 lg:mb-6 border-b border-gray-100 pb-4">
-                  <h2 className="font-bold text-xl text-gray-800">Filters</h2>
-                  <button 
-                    onClick={toggleFilters} 
-                    className="text-gray-500 hover:text-gray-700 p-2"
-                    aria-label="Close filters"
+               
+
+              <div className="sticky top-0 z-10 bg-white p-4 lg:p-0 border-b border-gray-100 flex justify-between items-center mb-6">
+                <h2 className="font-bold text-xl text-gray-800">Filters</h2>
+                <div 
+                    className="flex justify-between items-center mb-3 cursor-pointer" 
+                    onClick={() => toggleFilters()}
                   >
-                    <FaTimes size={16} />
-                  </button>
-                </div>
+                    <FaTimes 
+                      size={16} className="text-gray-400 text-sm"
+                    />
+                  </div>                  
+              </div>
                 
                 <div className="p-4 lg:p-0">
                   {/* Categories filter with icons */}
