@@ -40,13 +40,21 @@ export default function AddToCartButton({
   const getStyles = () => {
     switch (buttonStyle) {
       case 'primary':
-        return "bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center";
+        return isAdded
+          ? "bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center cursor-pointer"
+          : "bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center cursor-pointer";
       case 'secondary':
-        return "bg-white border border-[#4DA9FF] text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 flex items-center justify-center";
+        return isAdded
+          ? "bg-green-500 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 flex items-center justify-center cursor-pointer"
+          : "bg-white border border-[#4DA9FF] text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 flex items-center justify-center cursor-pointer";
       case 'icon':
-        return "w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer";
+        return isAdded 
+          ? "w-10 h-10 rounded-full bg-green-500 shadow-lg flex items-center justify-center text-white transition-all duration-300 cursor-pointer" 
+          : "w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer";
       default:
-        return "bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center";
+        return isAdded
+          ? "bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center cursor-pointer"
+          : "bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center cursor-pointer";
     }
   };
 
@@ -88,7 +96,7 @@ export default function AddToCartButton({
     >
       {isAdded ? (
         <>
-          <FaCheck size={16} className="mr-2" />
+          <FaCheck size={16} className={buttonStyle === 'icon' ? "" : "mr-2"} />
           {showText && "Added to cart!"}
         </>
       ) : (
