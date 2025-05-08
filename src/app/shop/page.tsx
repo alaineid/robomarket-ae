@@ -350,76 +350,89 @@ export default function ShopPage() {
             
             {/* Main Products Area */}
             <main className={`${showFilters ? 'lg:w-3/4' : 'w-full'}`}>
-              {/* Sort and Results Count */}
-              <div className="bg-white rounded-xl shadow p-4 mb-6 border border-gray-100">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  {/* Results Count */}
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#E6F3FF] text-[#2196F3] font-semibold text-base">
-                      {filteredProducts.length}
-                    </span>
-                    <span className="text-gray-700 text-base font-medium">
-                      robots found
-                      {searchTerm && (
-                        <span> for &quot;<span className="italic">{searchTerm}</span>&quot;</span>
-                      )}
-                    </span>
-                  </div>
-                  {/* Controls: Search, Sort, Clear Filters */}
-                  <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full md:w-auto">
-                    {/* Search Bar */}
-                    <div className="relative w-full sm:w-64">
-                      <input
-                        type="text"
-                        placeholder="Search robots..."
-                        value={searchTerm}
-                        onChange={(e) => {
-                          setSearchTerm(e.target.value);
-                          setCurrentPage(1); // Reset to first page on search
-                        }}
-                        className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:border-transparent transition"
-                      />
-                      <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      {searchTerm && (
-                        <button 
-                          onClick={() => setSearchTerm('')}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                          <FaTimes size={14} />
-                        </button>
-                      )}
-                    </div>
-                    {/* Sort Dropdown */}
-                    <div className="flex items-center whitespace-nowrap">
-                      <label htmlFor="sort" className="mr-2 text-gray-600 hidden sm:inline text-sm">Sort by:</label>
-                      <select 
-                        id="sort" 
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] transition"
+              {/* Search and Sort Control Bar */}
+              <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+                <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+                  {/* Search Bar - Large and clean */}
+                  <div className="relative flex-grow">
+                    <input
+                      type="text"
+                      placeholder="Search robots..."
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setCurrentPage(1); // Reset to first page on search
+                      }}
+                      className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-full bg-gray-50 focus:outline-none focus:ring-1 focus:ring-[#4DA9FF] focus:border-transparent transition"
+                    />
+                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    {searchTerm && (
+                      <button 
+                        onClick={() => setSearchTerm('')}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
-                        <option value="newest">Newest</option>
-                        <option value="price-asc">Price: Low to High</option>
-                        <option value="price-desc">Price: High to Low</option>
-                        <option value="rating">Best Rated</option>
-                        <option value="popularity">Most Popular</option>
-                      </select>
-                    </div>
-                    {/* Clear Filters Button */}
-                    {(selectedCategories.length > 0 || selectedBrands.length > 0 || ratingFilter > 0 || searchTerm) && (
-                      <motion.button 
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={clearFilters}
-                        className="flex items-center justify-center rounded-full border border-gray-200 px-4 py-2 text-gray-700 bg-white shadow-sm hover:bg-gray-50 transition"
-                      >
-                        <FaTimes className="mr-2" />
-                        <span className="font-medium">Clear Filters</span>
-                      </motion.button>
+                        <FaTimes size={14} />
+                      </button>
                     )}
+                  </div>
+                  
+                  {/* Sort Dropdown - Right aligned */}
+                  <div className="flex items-center whitespace-nowrap">
+                    <span className="mr-2 text-gray-600 text-sm">Sort by:</span>
+                    <select 
+                      id="sort" 
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#4DA9FF] transition"
+                    >
+                      <option value="newest">Newest</option>
+                      <option value="price-asc">Price: Low to High</option>
+                      <option value="price-desc">Price: High to Low</option>
+                      <option value="rating">Best Rated</option>
+                      <option value="popularity">Most Popular</option>
+                    </select>
                   </div>
                 </div>
               </div>
+              
+              {filteredProducts.length > 0 && (
+                <div className="mb-6">          
+                  
+                  {/* Category filter buttons */}
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <button
+                      onClick={() => setSelectedCategories([])}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                        selectedCategories.length === 0
+                          ? 'bg-[#4DA9FF] text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      All
+                    </button>
+                    
+                    {categories.map((category, index) => (
+                      <button
+                        key={index}
+                        onClick={() => toggleCategory(category)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1.5 transition-colors ${
+                          selectedCategories.includes(category)
+                            ? 'bg-[#4DA9FF] text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        <span className="text-sm">
+                          {renderCategoryIcon(category)}
+                        </span>
+                        {category}
+                        {selectedCategories.includes(category) && (
+                          <FaTimes size={12} />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               {/* Comparison Bar */}
               {comparingProducts.length > 0 && (
