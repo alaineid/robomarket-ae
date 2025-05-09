@@ -156,7 +156,7 @@ export default function FilterSidebar({
             variants={sidebarVariants}
             className={`${isMobile 
               ? 'fixed inset-y-0 left-0 z-40 w-80 bg-white shadow-xl overflow-y-auto'
-              : 'w-64 lg:w-72'}`}
+              : 'w-72'}`}
           >
             <div className="bg-white rounded-lg shadow-sm border border-gray-100 sticky top-4">
               {/* Header with close button on mobile */}
@@ -312,8 +312,6 @@ export default function FilterSidebar({
                           </div>
                         </div>
                       </div>
-                      
-                      {/* Price range slider could be added here in a future update */}
                     </div>
                   )}
                 </div>
@@ -371,7 +369,7 @@ export default function FilterSidebar({
                 </div>
                 
                 {/* Filter Actions */}
-                <div className="pt-4 border-t border-gray-100 flex flex-col gap-2">
+                <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
                   <button
                     onClick={onApplyFilters}
                     className={commonButtonStyles.primary}
