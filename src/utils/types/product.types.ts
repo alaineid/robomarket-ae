@@ -2,7 +2,6 @@
 export interface ProductAttribute {
   key: string;
   value: string;
-  numeric_value?: number | null; // optional, useful for sorting/filtering
 }
 
 export interface Vendor {

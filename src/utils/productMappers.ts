@@ -31,7 +31,6 @@ interface RawVendorProduct {
 interface RawProductAttribute {
   key: string;
   value: string;
-  numeric_value?: number | null;
 }
 
 interface RawProductRating {
@@ -76,13 +75,37 @@ interface DatabaseProduct {
   [key: string]: unknown; // For any other fields that might be in the database response
 }
 
+/**
+ * Maps a database product to our normalized Product type
+ * Handles all the complex relationships and provides fallbacks for missing data
+ * @param dbProduct The raw product from the database
+ * @returns A normalized Product object
+ */
 export function mapDatabaseProductToProduct(dbProduct: DatabaseProduct): Product {
   // Cache-busting with updated_at timestamp
   const timestamp = dbProduct?.updated_at ? new Date(dbProduct.updated_at).getTime() : Date.now();
   
-  // Process product images - handle potential error object
+  // Process product images - handle potential error object and sort by position
   const productImages: ProductImage[] = (() => {
     if (!dbProduct?.product_images || isQueryError(dbProduct.product_images)) {
+      // Try to create images from legacy format if available
+      if (Array.isArray(dbProduct?.images) && dbProduct.images.length > 0) {
+        return dbProduct.images.map((url, index) => ({
+          url,
+          alt_text: `${dbProduct.name || 'Product'} image ${index + 1}`,
+          position: index
+        }));
+      }
+      
+      // Create a single image if a main image is available
+      if (dbProduct?.image) {
+        return [{
+          url: dbProduct.image,
+          alt_text: dbProduct.name || 'Product image',
+          position: 0
+        }];
+      }
+      
       return [];
     }
     
@@ -90,8 +113,8 @@ export function mapDatabaseProductToProduct(dbProduct: DatabaseProduct): Product
       return dbProduct.product_images
         .map((img: RawProductImage) => ({
           url: img.url,
-          alt_text: img.alt_text || null,
-          position: img.position || 0
+          alt_text: img.alt_text || `${dbProduct.name || 'Product'} image`,
+          position: typeof img.position === 'number' ? img.position : 0
         }))
         .sort((a: ProductImage, b: ProductImage) => a.position - b.position);
     }
@@ -99,7 +122,7 @@ export function mapDatabaseProductToProduct(dbProduct: DatabaseProduct): Product
     return [];
   })();
   
-  // Set main image (first in the array or null)
+  // Set main image (first in the array or fallback)
   const mainImage = productImages.length > 0 
     ? `${productImages[0].url}?v=${timestamp}`
     : dbProduct?.image 
@@ -113,7 +136,7 @@ export function mapDatabaseProductToProduct(dbProduct: DatabaseProduct): Product
     ? productImages[0]?.alt_text || dbProduct?.name || 'Product image'
     : dbProduct?.name || 'Product image';
   
-  // Process categories - handle potential error object
+  // Process categories - handle potential error object and provide fallbacks
   const categories: Category[] = (() => {
     if (!dbProduct?.product_categories || isQueryError(dbProduct.product_categories)) {
       // Fallback to single category if available
@@ -128,7 +151,7 @@ export function mapDatabaseProductToProduct(dbProduct: DatabaseProduct): Product
     
     if (Array.isArray(dbProduct.product_categories)) {
       return dbProduct.product_categories
-        .filter((pc: RawCategory) => pc.categories)
+        .filter((pc: RawCategory) => pc.categories && pc.categories.id && pc.categories.name)
         .map((pc: RawCategory) => ({
           id: pc.categories!.id,
           name: pc.categories!.name
@@ -138,7 +161,7 @@ export function mapDatabaseProductToProduct(dbProduct: DatabaseProduct): Product
     return [];
   })();
   
-  // Process vendor products - handle potential error object
+  // Process vendor products - handle potential error object and create fallbacks
   const vendorProducts: VendorProduct[] = (() => {
     if (!dbProduct?.vendor_products || isQueryError(dbProduct.vendor_products)) {
       // Create a fallback vendor product if we have price and stock
@@ -160,32 +183,36 @@ export function mapDatabaseProductToProduct(dbProduct: DatabaseProduct): Product
     }
     
     if (Array.isArray(dbProduct.vendor_products)) {
-      return dbProduct.vendor_products.map((vp: RawVendorProduct) => ({
-        vendor: {
-          id: vp.vendors?.id || 0,
-          name: vp.vendors?.name || '',
-          email: vp.vendors?.email || null,
-          phone: vp.vendors?.phone || null,
-          website: vp.vendors?.website || null
-        },
-        vendor_sku: vp.vendor_sku || null,
-        price: vp.price || 0,
-        stock: vp.stock || 0
-      }));
+      return dbProduct.vendor_products
+        .filter((vp: RawVendorProduct) => vp !== null && typeof vp === 'object')
+        .map((vp: RawVendorProduct) => ({
+          vendor: {
+            id: vp.vendors?.id || 0,
+            name: vp.vendors?.name || 'Unknown Vendor',
+            email: vp.vendors?.email || null,
+            phone: vp.vendors?.phone || null,
+            website: vp.vendors?.website || null
+          },
+          vendor_sku: vp.vendor_sku || null,
+          price: typeof vp.price === 'number' ? vp.price : 0,
+          stock: typeof vp.stock === 'number' ? vp.stock : 0
+        }));
     }
     
     return [];
   })();
   
-  // Get best vendor product
-  const bestVendor = getBestVendorProduct(vendorProducts);
+  // Get best vendor product (lowest price with stock)
+  const bestVendor = vendorProducts.length > 0 ? 
+    getBestVendorProduct(vendorProducts) || vendorProducts[0] : 
+    undefined;
   
-  // Process product attributes - handle potential error object
+  // Process product attributes with improved handling for specifications
   const attributes: ProductAttribute[] = (() => {
     if (!dbProduct?.product_attributes || isQueryError(dbProduct.product_attributes)) {
       // Create attributes from specifications if available
       const specs = dbProduct?.specifications;
-      if (specs && typeof specs === 'object') {
+      if (specs && typeof specs === 'object' && specs !== null) {
         return Object.entries(specs).map(([key, value]) => ({
           key,
           value: String(value)
@@ -195,17 +222,18 @@ export function mapDatabaseProductToProduct(dbProduct: DatabaseProduct): Product
     }
     
     if (Array.isArray(dbProduct.product_attributes)) {
-      return dbProduct.product_attributes.map((attr: RawProductAttribute) => ({
-        key: attr.key,
-        value: attr.value,
-        numeric_value: attr.numeric_value
-      }));
+      return dbProduct.product_attributes
+        .filter((attr: RawProductAttribute) => attr && attr.key && attr.value)
+        .map((attr: RawProductAttribute) => ({
+          key: attr.key,
+          value: attr.value
+        }));
     }
     
     return [];
   })();
   
-  // Process ratings - handle potential error object
+  // Process ratings with improved defaults
   let ratings: ProductRatings = {
     average: 0,
     count: 0
@@ -214,45 +242,48 @@ export function mapDatabaseProductToProduct(dbProduct: DatabaseProduct): Product
   if (dbProduct?.product_ratings && !isQueryError(dbProduct.product_ratings)) {
     if (Array.isArray(dbProduct.product_ratings) && dbProduct.product_ratings.length > 0) {
       ratings = {
-        average: dbProduct.product_ratings[0]?.average_rating || 0,
-        count: dbProduct.product_ratings[0]?.rating_count || 0
+        average: typeof dbProduct.product_ratings[0]?.average_rating === 'number' 
+          ? dbProduct.product_ratings[0].average_rating 
+          : 0,
+        count: typeof dbProduct.product_ratings[0]?.rating_count === 'number'
+          ? dbProduct.product_ratings[0].rating_count
+          : 0
       };
-    } else if (typeof dbProduct.product_ratings === 'object') {
+    } else if (typeof dbProduct.product_ratings === 'object' && dbProduct.product_ratings !== null) {
       const ratingObj = dbProduct.product_ratings as RawProductRating;
       ratings = {
-        average: ratingObj.average_rating || 0,
-        count: ratingObj.rating_count || 0
+        average: typeof ratingObj.average_rating === 'number' ? ratingObj.average_rating : 0,
+        count: typeof ratingObj.rating_count === 'number' ? ratingObj.rating_count : 0
       };
     }
   }
 
-  // Extract featured position if product is featured
+  // Extract featured position with improved handling
   let featured_position: number | null = null;
+  
   if (dbProduct?.featured_products && !isQueryError(dbProduct.featured_products)) {
-    // Log the actual structure of featured_products for debugging
-    console.log('Featured products data structure:', JSON.stringify(dbProduct.featured_products));
-    
     if (Array.isArray(dbProduct.featured_products) && dbProduct.featured_products.length > 0) {
       // If the featured_products is an array of objects with position property
-      if (typeof dbProduct.featured_products[0] === 'object' && 'position' in dbProduct.featured_products[0]) {
-        featured_position = dbProduct.featured_products[0].position ?? null;
+      const featuredObj = dbProduct.featured_products[0];
+      if (featuredObj && typeof featuredObj === 'object' && 'position' in featuredObj) {
+        featured_position = typeof featuredObj.position === 'number' ? featuredObj.position : 0;
       }
-    } else if (typeof dbProduct.featured_products === 'object') {
+    } else if (typeof dbProduct.featured_products === 'object' && dbProduct.featured_products !== null) {
       // If it's a single object with position property
       const featuredObj = dbProduct.featured_products as { position?: number };
-      featured_position = featuredObj?.position ?? null;
+      featured_position = typeof featuredObj?.position === 'number' ? featuredObj.position : 0;
     }
   }
 
-  // Return transformed product
+  // Return transformed product with all data normalized
   return {
     id: dbProduct?.id || 0,
-    sku: dbProduct?.sku || `SKU-${dbProduct?.id || 0}`, // Fallback just in case
-    name: dbProduct?.name || '',
+    sku: dbProduct?.sku || `SKU-${dbProduct?.id || Math.floor(Math.random() * 10000)}`,
+    name: dbProduct?.name || 'Unnamed Product',
     description: dbProduct?.description || '',
     brand: dbProduct?.brand || null,
-    created_at: dbProduct?.created_at || '',
-    updated_at: dbProduct?.updated_at || '',
+    created_at: dbProduct?.created_at || new Date().toISOString(),
+    updated_at: dbProduct?.updated_at || new Date().toISOString(),
     
     // Related data
     ratings,
