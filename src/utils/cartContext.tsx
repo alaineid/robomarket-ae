@@ -120,7 +120,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
       
-      const product = await response.json();
+      const product: Product = await response.json();
+      // Get price from best vendor if available
+      const price = product.best_vendor?.price || 0;
       
       setCart(prevCart => {
         const existingItem = prevCart.find(item => item.productId === productId);
@@ -132,7 +134,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
               : item
           );
         } else {
-          return [...prevCart, { productId, quantity, price: product.price }];
+          return [...prevCart, { productId, quantity, price }];
         }
       });
     } catch (error) {

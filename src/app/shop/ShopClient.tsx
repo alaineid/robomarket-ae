@@ -15,44 +15,10 @@ import { commonButtonStyles, commonLayoutStyles } from '@/styles/commonStyles';
 import { categories, brands } from '@/utils/types/product.types';
 
 // Define types for our data
-interface ProductRating {
-  average_rating: number;
-  rating_count: number;
-}
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  rating: number;
-  brand: string;
-  category: string;
-  description: string;
-  features: string[];
-  specifications: {
-    height: string;
-    weight: string;
-    battery: string;
-    processor: string;
-    memory: string;
-    connectivity: string;
-    sensors: string;
-  };
-  stock: number;
-  reviews: {
-    author: string;
-    date: string;
-    rating: number;
-    comment: string;
-  }[];
-  image: string;
-  images: string[];
-  product_ratings?: ProductRating[];
-  rating_count?: number;
-}
+import type { Product as ProductType } from '@/utils/types/product.types';
 
 interface ApiResponse {
-  products: Product[];
+  products: ProductType[];
   hasMore: boolean;
   total: number;
 }
@@ -63,7 +29,7 @@ interface ShopClientProps {
 
 export default function ShopClient({ initialData }: ShopClientProps) {
   // State for products and pagination
-  const [products, setProducts] = useState<Product[]>(initialData.products || []);
+  const [products, setProducts] = useState<ProductType[]>(initialData.products || []);
   const [hasMore, setHasMore] = useState<boolean>(initialData.hasMore || false);
   const [isLoading, setIsLoading] = useState(false);
   const [offset, setOffset] = useState(initialData.products?.length || 0);
@@ -77,7 +43,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
   const [ratingFilter, setRatingFilter] = useState(0);
   
   // State for recently viewed products
-  const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
+  const [recentlyViewed, setRecentlyViewed] = useState<ProductType[]>([]);
   
   // State for UI
   const [isFilterDirty, setIsFilterDirty] = useState(false);
@@ -115,10 +81,26 @@ export default function ShopClient({ initialData }: ShopClientProps) {
       const params = new URLSearchParams();
       
       if (searchTerm) params.append('search', searchTerm);
-      if (selectedCategories.length > 0) params.append('category', selectedCategories.join(','));
-      if (selectedBrands.length > 0) params.append('brand', selectedBrands.join(','));
-      if (priceRange[0] > 0) params.append('price_min', priceRange[0].toString());
-      if (priceRange[1] < 10000) params.append('price_max', priceRange[1].toString());
+      
+      // Add safer handling for categories
+      if (selectedCategories && selectedCategories.length > 0) {
+        // Make sure we're passing valid categories
+        const validCategories = selectedCategories.filter(Boolean);
+        if (validCategories.length > 0) {
+          params.append('category', validCategories.join(','));
+        }
+      }
+      
+      // Add safer handling for brands
+      if (selectedBrands && selectedBrands.length > 0) {
+        const validBrands = selectedBrands.filter(Boolean);
+        if (validBrands.length > 0) {
+          params.append('brand', validBrands.join(','));
+        }
+      }
+      
+      if (priceRange && priceRange[0] > 0) params.append('price_min', priceRange[0].toString());
+      if (priceRange && priceRange[1] < 10000) params.append('price_max', priceRange[1].toString());
       if (ratingFilter > 0) params.append('rating', ratingFilter.toString());
       if (sortBy) params.append('sort_by', sortBy);
       
@@ -136,25 +118,38 @@ export default function ShopClient({ initialData }: ShopClientProps) {
       const response = await fetch(`/api/products?${params.toString()}`);
       const data = await response.json();
       
-      // Log full API response for debugging
-      console.log('API Response:', data);
-      console.log('First product sample:', data.products[0]);
-      
+      // Filter out products that do not match the selected categories
+      let filteredProducts = data.products;
+      if (selectedCategories.length > 0) {
+        filteredProducts = filteredProducts.filter((product: ProductType) =>
+          product.categories &&
+          product.categories.some((cat) => 
+            // Check if category is an object with name property or a string
+            (typeof cat === 'object' && cat.name && selectedCategories.includes(cat.name)) || 
+            (typeof cat === 'string' && selectedCategories.includes(cat))
+          )
+        );
+      }
+
       if (resetProducts) {
-        // Replace all products
-        setProducts(data.products);
-        setOffset(data.products.length);
+        setProducts(filteredProducts || []);
+        setOffset((filteredProducts || []).length);
       } else {
-        // Append new products
-        setProducts(prev => [...prev, ...data.products]);
-        setOffset(prev => prev + data.products.length);
+        setProducts(prev => [...prev, ...(filteredProducts || [])]);
+        setOffset(prev => prev + (filteredProducts || []).length);
       }
       
-      setHasMore(data.hasMore);
+      setHasMore(!!data.hasMore);
       setIsFilterDirty(false);
       
     } catch (error) {
       console.error('Error fetching products:', error);
+      // Show empty products instead of crashing
+      if (resetProducts) {
+        setProducts([]);
+        setOffset(0);
+      }
+      setHasMore(false);
     } finally {
       setIsLoading(false);
     }
@@ -183,6 +178,14 @@ export default function ShopClient({ initialData }: ShopClientProps) {
       observer.disconnect();
     };
   }, [handleObserver]);
+  
+  // Auto-apply filters when selectedCategories changes
+  useEffect(() => {
+    // Only run this effect if selectedCategories actually changes and it's not the initial render
+    if (initialData.products && selectedCategories !== undefined) {
+      fetchProducts(true);
+    }
+  }, [selectedCategories, fetchProducts]);
   
   // Load recently viewed products from localStorage on mount
   useEffect(() => {
@@ -231,11 +234,9 @@ export default function ShopClient({ initialData }: ShopClientProps) {
   // Toggle a category selection
   const toggleCategory = (category: string) => {
     setSelectedCategories(prev => {
-      if (prev.includes(category)) {
-        return prev.filter(c => c !== category);
-      } else {
-        return [...prev, category];
-      }
+      return prev.includes(category) 
+        ? prev.filter(c => c !== category) 
+        : [...prev, category];
     });
     setIsFilterDirty(true);
   };
@@ -827,7 +828,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
               <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6 border border-gray-100">
                 <h3 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4 text-gray-800">Recently Viewed</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-                  {recentlyViewed.map(product => (
+                  {recentlyViewed.map((product: ProductType) => (
                     <Link 
                       key={product.id}
                       href={`/product/${product.id}`}
@@ -835,15 +836,15 @@ export default function ShopClient({ initialData }: ShopClientProps) {
                     >
                       <div className="relative w-10 h-10 sm:w-12 sm:h-12 mb-2 sm:mb-0 sm:mr-3 flex-shrink-0">
                         <Image
-                          src={product.image}
-                          alt={product.name}
+                          src={product.main_image}
+                          alt={product.main_image_alt || product.name}
                           fill
                           className="object-contain"
                         />
                       </div>
                       <div className="text-center sm:text-left">
                         <p className="text-xs sm:text-sm font-medium text-gray-800 line-clamp-1">{product.name}</p>
-                        <p className="text-xs sm:text-sm text-[#4DA9FF]">${product.price.toLocaleString()}</p>
+                        <p className="text-xs sm:text-sm text-[#4DA9FF]">${product.best_vendor?.price.toLocaleString()}</p>
                       </div>
                     </Link>
                   ))}
@@ -855,7 +856,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
             {products.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 <AnimatePresence>
-                  {products.map(product => (
+                  {products.map((product: ProductType) => (
                     <motion.div
                       key={product.id}
                       initial={{ opacity: 0, y: 20 }}

@@ -658,9 +658,9 @@ export default function CheckoutPage() {
                               <div key={index} className="p-4 flex items-center border-b last:border-b-0">
                                 {/* Product Image - Updated from placeholder */}
                                 <div className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-200 overflow-hidden">
-                                  {item.product?.image ? (
+                                  {item.product.main_image ? (
                                     <Image
-                                      src={item.product.image}
+                                      src={item.product.main_image}
                                       alt={item.product?.name || 'Product image'}
                                       width={64}
                                       height={64}
@@ -677,7 +677,7 @@ export default function CheckoutPage() {
                                 </div>
                                 
                                 <div className="font-bold text-[#4DA9FF]">
-                                  ${((item.product?.price || 0) * item.quantity).toLocaleString()}
+                                  ${((item.product?.best_vendor?.price || 0) * item.quantity).toLocaleString()}
                                 </div>
                               </div>
                             ))}
@@ -813,10 +813,10 @@ export default function CheckoutPage() {
                         <div key={index} className="flex justify-between text-sm">
                           <div className="flex items-center">
                             {/* Small image thumbnail in the order summary */}
-                            {item.product?.image && (
+                            {item.product?.main_image && (
                               <div className="w-8 h-8 mr-2 rounded overflow-hidden border border-gray-200 flex-shrink-0">
                                 <Image 
-                                  src={item.product.image}
+                                  src={item.product.main_image}
                                   alt={item.product?.name || 'Product thumbnail'}
                                   width={32}
                                   height={32}
@@ -830,7 +830,7 @@ export default function CheckoutPage() {
                                 : item.product?.name || 'Product'}
                             </span>
                           </div>
-                          <span className="font-medium">${((item.product?.price || 0) * item.quantity).toLocaleString()}</span>
+                          <span className="font-medium">${((item.product?.best_vendor?.price || 0) * item.quantity).toLocaleString()}</span>
                         </div>
                       ))}
                     </div>

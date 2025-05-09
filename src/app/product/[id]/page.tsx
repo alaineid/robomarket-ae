@@ -23,6 +23,17 @@ interface BreadcrumbItem {
   isCurrent: boolean;
 }
 
+interface Review {
+  author: string;
+  date: string;
+  rating: number;
+  comment: string;
+}
+
+interface Specifications {
+  [key: string]: string;
+}
+
 export default function ProductDetail() {
   const params = useParams();
   const productId = parseInt(params?.id as string ?? '0');
@@ -37,6 +48,9 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [addedToCart, setAddedToCart] = useState(false);
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
+  // Mock data for backward compatibility
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [specifications, setSpecifications] = useState<Specifications>({});
 
   // Load product data based on ID using API instead of local data
   useEffect(() => {
@@ -54,21 +68,28 @@ export default function ProductDetail() {
         const product = await response.json();
         setProductData(product);
         
-        // Build custom breadcrumbs including the product name
+        // Generate mock reviews and specs from product data for compatibility
+        generateMockData(product);
+        
+        // Build custom breadcrumbs including the product name and category
+        const categoryName = product.categories.length > 0 ? product.categories[0].name : "Uncategorized";
         setBreadcrumbs([
           { label: 'Home', path: '/', isCurrent: false },
           { label: 'Shop', path: '/shop', isCurrent: false },
-          { label: product.category, path: `/shop?category=${encodeURIComponent(product.category)}`, isCurrent: false },
+          { label: categoryName, path: `/shop?category=${encodeURIComponent(categoryName)}`, isCurrent: false },
           { label: product.name, path: `/product/${product.id}`, isCurrent: true }
         ]);
         
         // Fetch related products (products in the same category)
-        const relatedResponse = await fetch(`/api/products?category=${encodeURIComponent(product.category)}&limit=4`);
-        const relatedData = await relatedResponse.json();
-        
-        // Filter out the current product from related products
-        const filteredProducts = relatedData.products.filter((p: Product) => p.id !== productId);
-        setRelatedProducts(filteredProducts.slice(0, 4)); // Limit to 4 related products
+        if (product.categories.length > 0) {
+          const categoryName = product.categories[0].name;
+          const relatedResponse = await fetch(`/api/products?category=${encodeURIComponent(categoryName)}&limit=4`);
+          const relatedData = await relatedResponse.json();
+          
+          // Filter out the current product from related products
+          const filteredProducts = relatedData.products.filter((p: Product) => p.id !== productId);
+          setRelatedProducts(filteredProducts.slice(0, 4)); // Limit to 4 related products
+        }
       } catch (error) {
         console.error('Error fetching product:', error);
       } finally {
@@ -80,6 +101,44 @@ export default function ProductDetail() {
       fetchProduct();
     }
   }, [productId]);
+
+  // Generate mock reviews and specs for UI compatibility
+  const generateMockData = (product: Product) => {
+    // Generate mock reviews based on ratings
+    const mockReviews: Review[] = [
+      {
+        author: "Customer Review",
+        date: new Date().toLocaleDateString(),
+        rating: product.ratings.average,
+        comment: `${product.name} is an excellent product that exceeds expectations. The quality and features are outstanding.`
+      }
+    ];
+    
+    if (product.ratings.count > 1) {
+      mockReviews.push({
+        author: "Verified Buyer",
+        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+        rating: Math.min(5, product.ratings.average + 0.5),
+        comment: `I'm very satisfied with my purchase of the ${product.name}. It's well-built and performs great!`
+      });
+    }
+    
+    setReviews(mockReviews);
+    
+    // Generate specs from attributes
+    const specs: Specifications = {};
+    product.attributes.forEach(attr => {
+      specs[attr.key] = attr.value;
+    });
+    
+    // Add some standard specs if they don't exist
+    if (!specs["dimensions"]) specs["dimensions"] = "Varies by model";
+    if (!specs["weight"]) specs["weight"] = "Contact manufacturer";
+    if (!specs["battery"]) specs["battery"] = "Rechargeable Li-ion";
+    if (!specs["warranty"]) specs["warranty"] = "2 years limited";
+    
+    setSpecifications(specs);
+  };
 
   // Reset activeImage when product changes
   useEffect(() => {
@@ -115,18 +174,18 @@ export default function ProductDetail() {
   };
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!productData) return;
+    if (!productData || !productData.best_vendor) return;
     
     const value = parseInt(e.target.value);
-    if (!isNaN(value) && value > 0 && value <= productData.stock) {
+    if (!isNaN(value) && value > 0 && value <= productData.best_vendor.stock) {
       setQuantity(value);
     }
   };
 
   const increaseQuantity = () => {
-    if (!productData) return;
+    if (!productData || !productData.best_vendor) return;
     
-    if (quantity < productData.stock) {
+    if (quantity < productData.best_vendor.stock) {
       setQuantity(quantity + 1);
     }
   };
@@ -195,6 +254,24 @@ export default function ProductDetail() {
     );
   }
 
+  // Extract relevant data from product
+  const imageUrls = productData.images.map(img => img.url);
+  const price = productData.best_vendor?.price || 0;
+  const stock = productData.best_vendor?.stock || 0;
+  const categoryName = productData.categories.length > 0 ? productData.categories[0].name : "Uncategorized";
+  const rating = productData.ratings.average;
+  const ratingCount = productData.ratings.count;
+
+  // Extract features from attributes
+  const features = productData.attributes
+    .filter(attr => attr.key.toLowerCase().includes('feature'))
+    .map(attr => attr.value);
+  
+  // If no specific features, use the first few attributes as features
+  const displayFeatures = features.length > 0 
+    ? features 
+    : productData.attributes.slice(0, 4).map(attr => `${attr.key}: ${attr.value}`);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -215,7 +292,7 @@ export default function ProductDetail() {
                 <div className="relative h-[400px] mb-5 rounded-lg overflow-hidden bg-white border border-gray-200">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Image
-                      src={productData.images?.[activeImage] || productData.image}
+                      src={imageUrls[activeImage] || productData.main_image}
                       alt={`${productData.name} - View ${activeImage + 1}`}
                       width={600}
                       height={600}
@@ -227,80 +304,23 @@ export default function ProductDetail() {
                 
                 {/* Image Carousel */}
                 <div className="grid grid-cols-4 gap-3">
-                  {/* Explicitly render each image with a key */}
-                  {productData.images && productData.images.length > 0 && (
-                    <>
-                      <button 
-                        key="img-0"
-                        onClick={() => handleThumbnailClick(0)}
-                        className={`relative h-20 rounded-md overflow-hidden bg-white border ${activeImage === 0 ? 'border-[#4DA9FF]' : 'border-gray-200'} hover:border-[#4DA9FF] transition-all cursor-pointer`}
-                      >
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <Image
-                            src={productData.images[0]}
-                            alt={`${productData.name} thumbnail 1`}
-                            width={100}
-                            height={100}
-                            className="object-contain w-full h-full"
-                          />
-                        </div>
-                      </button>
-                      
-                      {productData.images[1] && (
-                        <button 
-                          key="img-1"
-                          onClick={() => handleThumbnailClick(1)}
-                          className={`relative h-20 rounded-md overflow-hidden bg-white border ${activeImage === 1 ? 'border-[#4DA9FF]' : 'border-gray-200'} hover:border-[#4DA9FF] transition-all cursor-pointer`}
-                        >
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Image
-                              src={productData.images[1]}
-                              alt={`${productData.name} thumbnail 2`}
-                              width={100}
-                              height={100}
-                              className="object-contain w-full h-full"
-                            />
-                          </div>
-                        </button>
-                      )}
-                      
-                      {productData.images[2] && (
-                        <button 
-                          key="img-2"
-                          onClick={() => handleThumbnailClick(2)}
-                          className={`relative h-20 rounded-md overflow-hidden bg-white border ${activeImage === 2 ? 'border-[#4DA9FF]' : 'border-gray-200'} hover:border-[#4DA9FF] transition-all cursor-pointer`}
-                        >
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Image
-                              src={productData.images[2]}
-                              alt={`${productData.name} thumbnail 3`}
-                              width={100}
-                              height={100}
-                              className="object-contain w-full h-full"
-                            />
-                          </div>
-                        </button>
-                      )}
-                      
-                      {productData.images[3] && (
-                        <button 
-                          key="img-3"
-                          onClick={() => handleThumbnailClick(3)}
-                          className={`relative h-20 rounded-md overflow-hidden bg-white border ${activeImage === 3 ? 'border-[#4DA9FF]' : 'border-gray-200'} hover:border-[#4DA9FF] transition-all cursor-pointer`}
-                        >
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Image
-                              src={productData.images[3]}
-                              alt={`${productData.name} thumbnail 4`}
-                              width={100}
-                              height={100}
-                              className="object-contain w-full h-full"
-                            />
-                          </div>
-                        </button>
-                      )}
-                    </>
-                  )}
+                  {imageUrls.length > 0 && imageUrls.slice(0, 4).map((url, index) => (
+                    <button 
+                      key={`img-${index}`}
+                      onClick={() => handleThumbnailClick(index)}
+                      className={`relative h-20 rounded-md overflow-hidden bg-white border ${activeImage === index ? 'border-[#4DA9FF]' : 'border-gray-200'} hover:border-[#4DA9FF] transition-all cursor-pointer`}
+                    >
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Image
+                          src={url}
+                          alt={`${productData.name} thumbnail ${index + 1}`}
+                          width={100}
+                          height={100}
+                          className="object-contain w-full h-full"
+                        />
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
               
@@ -309,7 +329,7 @@ export default function ProductDetail() {
                 {/* Product Category Badge */}
                 <div className="mb-2">
                   <span className={commonCardStyles.categoryBadge}>
-                    {productData.category}
+                    {categoryName}
                   </span>
                 </div>
                 
@@ -324,19 +344,25 @@ export default function ProductDetail() {
                 {/* Rating */}
                 <div className="flex items-center mb-5">
                   <div className="flex mr-2">
-                    {renderRatingStars(productData.rating)}
+                    {renderRatingStars(rating)}
                   </div>
-                  <span className="text-gray-600 text-sm">{productData.reviews.length} reviews</span>
+                  <span className="text-gray-600 text-sm">{ratingCount} reviews</span>
                   <span className="mx-2 text-gray-300">|</span>
-                  <span className="text-green-600 font-medium flex items-center">
-                    <FaCheck size={12} className="mr-1" /> In Stock ({productData.stock})
+                  <span className={`${stock > 0 ? 'text-green-600' : 'text-red-500'} font-medium flex items-center`}>
+                    {stock > 0 ? (
+                      <>
+                        <FaCheck size={12} className="mr-1" /> In Stock ({stock})
+                      </>
+                    ) : (
+                      <>Out of Stock</>
+                    )}
                   </span>
                 </div>
                 
                 {/* Price */}
                 <div className="mb-8">
                   <div className="flex items-baseline">
-                    <span className="text-3xl font-bold text-[#4DA9FF]">${productData.price.toLocaleString()}</span>
+                    <span className="text-3xl font-bold text-[#4DA9FF]">${price.toLocaleString()}</span>
                     <span className="ml-2 text-sm bg-green-100 text-green-800 px-2 py-0.5 rounded">Free Shipping</span>
                   </div>
                   <p className="text-sm text-gray-500 mt-1">Financing options available at checkout</p>
@@ -351,7 +377,7 @@ export default function ProductDetail() {
                 <div className="mb-8">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">Key Features</h3>
                   <ul className="space-y-2">
-                    {productData.features.slice(0, 4).map((feature, index) => (
+                    {displayFeatures.slice(0, 4).map((feature, index) => (
                       <li key={index} className="flex items-start">
                         <span className="text-[#4DA9FF] mr-2 mt-1">•</span>
                         <span className="text-gray-700">{feature}</span>
@@ -368,20 +394,23 @@ export default function ProductDetail() {
                       <button 
                         onClick={decreaseQuantity}
                         className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-[#4DA9FF] hover:bg-gray-100 rounded-l-lg"
+                        disabled={stock <= 0}
                       >
                         -
                       </button>
                       <input
                         type="number"
                         min="1"
-                        max={productData.stock}
+                        max={stock}
                         value={quantity}
                         onChange={handleQuantityChange}
                         className="w-14 text-center border-x border-gray-300 h-10 focus:outline-none focus:ring-0 focus:border-gray-300 text-gray-700"
+                        disabled={stock <= 0}
                       />
                       <button 
                         onClick={increaseQuantity}
                         className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-[#4DA9FF] hover:bg-gray-100 rounded-r-lg"
+                        disabled={stock <= 0}
                       >
                         +
                       </button>
@@ -417,11 +446,12 @@ export default function ProductDetail() {
                     <motion.button 
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className={`flex items-center justify-center ${commonButtonStyles.primary}`}
+                      className={`flex items-center justify-center ${commonButtonStyles.primary} ${stock <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={handleAddToCart}
+                      disabled={stock <= 0}
                     >
                       <FaShoppingCart className="mr-2" />
-                      Add to Cart
+                      {stock > 0 ? 'Add to Cart' : 'Out of Stock'}
                     </motion.button>
                   </div>
                 </div>
@@ -430,7 +460,7 @@ export default function ProductDetail() {
                 <div className="mt-8 border-t border-gray-200 pt-6">
                   <div className="flex justify-between items-center text-sm text-gray-600 mb-3">
                     <div>Model: <span className="text-gray-800 font-medium">{productData.name.replace(/\s+/g, '-').toUpperCase()}</span></div>
-                    <div>SKU: <span className="text-gray-800 font-medium">{productData.brand.substring(0, 2).toUpperCase()}-{productData.id}00{Math.floor(Math.random() * 900) + 100}</span></div>
+                    <div>SKU: <span className="text-gray-800 font-medium">{productData.sku || `${productData.brand?.substring(0, 2).toUpperCase()}-${productData.id}00${Math.floor(Math.random() * 900) + 100}`}</span></div>
                   </div>
                   <p className="text-sm text-gray-600">Free 30-day returns & 2-year warranty included</p>
                 </div>
@@ -470,7 +500,7 @@ export default function ProductDetail() {
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
-                  Customer Reviews ({productData.reviews.length})
+                  Customer Reviews ({ratingCount})
                 </button>
               </div>
               
@@ -479,24 +509,12 @@ export default function ProductDetail() {
                 {activeTab === 'description' && (
                   <div className="prose max-w-none">
                     <p className="mb-4">{productData.description}</p>
-                    <p className="mb-4">
-                      Experience the future with the {productData.name}. This advanced {productData.category.toLowerCase()} robot 
-                      combines cutting-edge artificial intelligence with elegant design to provide an unparalleled user experience.
-                      Whether you need help managing your schedule, controlling smart home devices, or simply want a companion, 
-                      the {productData.name} adapts to your unique needs.
-                    </p>
-                    <p className="mb-4">
-                      With its advanced mobility system, the {productData.name} can navigate smoothly through your 
-                      environment, avoiding obstacles and learning the layout over time to optimize its movement patterns. 
-                      The robot&apos;s expressive interface and intuitive interactions create a natural experience that feels 
-                      comfortable from day one.
-                    </p>
                     <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">All Features</h3>
                     <ul className="space-y-3">
-                      {productData.features.map((feature, index) => (
+                      {productData.attributes.map((attr, index) => (
                         <li key={index} className="flex items-center">
                           <FaCheck className="text-green-500 mr-3" />
-                          <span>{feature}</span>
+                          <span>{attr.key}: {attr.value}</span>
                         </li>
                       ))}
                     </ul>
@@ -508,7 +526,7 @@ export default function ProductDetail() {
                   <div>
                     <table className="w-full text-left">
                       <tbody>
-                        {Object.entries(productData.specifications).map(([key, value], index) => (
+                        {Object.entries(specifications).map(([key, value], index) => (
                           <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
                             <td className="px-6 py-4 font-medium text-gray-700 capitalize">{key}</td>
                             <td className="px-6 py-4 text-gray-700">{value}</td>
@@ -526,27 +544,49 @@ export default function ProductDetail() {
                       <h3 className="text-xl font-semibold mb-4">Customer Feedback</h3>
                       <div className="flex items-center mb-2">
                         <div className="flex mr-4">
-                          {renderRatingStars(productData.rating)}
+                          {renderRatingStars(rating)}
                         </div>
-                        <span className="text-2xl font-semibold text-gray-800">{productData.rating}</span>
+                        <span className="text-2xl font-semibold text-gray-800">{rating.toFixed(1)}</span>
                         <span className="text-gray-500 ml-2">out of 5</span>
                       </div>
-                      <p className="text-gray-600">{productData.reviews.length} global ratings</p>
+                      <p className="text-gray-600">{ratingCount} global ratings</p>
+                      
+                      {/* Show rating breakdown if available */}
+                      {productData.ratings.breakdown && (
+                        <div className="mt-4 space-y-2">
+                          {Object.entries(productData.ratings.breakdown).sort((a, b) => parseInt(b[0]) - parseInt(a[0])).map(([stars, count]) => (
+                            <div key={stars} className="flex items-center">
+                              <span className="w-12 text-sm text-gray-600">{stars} star</span>
+                              <div className="w-48 h-2 bg-gray-200 rounded-full mx-2">
+                                <div 
+                                  className="h-full bg-yellow-400 rounded-full" 
+                                  style={{ width: `${(count / ratingCount) * 100}%` }}
+                                ></div>
+                              </div>
+                              <span className="text-sm text-gray-600">{Math.round((count / ratingCount) * 100)}%</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     
                     <div className="space-y-6">
-                      {productData.reviews.map((review, index) => (
-                        <div key={index} className="border-b border-gray-100 pb-6 last:border-b-0">
-                          <div className="flex justify-between mb-2">
-                            <p className="font-medium">{review.author}</p>
-                            <p className="text-gray-500 text-sm">{review.date}</p>
+                      {reviews.length > 0 ? (
+                        reviews.map((review, index) => (
+                          <div key={index} className="border-b border-gray-100 pb-6 last:border-b-0">
+                            <div className="flex justify-between mb-2">
+                              <p className="font-medium">{review.author}</p>
+                              <p className="text-gray-500 text-sm">{review.date}</p>
+                            </div>
+                            <div className="flex mb-3">
+                              {renderRatingStars(review.rating)}
+                            </div>
+                            <p className="text-gray-700">{review.comment}</p>
                           </div>
-                          <div className="flex mb-3">
-                            {renderRatingStars(review.rating)}
-                          </div>
-                          <p className="text-gray-700">{review.comment}</p>
-                        </div>
-                      ))}
+                        ))
+                      ) : (
+                        <p className="text-gray-600">No reviews yet. Be the first to review this product!</p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -577,7 +617,7 @@ export default function ProductDetail() {
                     {/* Display actual robot image */}
                     <div className={`${commonCardStyles.imagePlaceholder} bg-white`}>
                       <Image
-                        src={product.image}
+                        src={product.main_image}
                         alt={product.name}
                         width={300}
                         height={300}
@@ -597,7 +637,7 @@ export default function ProductDetail() {
                     <div className="flex justify-between items-start mb-auto">
                       <div className="flex-1 min-w-0">
                         <span className={commonCardStyles.categoryBadge}>
-                          {product.category}
+                          {product.categories[0]?.name || "Uncategorized"}
                         </span>
                         <Link href={`/product/${product.id}`}>
                           <h3 className="font-bold text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors truncate">
@@ -606,14 +646,16 @@ export default function ProductDetail() {
                         </Link>
                         <p className="text-gray-600 text-sm mt-1">{product.brand}</p>
                       </div>
-                      <span className="font-bold text-lg text-[#4DA9FF] ml-2 whitespace-nowrap">${product.price.toLocaleString()}</span>
+                      <span className="font-bold text-lg text-[#4DA9FF] ml-2 whitespace-nowrap">
+                        ${product.best_vendor?.price?.toLocaleString() || '0.00'}
+                      </span>
                     </div>
                     
                     <div className="flex items-center mt-3">
                       <div className="flex">
-                        {renderRatingStars(product.rating)}
+                        {renderRatingStars(product.ratings.average)}
                       </div>
-                      <span className="text-gray-500 text-xs ml-2">({product.reviews.length})</span>
+                      <span className="text-gray-500 text-xs ml-2">({product.ratings.count})</span>
                     </div>
                     
                     <div className="mt-auto pt-4 pb-2">

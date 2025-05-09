@@ -96,8 +96,12 @@ export default function AddToCartButton({
     return null;
   }
 
-  // Check if product is in stock (default to true if we only have ID)
-  const isInStock = resolvedProduct ? resolvedProduct.stock > 0 : true;
+  // Get stock from the best vendor if available
+  const isInStock = resolvedProduct 
+    ? resolvedProduct.best_vendor 
+      ? resolvedProduct.best_vendor.stock > 0 
+      : false
+    : true;
 
   return (
     <button

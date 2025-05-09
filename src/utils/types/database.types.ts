@@ -12,6 +12,7 @@ export interface Database {
       products: {
         Row: {
           id: number
+          sku: string
           name: string
           price: number
           brand: string
@@ -27,6 +28,7 @@ export interface Database {
         }
         Insert: {
           id?: number
+          sku: string
           name: string
           price: number
           brand: string
@@ -42,6 +44,7 @@ export interface Database {
         }
         Update: {
           id?: number
+          sku?: string
           name?: string
           price?: number
           brand?: string

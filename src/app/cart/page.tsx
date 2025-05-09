@@ -127,10 +127,10 @@ export default function CartPage() {
                       <div className="col-span-6 flex items-center space-x-4">
                         {/* Product Image - Updated from placeholder */}
                         <div className="w-20 h-20 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-200 overflow-hidden">
-                          {item.product?.image ? (
+                          {item.product?.main_image ? (
                             <Image
-                              src={item.product.image}
-                              alt={item.product?.name || 'Product image'}
+                              src={item.product.main_image}
+                              alt={item.product.main_image_alt || 'Product image'}
                               width={80}
                               height={80}
                               className="object-contain w-full h-full"
@@ -152,7 +152,7 @@ export default function CartPage() {
                           
                           {/* Product Brand & Category */}
                           <div className="text-sm text-gray-500 mb-2">
-                            {item.product?.brand} • {item.product?.category}
+                            {item.product?.brand} • {item.product?.categories.length > 0 ? item.product.categories[0].name : 'Uncategorized'}
                           </div>
                           
                           {/* Remove Button - Mobile Only */}
@@ -168,7 +168,7 @@ export default function CartPage() {
                       {/* Price */}
                       <div className="col-span-2 text-center">
                         <span className="sm:hidden font-medium mr-2 text-gray-700">Price:</span>
-                        <span className="text-gray-800 font-medium">${item.product?.price.toLocaleString() || '0.00'}</span>
+                        <span className="text-gray-800 font-medium">${item.product?.best_vendor?.price || '0.00'}</span>
                       </div>
                       
                       {/* Quantity Selector */}
@@ -184,7 +184,7 @@ export default function CartPage() {
                           <input
                             type="number"
                             min="1"
-                            max={item.product?.stock || 10}
+                            max={item.product?.best_vendor?.stock || 10}
                             value={item.quantity}
                             onChange={(e) => handleQuantityChange(item.productId, parseInt(e.target.value) || 1)}
                             className="w-12 text-center border-x border-gray-300 h-8 focus:outline-none focus:ring-0 focus:border-gray-300 text-gray-700"
@@ -203,7 +203,7 @@ export default function CartPage() {
                         <span className="sm:hidden font-medium mr-2 text-gray-700">Total:</span>
                         <div className="text-right">
                           <span className="font-bold text-[#4DA9FF]">
-                            ${((item.product?.price || 0) * item.quantity).toLocaleString()}
+                            ${((item.product?.best_vendor?.price || 0) * item.quantity).toLocaleString()}
                           </span>
                           
                           {/* Remove Button - Desktop Only */}

@@ -1,33 +1,23 @@
 /**
  * Helper functions for working with vendor products
  */
-
-interface VendorProduct {
-  price: number;
-  stock: number;
-  vendor_id?: number;
-  vendors?: {
-    name: string;
-    email?: string;
-    phone?: string;
-    website?: string;
-  };
-}
+import { VendorProduct } from './types/product.types';
 
 /**
  * Gets the best vendor product based on price and availability
  * Prioritizes in-stock items, then sorts by price
+ * Returns undefined if no vendor products are available
  */
-export const getBestVendorProduct = (vendorProducts: VendorProduct[]): VendorProduct | null => {
+export const getBestVendorProduct = (vendorProducts: VendorProduct[]): VendorProduct | undefined => {
   // Check if it's an error object from Supabase
   if (vendorProducts && typeof vendorProducts === 'object' && 'error' in vendorProducts) {
     console.error("Error in vendor products data:", vendorProducts);
-    return null;
+    return undefined;
   }
   
   // Check if it's a valid array of vendor products
   if (!vendorProducts || !Array.isArray(vendorProducts) || vendorProducts.length === 0) {
-    return null;
+    return undefined;
   }
 
   // First filter for products that are in stock, if any

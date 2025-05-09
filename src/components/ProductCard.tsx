@@ -27,45 +27,14 @@ export default function ProductCard({
   console.log('ProductCard data:', {
     id: product.id,
     name: product.name,
-    hasImage: !!product.image,
-    imageValue: product.image,
+    hasMainImage: !!product.main_image,
+    mainImageValue: product.main_image,
     hasImages: Array.isArray(product.images),
     imagesLength: Array.isArray(product.images) ? product.images.length : 0,
-    imagesValues: product.images,
-    rating: product.rating,
-    rating_count: product.rating_count,
-    categories: product.categories
+    rating: product.ratings.average,
+    rating_count: product.ratings.count,
+    categories: product.categories.map(c => c.name),
   });
-  
-  // Get rating value with fallbacks
-  const getRating = () => {
-    // Direct rating property
-    if (typeof product.rating === 'number') {
-      return product.rating;
-    }
-    
-    // Try to get from product_ratings array if available
-    if (Array.isArray(product.product_ratings) && product.product_ratings.length > 0) {
-      return product.product_ratings[0].average_rating || 0;
-    }
-    
-    return 0;
-  };
-  
-  // Get rating count with fallbacks
-  const getRatingCount = () => {
-    // Direct rating_count property
-    if (typeof product.rating_count === 'number') {
-      return product.rating_count;
-    }
-    
-    // Try to get from product_ratings array if available
-    if (Array.isArray(product.product_ratings) && product.product_ratings.length > 0) {
-      return product.product_ratings[0].rating_count || 0;
-    }
-    
-    return 0;
-  };
   
   // Function to render star ratings
   const renderRatingStars = (rating: number) => {
@@ -96,6 +65,10 @@ export default function ProductCard({
     setShowQuickView(true);
   };
 
+  // Get price and stock from best vendor
+  const price = product.best_vendor?.price || 0;
+  const stock = product.best_vendor?.stock || 0;
+
   return (
     <>
       <motion.div 
@@ -104,28 +77,27 @@ export default function ProductCard({
       >
         <div className={`${commonCardStyles.imageContainer} group`}>
           {/* Product Images Thumbnails Row */}
-          {Array.isArray(product.images) && product.images.length > 1 && (
+          {product.images.length > 1 && (
             <div className="absolute top-2 left-2 z-20 flex gap-1 overflow-x-auto max-w-[90%]">
-              {product.images.map((imgUrl, idx) => (
-                imgUrl ? (
-                  <Image
-                    key={idx}
-                    src={imgUrl}
-                    alt={product.name + ' thumbnail ' + (idx + 1)}
-                    width={40}
-                    height={40}
-                    className="object-contain rounded border bg-white"
-                  />
-                ) : null
+              {product.images.slice(0, 4).map((img, idx) => (
+                <Image
+                  key={idx}
+                  src={img.url}
+                  alt={`${product.name} thumbnail ${idx + 1}`}
+                  width={40}
+                  height={40}
+                  className="object-contain rounded border bg-white"
+                />
               ))}
             </div>
           )}
+          
           {/* Main Product Image */}
           <Link href={`/product/${product.id}`} className="block absolute inset-0 z-10">
             <div className={`${commonCardStyles.imagePlaceholder} bg-white`}>
-              {(product.image && product.image !== '') ? (
+              {product.main_image ? (
                 <Image
-                  src={product.image}
+                  src={product.main_image}
                   alt={product.name}
                   width={300}
                   height={300}
@@ -133,9 +105,9 @@ export default function ProductCard({
                   priority={false}
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 />
-              ) : Array.isArray(product.images) && product.images[0] ? (
+              ) : product.images.length > 0 ? (
                 <Image
-                  src={product.images[0]}
+                  src={product.images[0].url}
                   alt={product.name}
                   width={300}
                   height={300}
@@ -152,7 +124,7 @@ export default function ProductCard({
           </Link>
           
           {/* Stock Status Badge - Only Out of Stock */}
-          {product.stock <= 0 && (
+          {stock <= 0 && (
             <div className="absolute top-2 right-2 z-20">
               <span className="inline-block px-2 py-0.5 text-xs font-medium text-white bg-red-500 rounded-full">
                 Out of Stock
@@ -178,25 +150,25 @@ export default function ProductCard({
               <p className="text-gray-600 text-xs">{product.brand}</p>
             </div>
             <span className="font-bold text-sm sm:text-base text-[#4DA9FF] ml-2 whitespace-nowrap">
-              ${typeof product.price === 'number' ? product.price.toLocaleString() : '0.00'}
+              ${price.toLocaleString()}
             </span>
           </div>
           
           <div className="flex items-center justify-between mt-1">
             <div className="flex items-center">
               <div className="flex">
-                {renderRatingStars(getRating())}
+                {renderRatingStars(product.ratings.average)}
               </div>
-              <span className="text-gray-500 text-xs ml-1">{getRating().toFixed(1)}</span>
-              {getRatingCount() > 0 && (
-                <span className="text-gray-500 text-xs ml-1">({getRatingCount()})</span>
+              <span className="text-gray-500 text-xs ml-1">{product.ratings.average.toFixed(1)}</span>
+              {product.ratings.count > 0 && (
+                <span className="text-gray-500 text-xs ml-1">({product.ratings.count})</span>
               )}
             </div>
             <div className="flex flex-wrap gap-1">
-              {Array.isArray(product.categories) && product.categories.length > 0 ? (
-                product.categories.map((cat, idx) => (
+              {product.categories.length > 0 ? (
+                product.categories.slice(0, 2).map((cat, idx) => (
                   <span key={idx} className={`${commonCardStyles.categoryBadge} inline-block text-xs px-1.5 py-0.5`}>
-                    {cat}
+                    {cat.name}
                   </span>
                 ))
               ) : (
@@ -205,13 +177,13 @@ export default function ProductCard({
             </div>
           </div>
           
-          {/* Key Features - Simplified for mobile */}
+          {/* Key Features - Show product attributes */}
           <div className="mt-2 space-y-0.5 mb-auto">
-            {Array.isArray(product.features) && product.features.length > 0 ? (
-              product.features.slice(0, 1).map((feature, index) => (
+            {product.attributes.length > 0 ? (
+              product.attributes.slice(0, 1).map((attr, index) => (
                 <div key={index} className="flex items-start">
                   <FaCheck className="text-green-500 mt-0.5 mr-1 flex-shrink-0" size={10} />
-                  <p className="text-gray-600 text-xs line-clamp-1">{feature}</p>
+                  <p className="text-gray-600 text-xs line-clamp-1">{attr.key}: {attr.value}</p>
                 </div>
               ))
             ) : null}

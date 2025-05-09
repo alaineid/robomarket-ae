@@ -15,7 +15,7 @@ interface QuickViewProps {
 }
 
 export default function QuickView({ product, isOpen, onClose }: QuickViewProps) {
-  const [currentImage, setCurrentImage] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   // Function to render star ratings
   const renderRatingStars = (rating: number) => {
@@ -39,6 +39,19 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
     return stars;
   };
   
+  // Function to get attribute value by key
+  const getAttributeValue = (key: string): string => {
+    const attribute = product.attributes.find(attr => attr.key.toLowerCase() === key.toLowerCase());
+    return attribute ? attribute.value : 'Not specified';
+  };
+
+  // Current image URL
+  const currentImage = product.images[currentImageIndex]?.url || product.main_image;
+  
+  // Price and stock from best vendor
+  const price = product.best_vendor?.price || 0;
+  const stock = product.best_vendor?.stock || 0;
+  
   return (
     <AnimatePresence>
       {isOpen && (
@@ -60,7 +73,7 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
               <div className="p-4 sm:p-6 bg-gray-50 flex flex-col">
                 <div className="relative w-full h-48 sm:h-64 bg-white rounded-lg overflow-hidden mb-4 sm:mb-6">
                   <Image
-                    src={product.images[currentImage] || product.image}
+                    src={currentImage}
                     alt={product.name}
                     fill
                     className="object-contain"
@@ -71,11 +84,11 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
                   {product.images.map((image, index) => (
                     <button 
                       key={index}
-                      onClick={() => setCurrentImage(index)}
-                      className={`w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-lg shadow-sm overflow-hidden relative flex-shrink-0 transition-all duration-200 ${currentImage === index ? 'border-2 border-[#4DA9FF] scale-105' : 'border border-gray-100 hover:border-gray-300'}`}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-lg shadow-sm overflow-hidden relative flex-shrink-0 transition-all duration-200 ${currentImageIndex === index ? 'border-2 border-[#4DA9FF] scale-105' : 'border border-gray-100 hover:border-gray-300'}`}
                     >
                       <Image
-                        src={image}
+                        src={image.url}
                         alt={`${product.name} thumbnail ${index + 1}`}
                         fill
                         className="object-contain p-1"
@@ -87,7 +100,9 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
               
               <div className="p-4 sm:p-6 overflow-y-auto">
                 <span className="inline-block px-2 sm:px-3 py-1 text-xs font-medium text-[#4DA9FF] bg-blue-50 rounded-full mb-2 sm:mb-3">
-                  {product.category}
+                  {product.categories && product.categories.length > 0 && product.categories[0] && product.categories[0].name
+                    ? product.categories[0].name 
+                    : "Uncategorized"}
                 </span>
                 
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
@@ -96,41 +111,61 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
                 
                 <div className="flex items-center mb-3 sm:mb-4">
                   <div className="flex mr-2">
-                    {renderRatingStars(product.rating)}
+                    {renderRatingStars(product.ratings.average)}
                   </div>
                   <span className="text-sm text-gray-500">
-                    ({product.reviews.length} reviews)
+                    ({product.ratings.count} reviews)
                   </span>
                 </div>
                 
                 <p className="text-xl sm:text-2xl font-bold text-[#4DA9FF] mb-3 sm:mb-4">
-                  ${product.price.toLocaleString()}
+                  ${price.toLocaleString()}
                 </p>
                 
                 <p className="text-gray-600 mb-4 sm:mb-6 line-clamp-3 text-sm sm:text-base">
-                  {product.description.substring(0, 150)}...
+                  {product.description 
+                    ? `${product.description.substring(0, 150)}${product.description.length > 150 ? '...' : ''}` 
+                    : 'No description available'}
                 </p>
                 
                 <div className="flex flex-col space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                   <div className="flex items-center">
                     <span className="font-medium w-20 sm:w-24 text-gray-700 text-sm">Brand:</span>
-                    <span className="text-gray-600 text-sm">{product.brand}</span>
+                    <span className="text-gray-600 text-sm">{product.brand || 'Unknown'}</span>
                   </div>
                   
                   <div className="flex items-center">
                     <span className="font-medium w-20 sm:w-24 text-gray-700 text-sm">Height:</span>
-                    <span className="text-gray-600 text-sm">{product.specifications.height}</span>
+                    <span className="text-gray-600 text-sm">
+                      {getAttributeValue('height')}
+                    </span>
                   </div>
                   
                   <div className="flex items-center">
                     <span className="font-medium w-20 sm:w-24 text-gray-700 text-sm">Weight:</span>
-                    <span className="text-gray-600 text-sm">{product.specifications.weight}</span>
+                    <span className="text-gray-600 text-sm">
+                      {getAttributeValue('weight')}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <span className="font-medium w-20 sm:w-24 text-gray-700 text-sm">Battery:</span>
+                    <span className="text-gray-600 text-sm">
+                      {getAttributeValue('battery')}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <span className="font-medium w-20 sm:w-24 text-gray-700 text-sm">Processor:</span>
+                    <span className="text-gray-600 text-sm">
+                      {getAttributeValue('processor')}
+                    </span>
                   </div>
                   
                   <div className="flex items-center">
                     <span className="font-medium w-20 sm:w-24 text-gray-700 text-sm">Availability:</span>
-                    <span className={`${product.stock > 0 ? 'text-green-600' : 'text-red-500'} font-medium text-sm`}>
-                      {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
+                    <span className={`${stock > 0 ? 'text-green-600' : 'text-red-500'} font-medium text-sm`}>
+                      {stock > 0 ? `In Stock (${stock})` : 'Out of Stock'}
                     </span>
                   </div>
                 </div>
