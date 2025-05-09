@@ -2,51 +2,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { FaStar, FaStarHalfAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import ProductCard from './ProductCard';
+import { Product } from '@/utils/types/product.types';
 
-import AddToCartButton from '@/components/ui/AddToCartButton';
-import { commonCardStyles } from '@/styles/commonStyles';
-
-// Define Product type based on our database schema
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  category: string;
-  image_url: string;
-  rating: number;
-  review_count: number;
-  position?: number;
-}
-
-// Function to render star ratings using React Icons
-const renderRatingStars = (rating: number) => {
-  const stars = [];
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 !== 0;
-  
-  for (let i = 0; i < fullStars; i++) {
-    stars.push(<FaStar key={`full-${i}`} className="text-yellow-400" />);
-  }
-  
-  if (hasHalfStar) {
-    stars.push(<FaStarHalfAlt key="half" className="text-yellow-400" />);
-  }
-  
-  const remainingStars = 5 - stars.length;
-  for (let i = 0; i < remainingStars; i++) {
-    stars.push(<FaStar key={`empty-${i}`} className="text-gray-300" />);
-  }
-  
-  return stars;
-};
-
-async function getFeaturedProducts(): Promise<Product[]> {
+async function getFeaturedProducts(limit = 6): Promise<Product[]> {
   try {
-    console.log('Starting to fetch featured products via API...');
+    console.log('Starting to fetch featured products via main API...');
     
-    const response = await fetch('/api/products/featured', {
+    const response = await fetch(`/api/products?featured=true&limit=${limit}&sort_by=featured`, {
       next: { revalidate: 600 } // Cache for 10 minutes
     });
     
@@ -75,7 +39,7 @@ export default function FeaturedRobots() {
     const loadProducts = async () => {
       console.log('FeaturedRobots: Attempting to load products...');
       try {
-        const products = await getFeaturedProducts();
+        const products = await getFeaturedProducts(8); // Fetch up to 8 featured products
         console.log('FeaturedRobots: Products loaded:', products);
         setFeaturedRobots(products);
         setLoading(false);
@@ -192,7 +156,7 @@ export default function FeaturedRobots() {
             <>
               <button 
                 onClick={prevPage}
-                className="absolute -left-2 md:-left-6 top-1/3 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-md flex items-center justify-center text-gray-800 hover:bg-[#4DA9FF] hover:text-white transition-all duration-300"
+                className="absolute -left-2 md:-left-6 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-md flex items-center justify-center text-gray-800 hover:bg-[#4DA9FF] hover:text-white transition-all duration-300"
                 aria-label="Previous page"
               >
                 <FaChevronLeft className="text-xs sm:text-base" />
@@ -200,7 +164,7 @@ export default function FeaturedRobots() {
               
               <button 
                 onClick={nextPage}
-                className="absolute -right-2 md:-right-6 top-1/3 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-md flex items-center justify-center text-gray-800 hover:bg-[#4DA9FF] hover:text-white transition-all duration-300"
+                className="absolute -right-2 md:-right-6 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-md flex items-center justify-center text-gray-800 hover:bg-[#4DA9FF] hover:text-white transition-all duration-300"
                 aria-label="Next page"
               >
                 <FaChevronRight className="text-xs sm:text-base" />
@@ -216,62 +180,9 @@ export default function FeaturedRobots() {
               itemsPerPage === 3 ? 'grid-cols-3' : 
               'grid-cols-4'
             }`}>
-              {currentRobots.map((robot) => (
-                <div 
-                  key={robot.id} 
-                  className={`${commonCardStyles.container} transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg`}
-                >
-                  <Link href={`/product/${robot.id}`} className="block">
-                    <div className="relative h-36 sm:h-48 w-full overflow-hidden">
-                      <div className="absolute inset-0 flex items-center justify-center p-2">
-                        <Image
-                          src={robot.image_url}
-                          alt={robot.name}
-                          width={300}
-                          height={300}
-                          className="object-contain w-full h-full"
-                          priority={robot.position === 1}
-                        />
-                      </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
-                  </Link>
-                  
-                  <div className="p-3 sm:p-4">
-                    <span className="inline-block px-2 py-1 text-xs font-medium text-[#4DA9FF] bg-blue-50 rounded-full mb-1 sm:mb-2 mt-3">
-                      {robot.category}
-                    </span>
-                    
-                    <div className="flex flex-col mb-1 sm:mb-2">
-                      <Link href={`/product/${robot.id}`}>
-                        <h3 className="font-bold text-base sm:text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors line-clamp-1 sm:line-clamp-2">
-                          {robot.name}
-                        </h3>
-                      </Link>
-                      <span className="font-bold text-base sm:text-lg text-gray-800 mt-1">
-                        ${robot.price.toLocaleString()}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center mb-2 sm:mb-3">
-                      <div className="flex items-center text-xs sm:text-sm">
-                        {renderRatingStars(robot.rating)}
-                      </div>
-                      <span className="text-gray-500 text-xs ml-1 sm:ml-2">
-                        ({robot.review_count})
-                      </span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <Link
-                        href={`/product/${robot.id}`}
-                        className="text-[#4DA9FF] text-xs sm:text-sm font-medium hover:text-[#3D99FF] border-b border-transparent hover:border-[#4DA9FF] pb-0.5 transition-all duration-200"
-                      >
-                        View Details
-                      </Link>
-                      <AddToCartButton productId={robot.id} />
-                    </div>
-                  </div>
+              {currentRobots.map((product) => (
+                <div key={product.id} className="h-full">
+                  <ProductCard product={product} />
                 </div>
               ))}
             </div>

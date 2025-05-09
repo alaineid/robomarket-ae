@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, getProductById } from './productData';
+import { Product } from './types/product.types';
 
 interface CartItem {
   productId: number;
@@ -18,6 +18,7 @@ interface CartContextProps {
   cartCount: number;
   cartTotal: number;
   cartItems: (CartItem & { product: Product })[];
+  isLoading: boolean;
 }
 
 // Initial empty state for SSR
@@ -30,6 +31,7 @@ const defaultCartContext: CartContextProps = {
   cartCount: 0,
   cartTotal: 0,
   cartItems: [],
+  isLoading: false,
 };
 
 const CartContext = createContext<CartContextProps>(defaultCartContext);
@@ -40,6 +42,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartItems, setCartItems] = useState<(CartItem & { product: Product })[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Initialize cart from localStorage only after component mounts
   useEffect(() => {
@@ -59,12 +62,42 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (!mounted) return;
     
-    const items = cart.map(item => {
-      const product = getProductById(item.productId);
-      return product ? { ...item, product } : null;
-    }).filter(Boolean) as (CartItem & { product: Product })[];
+    // Fetch product details from the API for each item in cart
+    const fetchCartProducts = async () => {
+      setIsLoading(true);
+      
+      try {
+        const productPromises = cart.map(async (item) => {
+          try {
+            const response = await fetch(`/api/products/${item.productId}`);
+            
+            if (!response.ok) {
+              console.error(`Failed to fetch product ${item.productId}: ${response.statusText}`);
+              return null;
+            }
+            
+            const product = await response.json();
+            return { ...item, product };
+          } catch (error) {
+            console.error(`Error fetching product ${item.productId}:`, error);
+            return null;
+          }
+        });
+        
+        const results = await Promise.all(productPromises);
+        setCartItems(results.filter(Boolean) as (CartItem & { product: Product })[]);
+      } catch (error) {
+        console.error("Error fetching cart products:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    setCartItems(items);
+    if (cart.length > 0) {
+      fetchCartProducts();
+    } else {
+      setCartItems([]);
+    }
     
     // Save to localStorage
     localStorage.setItem('cart', JSON.stringify(cart));
@@ -75,25 +108,36 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const cartCount = cartItems.reduce((count, item) => count + item.quantity, 0);
 
   // Cart operations
-  const addToCart = (productId: number, quantity: number) => {
+  const addToCart = async (productId: number, quantity: number) => {
     if (!mounted) return;
     
-    const product = getProductById(productId);
-    if (!product) return;
-
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.productId === productId);
+    try {
+      // Fetch the product to get its current price
+      const response = await fetch(`/api/products/${productId}`);
       
-      if (existingItem) {
-        return prevCart.map(item => 
-          item.productId === productId 
-            ? { ...item, quantity: item.quantity + quantity } 
-            : item
-        );
-      } else {
-        return [...prevCart, { productId, quantity, price: product.price }];
+      if (!response.ok) {
+        console.error(`Failed to fetch product ${productId}: ${response.statusText}`);
+        return;
       }
-    });
+      
+      const product = await response.json();
+      
+      setCart(prevCart => {
+        const existingItem = prevCart.find(item => item.productId === productId);
+        
+        if (existingItem) {
+          return prevCart.map(item => 
+            item.productId === productId 
+              ? { ...item, quantity: item.quantity + quantity } 
+              : item
+          );
+        } else {
+          return [...prevCart, { productId, quantity, price: product.price }];
+        }
+      });
+    } catch (error) {
+      console.error(`Error adding product ${productId} to cart:`, error);
+    }
   };
 
   const removeFromCart = (productId: number) => {
@@ -130,7 +174,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearCart,
       cartTotal,
       cartCount,
-      cartItems
+      cartItems,
+      isLoading
     }}>
       {children}
     </CartContext.Provider>

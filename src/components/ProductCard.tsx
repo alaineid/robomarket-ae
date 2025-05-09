@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FaStar, FaStarHalfAlt, FaCheck } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import { Product } from '@/utils/productData';
+import { Product } from '@/utils/types/product.types';
 import AddToCartButton from './ui/AddToCartButton';
 import WishlistButton from './ui/WishlistButton';
 import QuickView from './ui/QuickView';
@@ -22,6 +22,50 @@ export default function ProductCard({
   product
 }: ProductCardProps) {
   const [showQuickView, setShowQuickView] = useState(false);
+  
+  // Debug log for product data
+  console.log('ProductCard data:', {
+    id: product.id,
+    name: product.name,
+    hasImage: !!product.image,
+    imageValue: product.image,
+    hasImages: Array.isArray(product.images),
+    imagesLength: Array.isArray(product.images) ? product.images.length : 0,
+    imagesValues: product.images,
+    rating: product.rating,
+    rating_count: product.rating_count,
+    categories: product.categories
+  });
+  
+  // Get rating value with fallbacks
+  const getRating = () => {
+    // Direct rating property
+    if (typeof product.rating === 'number') {
+      return product.rating;
+    }
+    
+    // Try to get from product_ratings array if available
+    if (Array.isArray(product.product_ratings) && product.product_ratings.length > 0) {
+      return product.product_ratings[0].average_rating || 0;
+    }
+    
+    return 0;
+  };
+  
+  // Get rating count with fallbacks
+  const getRatingCount = () => {
+    // Direct rating_count property
+    if (typeof product.rating_count === 'number') {
+      return product.rating_count;
+    }
+    
+    // Try to get from product_ratings array if available
+    if (Array.isArray(product.product_ratings) && product.product_ratings.length > 0) {
+      return product.product_ratings[0].rating_count || 0;
+    }
+    
+    return 0;
+  };
   
   // Function to render star ratings
   const renderRatingStars = (rating: number) => {
@@ -59,18 +103,51 @@ export default function ProductCard({
         className={`${commonCardStyles.container} h-full flex flex-col`}
       >
         <div className={`${commonCardStyles.imageContainer} group`}>
-          {/* Product Image */}
+          {/* Product Images Thumbnails Row */}
+          {Array.isArray(product.images) && product.images.length > 1 && (
+            <div className="absolute top-2 left-2 z-20 flex gap-1 overflow-x-auto max-w-[90%]">
+              {product.images.map((imgUrl, idx) => (
+                imgUrl ? (
+                  <Image
+                    key={idx}
+                    src={imgUrl}
+                    alt={product.name + ' thumbnail ' + (idx + 1)}
+                    width={40}
+                    height={40}
+                    className="object-contain rounded border bg-white"
+                  />
+                ) : null
+              ))}
+            </div>
+          )}
+          {/* Main Product Image */}
           <Link href={`/product/${product.id}`} className="block absolute inset-0 z-10">
             <div className={`${commonCardStyles.imagePlaceholder} bg-white`}>
-              <Image
-                src={product.image}
-                alt={product.name}
-                width={300}
-                height={300}
-                className="object-contain w-full h-full transform transition-transform duration-500 group-hover:scale-110"
-                priority={false}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              />
+              {(product.image && product.image !== '') ? (
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  width={300}
+                  height={300}
+                  className="object-contain w-full h-full transform transition-transform duration-500 group-hover:scale-110"
+                  priority={false}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                />
+              ) : Array.isArray(product.images) && product.images[0] ? (
+                <Image
+                  src={product.images[0]}
+                  alt={product.name}
+                  width={300}
+                  height={300}
+                  className="object-contain w-full h-full transform transition-transform duration-500 group-hover:scale-110"
+                  priority={false}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-300 text-6xl bg-gray-50">
+                  <span>🖼️</span>
+                </div>
+              )}
             </div>
           </Link>
           
@@ -100,29 +177,44 @@ export default function ProductCard({
               </h3>
               <p className="text-gray-600 text-xs">{product.brand}</p>
             </div>
-            <span className="font-bold text-sm sm:text-base text-[#4DA9FF] ml-2 whitespace-nowrap">${product.price.toLocaleString()}</span>
+            <span className="font-bold text-sm sm:text-base text-[#4DA9FF] ml-2 whitespace-nowrap">
+              ${typeof product.price === 'number' ? product.price.toLocaleString() : '0.00'}
+            </span>
           </div>
           
           <div className="flex items-center justify-between mt-1">
             <div className="flex items-center">
               <div className="flex">
-                {renderRatingStars(product.rating)}
+                {renderRatingStars(getRating())}
               </div>
-              <span className="text-gray-500 text-xs ml-1">{product.rating.toFixed(1)}</span>
+              <span className="text-gray-500 text-xs ml-1">{getRating().toFixed(1)}</span>
+              {getRatingCount() > 0 && (
+                <span className="text-gray-500 text-xs ml-1">({getRatingCount()})</span>
+              )}
             </div>
-            <span className={`${commonCardStyles.categoryBadge} inline-block text-xs px-1.5 py-0.5`}>
-              {product.category}
-            </span>
+            <div className="flex flex-wrap gap-1">
+              {Array.isArray(product.categories) && product.categories.length > 0 ? (
+                product.categories.map((cat, idx) => (
+                  <span key={idx} className={`${commonCardStyles.categoryBadge} inline-block text-xs px-1.5 py-0.5`}>
+                    {cat}
+                  </span>
+                ))
+              ) : (
+                <span className={`${commonCardStyles.categoryBadge} inline-block text-xs px-1.5 py-0.5`}>Uncategorized</span>
+              )}
+            </div>
           </div>
           
           {/* Key Features - Simplified for mobile */}
           <div className="mt-2 space-y-0.5 mb-auto">
-            {product.features.slice(0, 1).map((feature, index) => (
-              <div key={index} className="flex items-start">
-                <FaCheck className="text-green-500 mt-0.5 mr-1 flex-shrink-0" size={10} />
-                <p className="text-gray-600 text-xs line-clamp-1">{feature}</p>
-              </div>
-            ))}
+            {Array.isArray(product.features) && product.features.length > 0 ? (
+              product.features.slice(0, 1).map((feature, index) => (
+                <div key={index} className="flex items-start">
+                  <FaCheck className="text-green-500 mt-0.5 mr-1 flex-shrink-0" size={10} />
+                  <p className="text-gray-600 text-xs line-clamp-1">{feature}</p>
+                </div>
+              ))
+            ) : null}
           </div>
           
           {/* Mobile-optimized action buttons */}

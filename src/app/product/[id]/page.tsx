@@ -1,17 +1,27 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useParams } from 'next/navigation';
-import { FaStar, FaStarHalfAlt, FaShoppingCart, FaHeart, FaRegHeart, FaArrowRight, FaCheck } from 'react-icons/fa';
+import { 
+  FaStar, FaStarHalfAlt, 
+  FaCheck, FaArrowRight, FaShoppingCart, FaHeart, FaRegHeart
+} from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import Breadcrumbs, { BreadcrumbItem } from '@/components/Breadcrumbs';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { commonButtonStyles, commonCardStyles } from '@/styles/commonStyles';
-import { getProductById, getRelatedProducts, Product } from '@/utils/productData';
 import { useCart } from '@/utils/cartContext';
+import { Product } from '@/utils/types/product.types';
+
+interface BreadcrumbItem {
+  label: string;
+  path: string;
+  isCurrent: boolean;
+}
 
 export default function ProductDetail() {
   const params = useParams();
@@ -28,45 +38,60 @@ export default function ProductDetail() {
   const [addedToCart, setAddedToCart] = useState(false);
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
 
-  // Load product data based on ID
+  // Load product data based on ID using API instead of local data
   useEffect(() => {
-    // In a real app, this would be an API call
-    const product = getProductById(productId);
-    const related = getRelatedProducts(productId, 4);
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch product data from API
+        const response = await fetch(`/api/products/${productId}`);
+        
+        if (!response.ok) {
+          throw new Error('Product not found');
+        }
+        
+        const product = await response.json();
+        setProductData(product);
+        
+        // Build custom breadcrumbs including the product name
+        setBreadcrumbs([
+          { label: 'Home', path: '/', isCurrent: false },
+          { label: 'Shop', path: '/shop', isCurrent: false },
+          { label: product.category, path: `/shop?category=${encodeURIComponent(product.category)}`, isCurrent: false },
+          { label: product.name, path: `/product/${product.id}`, isCurrent: true }
+        ]);
+        
+        // Fetch related products (products in the same category)
+        const relatedResponse = await fetch(`/api/products?category=${encodeURIComponent(product.category)}&limit=4`);
+        const relatedData = await relatedResponse.json();
+        
+        // Filter out the current product from related products
+        const filteredProducts = relatedData.products.filter((p: Product) => p.id !== productId);
+        setRelatedProducts(filteredProducts.slice(0, 4)); // Limit to 4 related products
+      } catch (error) {
+        console.error('Error fetching product:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    if (product) {
-      setProductData(product);
-      setRelatedProducts(related);
-      
-      // Build custom breadcrumbs including the product name
-      setBreadcrumbs([
-        { label: 'Home', path: '/', isCurrent: false },
-        { label: 'Shop', path: '/shop', isCurrent: false },
-        { label: product.category, path: `/shop?category=${encodeURIComponent(product.category)}`, isCurrent: false },
-        { label: product.name, path: `/product/${product.id}`, isCurrent: true }
-      ]);
+    if (productId) {
+      fetchProduct();
     }
-    
-    setLoading(false);
   }, [productId]);
 
   // Reset activeImage when product changes
   useEffect(() => {
-    // Reset to the first image when navigating between products
     setActiveImage(0);
   }, [productId]);
-
-  // Add effect to monitor activeImage changes
-  useEffect(() => {
-    console.log("Active image changed to:", activeImage);
-  }, [activeImage]);
 
   // Main image and thumbnail handling function
   const handleThumbnailClick = (index: number) => {
     console.log(`Clicking thumbnail ${index}`);
     setActiveImage(index);
   };
-
+  
   // Function to render star ratings
   const renderRatingStars = (rating: number) => {
     const stars = [];

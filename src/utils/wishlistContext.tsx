@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, getProductById } from './productData';
+import { Product } from './types/product.types';
 
 interface WishlistContextProps {
   wishlist: number[];
@@ -9,6 +9,7 @@ interface WishlistContextProps {
   removeFromWishlist: (productId: number) => void;
   isInWishlist: (productId: number) => boolean;
   wishlistProducts: Product[];
+  isLoading: boolean;
 }
 
 // Initial empty state for SSR
@@ -17,7 +18,8 @@ const defaultWishlistContext: WishlistContextProps = {
   addToWishlist: () => {},
   removeFromWishlist: () => {},
   isInWishlist: () => false,
-  wishlistProducts: []
+  wishlistProducts: [],
+  isLoading: false
 };
 
 const WishlistContext = createContext<WishlistContextProps>(defaultWishlistContext);
@@ -28,6 +30,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Load wishlist from localStorage only after component mounts
   useEffect(() => {
@@ -47,11 +50,42 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     if (!mounted) return;
     
-    const products = wishlist
-      .map(productId => getProductById(productId))
-      .filter((product): product is Product => product !== undefined);
+    // Fetch product details from API for each item in wishlist
+    const fetchWishlistProducts = async () => {
+      if (wishlist.length === 0) {
+        setWishlistProducts([]);
+        return;
+      }
+      
+      setIsLoading(true);
+      
+      try {
+        const productPromises = wishlist.map(async (productId) => {
+          try {
+            const response = await fetch(`/api/products/${productId}`);
+            
+            if (!response.ok) {
+              console.error(`Failed to fetch product ${productId}: ${response.statusText}`);
+              return null;
+            }
+            
+            return await response.json();
+          } catch (error) {
+            console.error(`Error fetching product ${productId}:`, error);
+            return null;
+          }
+        });
+        
+        const products = await Promise.all(productPromises);
+        setWishlistProducts(products.filter(Boolean) as Product[]);
+      } catch (error) {
+        console.error("Error fetching wishlist products:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    setWishlistProducts(products);
+    fetchWishlistProducts();
     
     // Save to localStorage
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
@@ -83,7 +117,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       addToWishlist,
       removeFromWishlist,
       isInWishlist,
-      wishlistProducts
+      wishlistProducts,
+      isLoading
     }}>
       {children}
     </WishlistContext.Provider>

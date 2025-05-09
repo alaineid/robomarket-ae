@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { FaShoppingCart, FaCheck } from 'react-icons/fa';
 import { useCart } from '@/utils/cartContext';
-import { Product, getProductById } from '@/utils/productData';
+import { Product } from '@/utils/types/product.types';
 
 interface AddToCartButtonProps {
   product?: Product;
@@ -31,8 +31,20 @@ export default function AddToCartButton({
   // If a productId is provided without a product, fetch the product
   useEffect(() => {
     if (!product && productId) {
-      const fetchedProduct = getProductById(productId);
-      setResolvedProduct(fetchedProduct);
+      // Replace local getProductById with API fetch
+      const fetchProduct = async () => {
+        try {
+          const response = await fetch(`/api/products/${productId}`);
+          if (response.ok) {
+            const fetchedProduct = await response.json();
+            setResolvedProduct(fetchedProduct);
+          }
+        } catch (error) {
+          console.error('Error fetching product:', error);
+        }
+      };
+      
+      fetchProduct();
     }
   }, [product, productId]);
 

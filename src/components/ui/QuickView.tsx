@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaStar, FaStarHalfAlt, FaTimes } from 'react-icons/fa';
-import { Product } from '@/utils/productData';
-import WishlistButton from './WishlistButton';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FaTimes, FaStar, FaStarHalfAlt } from 'react-icons/fa';
+import { Product } from '@/utils/types/product.types';
+import WishlistButton from '@/components/ui/WishlistButton';
 
 interface QuickViewProps {
   product: Product;
