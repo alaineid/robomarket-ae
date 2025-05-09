@@ -283,8 +283,10 @@ export async function GET(request: Request) {
           rating = product.product_ratings[0]?.average_rating || 0;
           rating_count = product.product_ratings[0]?.rating_count || 0;
         } else if (typeof product.product_ratings === 'object') {
-          rating = product.product_ratings.average_rating || 0;
-          rating_count = product.product_ratings.rating_count || 0;
+          // Type assertion to handle non-array object case
+          const ratingObj = product.product_ratings as unknown as { average_rating?: number; rating_count?: number };
+          rating = ratingObj.average_rating || 0;
+          rating_count = ratingObj.rating_count || 0;
         }
       }
 
@@ -307,9 +309,13 @@ export async function GET(request: Request) {
     if (sortBy === 'featured' && featured) {
       // Sort products by their featured_position (lower position = higher priority)
       sortedProducts = [...productsWithFeaturedPosition].sort((a, b) => {
+        // Type assertion to access featured_position property that we added earlier
+        const productA = a as unknown as { featured_position?: number };
+        const productB = b as unknown as { featured_position?: number };
+        
         // Default position for products without a position value
-        const posA = a.featured_position ?? 999;
-        const posB = b.featured_position ?? 999;
+        const posA = productA.featured_position ?? 999;
+        const posB = productB.featured_position ?? 999;
         return posA - posB;
       });
     }

@@ -2,11 +2,15 @@ import { NextResponse } from 'next/server';
 import { createServerAdminClient } from '@/utils/server/supabaseServer';
 import { getBestVendorProduct } from '@/utils/vendor';
 
-export async function GET(
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request) {
+  // Extract the id from the URL path
+  const url = new URL(request.url);  
+  const match = url.pathname.match(/\/products\/(\d+)$/);
+  const id = match ? match[1] : null;
+  
   try {
-    // Initialize Supabase admin client
+    const idNumber = Number(id);
+    
     const serverSupabase = createServerAdminClient();
 
     const { data: product, error } = await serverSupabase
@@ -38,7 +42,7 @@ export async function GET(
           )
         )
       `)
-      .eq('id', Number(params.id)) // Convert id to number
+      .eq('id', idNumber)
       .single();
 
     if (error) {
@@ -103,13 +107,13 @@ export async function GET(
       vendor: bestVendorProduct?.vendors ?? null,
       image: mainImage || images[0] || null,
       images: images.length > 0 ? images.map((img: string) => img ? `${img}?v=${timestamp}` : null).filter(Boolean) : ['/images/robot1.png'],
-      // Fix for product_ratings coming as an object instead of an array
-      rating: Array.isArray(product.product_ratings) 
-        ? product.product_ratings[0]?.average_rating || 0 
-        : product.product_ratings?.average_rating || 0,
-      rating_count: Array.isArray(product.product_ratings) 
-        ? product.product_ratings[0]?.rating_count || 0 
-        : product.product_ratings?.rating_count || 0,
+      // Fix for product_ratings handling both array and object formats
+      rating: Array.isArray(product.product_ratings) ? 
+        (product.product_ratings[0]?.average_rating || 0) : 
+        ((product.product_ratings as unknown as { average_rating?: number })?.average_rating || 0),
+      rating_count: Array.isArray(product.product_ratings) ? 
+        (product.product_ratings[0]?.rating_count || 0) : 
+        ((product.product_ratings as unknown as { rating_count?: number })?.rating_count || 0),
       categories,
       // Include all vendor options for potential UI display
       vendor_options: product.vendor_products,
