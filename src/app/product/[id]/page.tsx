@@ -401,17 +401,26 @@ export default function ProductDetail() {
                 </div>
                 
                 {/* Add to Cart Section */}
-                <div className="mb-8 bg-gray-50 p-6 rounded-xl border border-gray-100">
-                  <div className="flex items-center justify-between mb-4">
+                <div className="mb-8 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100 relative overflow-hidden">
+                  {/* Robot-themed decorative elements */}
+                  <div className="absolute right-0 top-0 w-36 h-36 opacity-5">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="fill-[#4DA9FF]">
+                      <path d="M40,60 L160,60 L160,140 L40,140 Z M70,30 L130,30 L130,60 L70,60 Z M50,140 L80,140 L80,170 L50,170 Z M120,140 L150,140 L150,170 L120,170 Z M95,140 L105,140 L105,150 L95,150 Z" />
+                      <circle cx="80" cy="100" r="10" />
+                      <circle cx="120" cy="100" r="10" />
+                    </svg>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mb-4 relative z-10">
                     <div className="flex items-center">
                       <p className="mr-4 font-medium text-gray-700">Quantity:</p>
                       {/* Improved quantity selector */}
                       <div className="flex items-center">
-                        <div className="flex border border-gray-300 rounded-lg overflow-hidden bg-white">
+                        <div className="flex border border-blue-300 rounded-lg overflow-hidden bg-white shadow-sm">
                           <motion.button 
                             whileTap={{ scale: 0.95 }}
                             onClick={decreaseQuantity}
-                            className="w-12 h-12 flex items-center justify-center text-gray-700 hover:bg-gray-50"
+                            className="w-12 h-12 flex items-center justify-center text-gray-700 hover:bg-blue-50"
                             disabled={quantity <= 1}
                           >
                             <span className="text-2xl font-medium">−</span>
@@ -422,7 +431,7 @@ export default function ProductDetail() {
                               type="text"
                               value={quantity}
                               onChange={handleQuantityChange}
-                              className="absolute inset-0 text-center border-x border-gray-300 h-full w-full focus:outline-none bg-white text-gray-700"
+                              className="absolute inset-0 text-center border-x border-blue-300 h-full w-full focus:outline-none bg-white text-gray-700"
                               aria-label="Quantity"
                             />
                           </div>
@@ -430,7 +439,7 @@ export default function ProductDetail() {
                           <motion.button 
                             whileTap={{ scale: 0.95 }}
                             onClick={increaseQuantity}
-                            className="w-12 h-12 flex items-center justify-center text-gray-700 hover:bg-gray-50"
+                            className="w-12 h-12 flex items-center justify-center text-gray-700 hover:bg-blue-50"
                             disabled={quantity >= productData.best_vendor.stock}
                           >
                             <span className="text-2xl font-medium">+</span>
@@ -439,8 +448,12 @@ export default function ProductDetail() {
                       </div>
                     </div>
                     
-                    <div className="text-gray-500">
-                      <span className="font-medium text-gray-900">{productData.best_vendor.stock}</span> units available
+                    <div className="flex items-center">
+                      <span className="font-medium text-green-600 mr-2 flex items-center">
+                        <FaCheck size={12} className="mr-1.5" />
+                        In Stock:
+                      </span>
+                      <span className="font-medium text-gray-900">{productData.best_vendor.stock}</span> units
                     </div>
                   </div>
                   
@@ -472,12 +485,52 @@ export default function ProductDetail() {
                     <motion.button 
                       whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.5)" }}
                       whileTap={{ scale: 0.98 }}
-                      className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] text-white shadow-md hover:shadow-lg transition-all duration-300`}
+                      className="w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] text-white shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden"
                       onClick={handleAddToCart}
                     >
-                      <FaShoppingCart className="mr-2" size={18} />
-                      Add to Cart
+                      {/* Animated circuit-board pattern in background */}
+                      <div className="absolute inset-0 opacity-10">
+                        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                          <pattern id="circuit" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                            <path d="M0,20 L40,20 M20,0 L20,40 M10,10 L30,30 M30,10 L10,30" stroke="white" strokeWidth="1" fill="none" />
+                          </pattern>
+                          <rect width="100%" height="100%" fill="url(#circuit)" />
+                        </svg>
+                      </div>
+                      <div className="mr-3 bg-white/20 p-2 rounded-full">
+                        <FaShoppingCart size={18} />
+                      </div>
+                      <span className="mr-2">Add to Cart</span>
+                      <span className="text-xs bg-white/30 py-1 px-2 rounded-full">Power Up Your Home</span>
                     </motion.button>
+                  </div>
+                  
+                  {/* Robot benefits */}
+                  <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-gray-600 relative z-10">
+                    <div className="flex items-center">
+                      <div className="bg-blue-100 p-1.5 rounded-full mr-2">
+                        <FaShippingFast className="text-[#4DA9FF]" size={12} />
+                      </div>
+                      Fast Robot Delivery
+                    </div>
+                    <div className="flex items-center">
+                      <div className="bg-blue-100 p-1.5 rounded-full mr-2">
+                        <FaCreditCard className="text-[#4DA9FF]" size={12} />
+                      </div>
+                      Financing Available
+                    </div>
+                    <div className="flex items-center">
+                      <div className="bg-blue-100 p-1.5 rounded-full mr-2">
+                        <FaExchangeAlt className="text-[#4DA9FF]" size={12} />
+                      </div>
+                      30-Day Returns
+                    </div>
+                    <div className="flex items-center">
+                      <div className="bg-blue-100 p-1.5 rounded-full mr-2">
+                        <FaAward className="text-[#4DA9FF]" size={12} />
+                      </div>
+                      Extended Warranty
+                    </div>
                   </div>
                 </div>
                 
