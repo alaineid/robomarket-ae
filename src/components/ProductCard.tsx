@@ -40,6 +40,25 @@ export default function ProductCard({
     return stars;
   };
 
+  // Function to get category background color
+  const getCategoryColor = (category: string): string => {
+    const categoryLower = category?.toLowerCase() || '';
+    
+    if (categoryLower.includes('companion')) return 'bg-blue-100 text-blue-700';
+    if (categoryLower.includes('home')) return 'bg-green-100 text-green-700';
+    if (categoryLower.includes('industrial')) return 'bg-orange-100 text-orange-700';
+    if (categoryLower.includes('utility')) return 'bg-amber-100 text-amber-700';
+    if (categoryLower.includes('security')) return 'bg-violet-100 text-violet-700';
+    if (categoryLower.includes('business')) return 'bg-purple-100 text-purple-700';
+    if (categoryLower.includes('medical') || categoryLower.includes('healthcare')) return 'bg-red-100 text-red-700';
+    if (categoryLower.includes('developer')) return 'bg-teal-100 text-teal-700';
+    if (categoryLower.includes('education')) return 'bg-yellow-100 text-yellow-700';
+    if (categoryLower.includes('entertainment')) return 'bg-pink-100 text-pink-700';
+    
+    // Default color for other categories
+    return 'bg-gray-100 text-gray-700';
+  };
+
   // Handle quick view button click
   const handleQuickView = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -136,12 +155,23 @@ export default function ProductCard({
             <div className="flex flex-wrap gap-1">
               {Array.isArray(product.categories) && product.categories.length > 0 ? (
                 product.categories.map((cat, idx) => (
-                  <span key={idx} className={`${commonCardStyles.categoryBadge} inline-block text-xs px-1.5 py-0.5`}>
+                  <motion.span 
+                    key={idx} 
+                    initial={{ scale: 1 }}
+                    whileHover={{ scale: 1.05 }}
+                    className={`${commonCardStyles.categoryBadge} inline-flex items-center text-xs px-2 py-1 ${getCategoryColor(cat.name)} shadow-sm transition-all duration-300 hover:shadow`}
+                  >
                     {cat.name || 'Category'}
-                  </span>
+                  </motion.span>
                 ))
               ) : (
-                <span className={`${commonCardStyles.categoryBadge} inline-block text-xs px-1.5 py-0.5`}>Uncategorized</span>
+                <motion.span 
+                  initial={{ scale: 1 }}
+                  whileHover={{ scale: 1.05 }}
+                  className={`${commonCardStyles.categoryBadge} inline-flex items-center text-xs px-2 py-1 bg-gray-100 text-gray-700 shadow-sm transition-all duration-300 hover:shadow`}
+                >
+                  Uncategorized
+                </motion.span>
               )}
             </div>
           </div>

@@ -6,7 +6,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { 
   FaStar, FaStarHalfAlt, 
-  FaCheck, FaArrowRight, FaShoppingCart, FaHeart, FaRegHeart
+  FaCheck, FaArrowRight, FaShoppingCart, FaHeart, FaRegHeart,
+  FaRobot, FaHome, FaBriefcase, FaUser, FaHospital, FaCode, FaIndustry
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -37,6 +38,40 @@ export default function ProductDetail() {
   const [activeTab, setActiveTab] = useState('description');
   const [addedToCart, setAddedToCart] = useState(false);
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
+
+  // Function to return appropriate icon for each category
+  const getCategoryIcon = (category: string) => {
+    const categoryLower = category?.toLowerCase() || '';
+    
+    if (categoryLower.includes('companion')) return <FaUser size={14} />;
+    if (categoryLower.includes('home')) return <FaHome size={14} />;
+    if (categoryLower.includes('industrial')) return <FaIndustry size={14} />;
+    if (categoryLower.includes('business')) return <FaBriefcase size={14} />;
+    if (categoryLower.includes('medical')) return <FaHospital size={14} />;
+    if (categoryLower.includes('developer')) return <FaCode size={14} />;
+    
+    // Default robot icon for other categories
+    return <FaRobot size={14} />;
+  };
+
+  // Function to get category background color
+  const getCategoryColor = (category: string): string => {
+    const categoryLower = category?.toLowerCase() || '';
+    
+    if (categoryLower.includes('companion')) return 'bg-blue-100 text-blue-700';
+    if (categoryLower.includes('home')) return 'bg-green-100 text-green-700';
+    if (categoryLower.includes('industrial')) return 'bg-orange-100 text-orange-700';
+    if (categoryLower.includes('utility')) return 'bg-amber-100 text-amber-700';
+    if (categoryLower.includes('security')) return 'bg-violet-100 text-violet-700';
+    if (categoryLower.includes('business')) return 'bg-purple-100 text-purple-700';
+    if (categoryLower.includes('medical') || categoryLower.includes('healthcare')) return 'bg-red-100 text-red-700';
+    if (categoryLower.includes('developer')) return 'bg-teal-100 text-teal-700';
+    if (categoryLower.includes('education')) return 'bg-yellow-100 text-yellow-700';
+    if (categoryLower.includes('entertainment')) return 'bg-pink-100 text-pink-700';
+    
+    // Default color for other categories
+    return 'bg-gray-100 text-gray-700';
+  };
 
   // Fetch product data using React Query
   const { 
@@ -323,9 +358,13 @@ export default function ProductDetail() {
               <div className="p-6 lg:p-8 bg-gray-50">
                 {/* Product Category Badge */}
                 <div className="mb-2">
-                  <span className={commonCardStyles.categoryBadge}>
+                  <motion.span 
+                    initial={{ scale: 1 }}
+                    whileHover={{ scale: 1.05 }}
+                    className={`${commonCardStyles.categoryBadge} inline-block text-xs px-3 py-1.5 rounded-full ${getCategoryColor(productData.categories[0].name)} shadow-sm transition-all duration-300 hover:shadow`}
+                  >
                     {productData.categories[0].name}
-                  </span>
+                  </motion.span>
                 </div>
                 
                 {/* Product Name */}
@@ -597,7 +636,7 @@ export default function ProductDetail() {
                     <div className={`${commonCardStyles.content} flex flex-col h-[200px]`}>
                       <div className="flex justify-between items-start mb-auto">
                         <div className="flex-1 min-w-0">
-                          <span className={commonCardStyles.categoryBadge}>
+                          <span className={`${commonCardStyles.categoryBadge} inline-block text-xs px-2 py-1 ${getCategoryColor(product.categories[0]?.name || 'Uncategorized')} rounded-full`}>
                             {product.categories && product.categories.length > 0 
                               ? product.categories[0].name 
                               : 'Uncategorized'}
@@ -607,7 +646,6 @@ export default function ProductDetail() {
                               {product.name}
                             </h3>
                           </Link>
-                          <p className="text-gray-600 text-sm mt-1">{product.brand}</p>
                         </div>
                         <span className="font-bold text-lg text-[#4DA9FF] ml-2 whitespace-nowrap">${product.best_vendor.price.toLocaleString()}</span>
                       </div>

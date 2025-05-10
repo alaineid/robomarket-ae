@@ -906,7 +906,6 @@ export default function ShopClient({ initialData }: ShopClientProps) {
               <div className="bg-gradient-to-r from-blue-50 to-white rounded-2xl shadow-sm p-6 mb-8 border border-blue-100">
                 <div className="flex items-center mb-4">
                   <h3 className="font-bold text-xl text-gray-800">Recently Viewed</h3>
-                  <div className="ml-3 h-1 w-10 bg-gradient-to-r from-[#4DA9FF] to-blue-300 rounded-full"></div>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {recentlyViewed.map(product => (
