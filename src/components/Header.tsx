@@ -333,43 +333,45 @@ export default function Header() {
                   leaveFrom="transform opacity-100 scale-100"
                   leaveTo="transform opacity-0 scale-95"
                 >
-                  <MenuItems className="absolute right-0 mt-2 w-80 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none divide-y divide-gray-100 z-50 py-1">
-                    <div className="px-4 py-3">
-                      <h3 className="text-sm font-medium text-gray-900">Your Cart</h3>
+                  <MenuItems className="absolute right-0 mt-2 w-80 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none z-50">
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <h3 className="text-lg font-medium text-gray-900">Your Cart</h3>
                     </div>
                     
                     {cartItems.length > 0 ? (
                       <>
-                        <div className="py-2 max-h-60 overflow-y-auto">
+                        <div className="py-2 max-h-[320px] overflow-y-auto custom-scrollbar">
                           {cartItems.map((item) => (
-                            <MenuItem 
-                              as="div"
-                              key={item.productId}
-                            >
-                              <div className="hover:bg-gray-50 px-4 py-2 flex items-center">
+                            <div key={item.productId} className="hover:bg-gray-50 px-4 py-3 border-b border-gray-100 last:border-0">
+                              <div className="flex items-center">
                                 {/* Product Image */}
-                                <div className="w-10 h-10 relative bg-gray-100 rounded-md overflow-hidden mr-3 flex-shrink-0">
-                                  {item.product?.images && item.product.images[0] && (
+                                <div className="w-16 h-16 relative rounded-md overflow-hidden bg-gray-50 flex-shrink-0">
+                                  {item.product?.images && item.product.images[0] ? (
                                     <Image
                                       src={item.product.images[0].url}
                                       alt={item.product?.name || "Product"}
                                       fill
-                                      className="object-cover"
+                                      className="object-contain p-1"
                                     />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                                      <FaShoppingCart size={20} />
+                                    </div>
                                   )}
                                 </div>
                                 
                                 {/* Product Info */}
-                                <div className="flex-1 min-w-0">
+                                <div className="flex-1 min-w-0 ml-3">
                                   <Link href={`/product/${item.productId}`} className="text-sm font-medium text-gray-800 hover:text-[#4DA9FF] truncate block">
                                     {item.product?.name || "Product"}
                                   </Link>
+                                  
                                   <div className="flex justify-between items-center mt-1">
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-sm text-gray-500">
                                       Qty: {item.quantity}
                                     </span>
-                                    <span className="text-xs font-medium text-[#4DA9FF]">
-                                      ${((item.product?.best_vendor?.price || 0) * item.quantity).toFixed(2)}
+                                    <span className="text-sm font-medium text-[#4DA9FF]">
+                                      ${((item.product?.best_vendor?.price || 0) * item.quantity).toLocaleString()}
                                     </span>
                                   </div>
                                 </div>
@@ -377,37 +379,44 @@ export default function Header() {
                                 {/* Remove Button */}
                                 <button
                                   onClick={() => removeFromCart(item.productId)}
-                                  className="ml-2 text-gray-400 hover:text-red-500 p-1"
+                                  className="ml-3 text-gray-400 hover:text-red-500 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                                  aria-label="Remove item"
                                 >
                                   <FaTrash size={12} />
                                 </button>
                               </div>
-                            </MenuItem>
+                            </div>
                           ))}
                         </div>
                         
-                        <div className="py-2 px-4">
-                          <div className="flex justify-between text-sm font-medium mb-4">
-                            <span className="text-gray-600">Subtotal:</span>
-                            <span className="text-[#4DA9FF]">${cartSubtotal.toFixed(2)}</span>
+                        <div className="p-4 bg-gray-50">
+                          <div className="flex justify-between font-medium mb-4">
+                            <span className="text-gray-700">Subtotal:</span>
+                            <span className="text-[#4DA9FF]">${cartSubtotal.toLocaleString()}</span>
                           </div>
                           <div className="flex flex-col space-y-2">
-                            <Link href="/cart" className={`text-center text-sm py-2 ${commonButtonStyles.secondary}`}>
+                            <Link 
+                              href="/cart" 
+                              className="w-full text-center py-2.5 px-4 border border-[#4DA9FF] text-[#4DA9FF] rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium"
+                            >
                               View Cart
                             </Link>
-                            <Link href="/checkout" className={`text-center text-sm py-2 ${commonButtonStyles.primary}`}>
+                            <Link 
+                              href="/checkout" 
+                              className="w-full text-center py-2.5 px-4 bg-[#4DA9FF] hover:bg-blue-500 text-white rounded-lg transition-colors text-sm font-medium"
+                            >
                               Checkout
                             </Link>
                           </div>
                         </div>
                       </>
                     ) : (
-                      <div className="py-6 px-4 text-center">
-                        <div className="w-12 h-12 rounded-full bg-gray-100 mx-auto mb-4 flex items-center justify-center">
-                          <FaShoppingCart className="text-gray-400" />
+                      <div className="py-8 px-4 text-center">
+                        <div className="w-16 h-16 rounded-full bg-gray-100 mx-auto mb-4 flex items-center justify-center">
+                          <FaShoppingCart className="text-gray-400" size={24} />
                         </div>
-                        <p className="text-sm text-gray-600 mb-4">Your cart is empty</p>
-                        <Link href="/shop" className={`text-center text-sm py-2 ${commonButtonStyles.secondary}`}>
+                        <p className="text-gray-600 mb-4">Your cart is empty</p>
+                        <Link href="/shop" className="inline-block text-center text-sm py-2.5 px-6 border border-[#4DA9FF] text-[#4DA9FF] rounded-lg hover:bg-blue-50 transition-colors font-medium">
                           Continue Shopping
                         </Link>
                       </div>
