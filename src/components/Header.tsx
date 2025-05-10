@@ -1,43 +1,97 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Fragment } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Logo from './Logo';
-import { FaUserCircle, FaShoppingCart, FaBars, FaTimes } from 'react-icons/fa';
+import { Menu, Transition } from '@headlessui/react';
+import { 
+  FaUserCircle, 
+  FaShoppingCart, 
+  FaBars, 
+  FaTimes, 
+  FaSignInAlt, 
+  FaUserPlus, 
+  FaSignOutAlt, 
+  FaUser, 
+  FaHeart,
+  FaChevronDown,
+  FaTrash
+} from 'react-icons/fa';
 import { useCart } from '@/utils/cartContext';
+import { commonButtonStyles } from '@/styles/commonStyles';
 
 export default function Header() {
-  const { cartCount } = useCart();
+  const { cartCount, cartItems, removeFromCart } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); 
   
   // Touch gesture handling
   const touchStartRef = useRef<number | null>(null);
   const touchEndRef = useRef<number | null>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const lastScrollY = useRef(0);
+  const ticking = useRef(false);
+  const transitionInProgress = useRef(false);
+  const scrollThreshold = 50; // Increased threshold to prevent oscillation
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobileView(window.innerWidth < 640);
     };
     
+    // Improved scroll handler with debouncing and state tracking
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      const currentScrollY = window.scrollY;
+      lastScrollY.current = currentScrollY;
+      
+      if (!ticking.current) {
+        window.requestAnimationFrame(() => {
+          // Only update state if we've crossed the threshold by a significant amount
+          // to prevent rapid toggling near the threshold
+          if (transitionInProgress.current) {
+            // If a transition is in progress, don't update state again
+            ticking.current = false;
+            return;
+          }
+          
+          const shouldBeScrolled = lastScrollY.current > scrollThreshold;
+          
+          if (shouldBeScrolled !== isScrolled) {
+            // Set a flag to prevent multiple state updates during transition
+            transitionInProgress.current = true;
+            
+            setIsScrolled(shouldBeScrolled);
+            
+            // Clear the flag after the transition duration
+            setTimeout(() => {
+              transitionInProgress.current = false;
+            }, 200); // Slightly longer than the transition duration
+          }
+          
+          ticking.current = false;
+        });
+        
+        ticking.current = true;
+      }
     };
     
     // Set initial values
     handleResize();
-    handleScroll();
+    window.requestAnimationFrame(() => {
+      setIsScrolled(window.scrollY > scrollThreshold);
+    });
     
     window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [isScrolled]);
 
   // Use a dedicated effect for touch event handling
   useEffect(() => {
@@ -117,14 +171,21 @@ export default function Header() {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // Calculate cart subtotal
+  const cartSubtotal = cartItems.reduce((sum, item) => {
+    return sum + ((item.product?.best_vendor?.price || 0) * item.quantity);
+  }, 0);
+
   return (
     <header 
       id="header" 
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-sm shadow-md py-2' 
-          : 'bg-white/90 py-4'
-      }`}
+      className="sticky top-0 z-50 will-change-transform transform-gpu"
+      style={{
+        backgroundColor: isScrolled ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.9)',
+        boxShadow: isScrolled ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none',
+        padding: isScrolled ? '0.5rem 0' : '1rem 0',
+        transition: 'padding 0.15s ease-in-out, background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
+      }}
     >
       <div className="absolute top-0 left-0 w-full h-1 bg-[#4DA9FF]"></div>
       <nav className="container mx-auto px-4 lg:px-6">
@@ -143,8 +204,8 @@ export default function Header() {
               Shop Robots
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full transition-all duration-300"></span>
             </Link>
-            <Link href="/new-arrivals" className="text-gray-700 hover:text-[#4DA9FF] font-medium relative group transition duration-200">
-              New Arrivals
+            <Link href="/about" className="text-gray-700 hover:text-[#4DA9FF] font-medium relative group transition duration-200">
+              About Us
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full transition-all duration-300"></span>
             </Link>
             <Link href="/support" className="text-gray-700 hover:text-[#4DA9FF] font-medium relative group transition duration-200">
@@ -154,23 +215,218 @@ export default function Header() {
 
             {/* Account & Cart */}
             <div className="flex space-x-6 ml-4">
-              <Link href="/account" className="text-gray-700 hover:text-[#4DA9FF] transition-colors duration-200 group">
-                <div className="relative">
-                  <FaUserCircle className="text-2xl transform group-hover:scale-110 transition-transform duration-200" />
-                  <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full group-hover:left-0 transition-all duration-300"></span>
-                </div>
-              </Link>
-              <Link href="/cart" className="text-gray-700 hover:text-[#4DA9FF] transition-colors duration-200 relative group">
-                <div className="relative">
-                  <FaShoppingCart className="text-2xl transform group-hover:scale-110 transition-transform duration-200" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-500 to-[#4DA9FF] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shadow-md transition-transform duration-200 group-hover:scale-110">
-                      {cartCount}
-                    </span>
-                  )}
-                  <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full group-hover:left-0 transition-all duration-300"></span>
-                </div>
-              </Link>
+              {/* Account Dropdown Menu */}
+              <Menu as="div" className="relative">
+                <Menu.Button className="text-gray-700 hover:text-[#4DA9FF] transition-colors duration-200 group flex items-center">
+                  <div className="relative flex items-center">
+                    <FaUserCircle className="text-2xl transform group-hover:scale-110 transition-transform duration-200" />
+                    <FaChevronDown className="ml-1 h-3 w-3 text-gray-500 group-hover:text-[#4DA9FF]" />
+                    <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full group-hover:left-0 transition-all duration-300"></span>
+                  </div>
+                </Menu.Button>
+                <Transition
+                  as={Fragment}
+                  enter="transition ease-out duration-100"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-75"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
+                >
+                  <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none divide-y divide-gray-100 z-50 py-1">
+                    {/* Menu changes based on login state */}
+                    {isLoggedIn ? (
+                      <>
+                        <div className="px-4 py-3">
+                          <p className="text-sm font-medium text-gray-900">
+                            Welcome back!
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            user@example.com
+                          </p>
+                        </div>
+                        <div className="py-1">
+                          <Menu.Item>
+                            {({ active }) => (
+                              <Link
+                                href="/account"
+                                className={`${
+                                  active ? "bg-gray-50 text-[#4DA9FF]" : "text-gray-700"
+                                } flex items-center px-4 py-2 text-sm`}
+                              >
+                                <FaUser className="mr-3 h-4 w-4" />
+                                My Profile
+                              </Link>
+                            )}
+                          </Menu.Item>
+                          <Menu.Item>
+                            {({ active }) => (
+                              <Link
+                                href="/wishlist"
+                                className={`${
+                                  active ? "bg-gray-50 text-[#4DA9FF]" : "text-gray-700"
+                                } flex items-center px-4 py-2 text-sm`}
+                              >
+                                <FaHeart className="mr-3 h-4 w-4" />
+                                Wishlist
+                              </Link>
+                            )}
+                          </Menu.Item>
+                        </div>
+                        <div className="py-1">
+                          <Menu.Item>
+                            {({ active }) => (
+                              <button
+                                onClick={() => setIsLoggedIn(false)}
+                                className={`${
+                                  active ? "bg-gray-50 text-[#4DA9FF]" : "text-gray-700"
+                                } flex w-full items-center px-4 py-2 text-sm`}
+                              >
+                                <FaSignOutAlt className="mr-3 h-4 w-4" />
+                                Sign out
+                              </button>
+                            )}
+                          </Menu.Item>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="py-1">
+                        <Menu.Item>
+                          {({ active }) => (
+                            <Link
+                              href="/login"
+                              className={`${
+                                active ? "bg-gray-50 text-[#4DA9FF]" : "text-gray-700"
+                              } flex items-center px-4 py-2 text-sm`}
+                              onClick={() => setIsLoggedIn(true)} // For demo purposes
+                            >
+                              <FaSignInAlt className="mr-3 h-4 w-4" />
+                              Login
+                            </Link>
+                          )}
+                        </Menu.Item>
+                        <Menu.Item>
+                          {({ active }) => (
+                            <Link
+                              href="/signup"
+                              className={`${
+                                active ? "bg-gray-50 text-[#4DA9FF]" : "text-gray-700"
+                              } flex items-center px-4 py-2 text-sm`}
+                            >
+                              <FaUserPlus className="mr-3 h-4 w-4" />
+                              Sign up
+                            </Link>
+                          )}
+                        </Menu.Item>
+                      </div>
+                    )}
+                  </Menu.Items>
+                </Transition>
+              </Menu>
+              
+              {/* Cart Dropdown */}
+              <Menu as="div" className="relative">
+                <Menu.Button className="text-gray-700 hover:text-[#4DA9FF] transition-colors duration-200 group">
+                  <div className="relative">
+                    <FaShoppingCart className="text-2xl transform group-hover:scale-110 transition-transform duration-200" />
+                    {cartCount > 0 && (
+                      <span className="absolute top-1 right-0 translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-blue-500 to-[#4DA9FF] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shadow-md transition-all duration-200 group-hover:scale-110">
+                        {cartCount}
+                      </span>
+                    )}
+                    <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full group-hover:left-0 transition-all duration-300"></span>
+                  </div>
+                </Menu.Button>
+                <Transition
+                  as={Fragment}
+                  enter="transition ease-out duration-100"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-75"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
+                >
+                  <Menu.Items className="absolute right-0 mt-2 w-80 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none divide-y divide-gray-100 z-50 py-1">
+                    <div className="px-4 py-3">
+                      <h3 className="text-sm font-medium text-gray-900">Your Cart</h3>
+                    </div>
+                    
+                    {cartItems.length > 0 ? (
+                      <>
+                        <div className="py-2 max-h-60 overflow-y-auto">
+                          {cartItems.map((item) => (
+                            <Menu.Item key={item.productId}>
+                              {({ active }) => (
+                                <div className={`${active ? "bg-gray-50" : ""} px-4 py-2 flex items-center`}>
+                                  {/* Product Image */}
+                                  <div className="w-10 h-10 relative bg-gray-100 rounded-md overflow-hidden mr-3 flex-shrink-0">
+                                    {item.product?.images && item.product.images[0] && (
+                                      <Image
+                                        src={item.product.images[0].url}
+                                        alt={item.product?.name || "Product"}
+                                        fill
+                                        className="object-cover"
+                                      />
+                                    )}
+                                  </div>
+                                  
+                                  {/* Product Info */}
+                                  <div className="flex-1 min-w-0">
+                                    <Link href={`/product/${item.productId}`} className="text-sm font-medium text-gray-800 hover:text-[#4DA9FF] truncate block">
+                                      {item.product?.name || "Product"}
+                                    </Link>
+                                    <div className="flex justify-between items-center mt-1">
+                                      <span className="text-xs text-gray-500">
+                                        Qty: {item.quantity}
+                                      </span>
+                                      <span className="text-xs font-medium text-[#4DA9FF]">
+                                        ${((item.product?.best_vendor?.price || 0) * item.quantity).toFixed(2)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Remove Button */}
+                                  <button
+                                    onClick={() => removeFromCart(item.productId)}
+                                    className="ml-2 text-gray-400 hover:text-red-500 p-1"
+                                  >
+                                    <FaTrash size={12} />
+                                  </button>
+                                </div>
+                              )}
+                            </Menu.Item>
+                          ))}
+                        </div>
+                        
+                        <div className="py-2 px-4">
+                          <div className="flex justify-between text-sm font-medium mb-4">
+                            <span className="text-gray-600">Subtotal:</span>
+                            <span className="text-[#4DA9FF]">${cartSubtotal.toFixed(2)}</span>
+                          </div>
+                          <div className="flex flex-col space-y-2">
+                            <Link href="/cart" className={`text-center text-sm py-2 ${commonButtonStyles.secondary}`}>
+                              View Cart
+                            </Link>
+                            <Link href="/checkout" className={`text-center text-sm py-2 ${commonButtonStyles.primary}`}>
+                              Checkout
+                            </Link>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="py-6 px-4 text-center">
+                        <div className="w-12 h-12 rounded-full bg-gray-100 mx-auto mb-4 flex items-center justify-center">
+                          <FaShoppingCart className="text-gray-400" />
+                        </div>
+                        <p className="text-sm text-gray-600 mb-4">Your cart is empty</p>
+                        <Link href="/shop" className={`text-center text-sm py-2 ${commonButtonStyles.secondary}`}>
+                          Continue Shopping
+                        </Link>
+                      </div>
+                    )}
+                  </Menu.Items>
+                </Transition>
+              </Menu>
             </div>
           </div>
 
@@ -209,23 +465,58 @@ export default function Header() {
             <Link href="/shop" className="block text-gray-700 hover:text-[#4DA9FF] py-2 font-medium border-b border-gray-100">
               Shop Robots
             </Link>
-            <Link href="/new-arrivals" className="block text-gray-700 hover:text-[#4DA9FF] py-2 font-medium border-b border-gray-100">
-              New Arrivals
+            <Link href="/about" className="block text-gray-700 hover:text-[#4DA9FF] py-2 font-medium border-b border-gray-100">
+              About Us
             </Link>
             <Link href="/support" className="block text-gray-700 hover:text-[#4DA9FF] py-2 font-medium border-b border-gray-100">
               Support
             </Link>
             
-            <div className="flex space-x-4 pt-2">
-              <Link href="/account" className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors px-3 py-2 rounded-full hover:bg-blue-50">
-                <FaUserCircle className="mr-2" />
-                My Account
-              </Link>
+            {/* Mobile Login/Account section */}
+            <div className="py-2 border-b border-gray-100">
+              <div className="mb-2 font-medium text-gray-700">Account</div>
+              {isLoggedIn ? (
+                <div className="space-y-2">
+                  <Link href="/account" className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1">
+                    <FaUser className="mr-2 h-4 w-4" />
+                    My Profile
+                  </Link>
+                  <Link href="/wishlist" className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1">
+                    <FaHeart className="mr-2 h-4 w-4" />
+                    Wishlist
+                  </Link>
+                  <button 
+                    onClick={() => setIsLoggedIn(false)}
+                    className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1"
+                  >
+                    <FaSignOutAlt className="mr-2 h-4 w-4" />
+                    Sign out
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Link 
+                    href="/login" 
+                    className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1"
+                    onClick={() => setIsLoggedIn(true)} // For demo purposes
+                  >
+                    <FaSignInAlt className="mr-2 h-4 w-4" />
+                    Login
+                  </Link>
+                  <Link href="/signup" className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1">
+                    <FaUserPlus className="mr-2 h-4 w-4" />
+                    Sign up
+                  </Link>
+                </div>
+              )}
+            </div>
+            
+            <div className="pt-2">
               <Link href="/cart" className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors px-3 py-2 rounded-full hover:bg-blue-50">
                 <div className="relative mr-2">
                   <FaShoppingCart />
                   {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-500 to-[#4DA9FF] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                    <span className="absolute top-1 right-0 translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-blue-500 to-[#4DA9FF] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                       {cartCount}
                     </span>
                   )}
