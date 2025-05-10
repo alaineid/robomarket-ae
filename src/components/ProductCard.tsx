@@ -9,6 +9,7 @@ import { Product } from '@/utils/types/product.types';
 import AddToCartButton from './ui/AddToCartButton';
 import WishlistButton from './ui/WishlistButton';
 import QuickView from './ui/QuickView';
+import CategoryTag from './ui/CategoryTag';
 import { commonCardStyles } from '@/styles/commonStyles';
 
 export default function ProductCard({ 
@@ -38,25 +39,6 @@ export default function ProductCard({
     }
     
     return stars;
-  };
-
-  // Function to get category background color
-  const getCategoryColor = (category: string): string => {
-    const categoryLower = category?.toLowerCase() || '';
-    
-    if (categoryLower.includes('companion')) return 'bg-blue-100 text-blue-700';
-    if (categoryLower.includes('home')) return 'bg-green-100 text-green-700';
-    if (categoryLower.includes('industrial')) return 'bg-orange-100 text-orange-700';
-    if (categoryLower.includes('utility')) return 'bg-amber-100 text-amber-700';
-    if (categoryLower.includes('security')) return 'bg-violet-100 text-violet-700';
-    if (categoryLower.includes('business')) return 'bg-purple-100 text-purple-700';
-    if (categoryLower.includes('medical') || categoryLower.includes('healthcare')) return 'bg-red-100 text-red-700';
-    if (categoryLower.includes('developer')) return 'bg-teal-100 text-teal-700';
-    if (categoryLower.includes('education')) return 'bg-yellow-100 text-yellow-700';
-    if (categoryLower.includes('entertainment')) return 'bg-pink-100 text-pink-700';
-    
-    // Default color for other categories
-    return 'bg-gray-100 text-gray-700';
   };
 
   // Handle quick view button click
@@ -155,23 +137,17 @@ export default function ProductCard({
             <div className="flex flex-wrap gap-1">
               {Array.isArray(product.categories) && product.categories.length > 0 ? (
                 product.categories.map((cat, idx) => (
-                  <motion.span 
-                    key={idx} 
-                    initial={{ scale: 1 }}
-                    whileHover={{ scale: 1.05 }}
-                    className={`${commonCardStyles.categoryBadge} inline-flex items-center text-xs px-2 py-1 ${getCategoryColor(cat.name)} shadow-sm transition-all duration-300 hover:shadow`}
-                  >
-                    {cat.name || 'Category'}
-                  </motion.span>
+                  <CategoryTag 
+                    key={idx}
+                    category={cat.name}
+                    size="sm"
+                  />
                 ))
               ) : (
-                <motion.span 
-                  initial={{ scale: 1 }}
-                  whileHover={{ scale: 1.05 }}
-                  className={`${commonCardStyles.categoryBadge} inline-flex items-center text-xs px-2 py-1 bg-gray-100 text-gray-700 shadow-sm transition-all duration-300 hover:shadow`}
-                >
-                  Uncategorized
-                </motion.span>
+                <CategoryTag
+                  category="Uncategorized"
+                  size="sm"
+                />
               )}
             </div>
           </div>

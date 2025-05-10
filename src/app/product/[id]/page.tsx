@@ -7,14 +7,15 @@ import Image from 'next/image';
 import { 
   FaStar, FaStarHalfAlt, 
   FaCheck, FaArrowRight, FaShoppingCart, FaHeart, FaRegHeart,
-  FaRobot, FaHome, FaBriefcase, FaUser, FaHospital, FaCode, FaIndustry
+  FaShippingFast, FaAward, FaCreditCard, FaExchangeAlt
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
-import { commonButtonStyles, commonCardStyles } from '@/styles/commonStyles';
+import CategoryTag from '@/components/ui/CategoryTag';
+import { commonButtonStyles } from '@/styles/commonStyles';
 import { useCart } from '@/utils/cartContext';
 import { useProduct, useProducts } from '@/utils/queryHooks';
 import { useQueryClient } from '@tanstack/react-query';
@@ -38,40 +39,6 @@ export default function ProductDetail() {
   const [activeTab, setActiveTab] = useState('description');
   const [addedToCart, setAddedToCart] = useState(false);
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
-
-  // Function to return appropriate icon for each category
-  const getCategoryIcon = (category: string) => {
-    const categoryLower = category?.toLowerCase() || '';
-    
-    if (categoryLower.includes('companion')) return <FaUser size={14} />;
-    if (categoryLower.includes('home')) return <FaHome size={14} />;
-    if (categoryLower.includes('industrial')) return <FaIndustry size={14} />;
-    if (categoryLower.includes('business')) return <FaBriefcase size={14} />;
-    if (categoryLower.includes('medical')) return <FaHospital size={14} />;
-    if (categoryLower.includes('developer')) return <FaCode size={14} />;
-    
-    // Default robot icon for other categories
-    return <FaRobot size={14} />;
-  };
-
-  // Function to get category background color
-  const getCategoryColor = (category: string): string => {
-    const categoryLower = category?.toLowerCase() || '';
-    
-    if (categoryLower.includes('companion')) return 'bg-blue-100 text-blue-700';
-    if (categoryLower.includes('home')) return 'bg-green-100 text-green-700';
-    if (categoryLower.includes('industrial')) return 'bg-orange-100 text-orange-700';
-    if (categoryLower.includes('utility')) return 'bg-amber-100 text-amber-700';
-    if (categoryLower.includes('security')) return 'bg-violet-100 text-violet-700';
-    if (categoryLower.includes('business')) return 'bg-purple-100 text-purple-700';
-    if (categoryLower.includes('medical') || categoryLower.includes('healthcare')) return 'bg-red-100 text-red-700';
-    if (categoryLower.includes('developer')) return 'bg-teal-100 text-teal-700';
-    if (categoryLower.includes('education')) return 'bg-yellow-100 text-yellow-700';
-    if (categoryLower.includes('entertainment')) return 'bg-pink-100 text-pink-700';
-    
-    // Default color for other categories
-    return 'bg-gray-100 text-gray-700';
-  };
 
   // Fetch product data using React Query
   const { 
@@ -249,211 +216,231 @@ export default function ProductDetail() {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-grow bg-gray-50 py-12">
-        <div className="container mx-auto px-4">
+      <main className="flex-grow bg-gray-50 py-12 md:py-16">
+        <div className="container mx-auto px-4 md:px-6">
           {/* Breadcrumb Navigation */}
-          <div className="mb-6">
+          <div className="mb-8">
             <Breadcrumbs items={breadcrumbs} />
           </div>
           
           {/* Product Details Section */}
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-16">
+            <div className="grid grid-cols-1 lg:grid-cols-2">
               {/* Left Side - Product Images */}
-              <div className="p-6 lg:p-8">
+              <div className="p-6 lg:p-10 order-2 lg:order-1 bg-gradient-to-br from-gray-50 to-white">
                 {/* Main Image */}
-                <div className="relative h-[400px] mb-5 rounded-lg overflow-hidden bg-white border border-gray-200">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Image
-                      src={productData.images?.[activeImage]?.url || ''}
-                      alt={`${productData.name} - View ${activeImage + 1}`}
-                      width={600}
-                      height={600}
-                      className="object-contain w-full h-full"
-                      priority
-                    />
+                <div className="relative h-[400px] md:h-[500px] mb-6 rounded-xl overflow-hidden bg-white">
+                  <div className="absolute inset-0 flex items-center justify-center p-6">
+                    <motion.div
+                      key={activeImage}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="w-full h-full relative"
+                    >
+                      <Image
+                        src={productData.images?.[activeImage]?.url || ''}
+                        alt={`${productData.name} - View ${activeImage + 1}`}
+                        fill
+                        className="object-contain"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        priority
+                      />
+                    </motion.div>
                   </div>
+                  
+                  {/* Category badge floating on image */}
+                  <div className="absolute top-4 left-4 z-10">
+                    {productData.categories && productData.categories.length > 0 && (
+                      <CategoryTag 
+                        category={productData.categories[0].name}
+                        size="md"
+                        className="shadow-md"
+                      />
+                    )}
+                  </div>
+                  
+                  {/* Favorite button floating */}
+                  <motion.button 
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setIsFavorite(!isFavorite)}
+                    className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center z-10"
+                  >
+                    {isFavorite ? 
+                      <FaHeart className="text-red-500" size={18} /> : 
+                      <FaRegHeart className="text-gray-500 hover:text-red-500 transition-colors" size={18} />
+                    }
+                  </motion.button>
                 </div>
                 
-                {/* Image Carousel */}
-                <div className="grid grid-cols-4 gap-3">
-                  {/* Explicitly render each image with a key */}
-                  {productData.images && productData.images.length > 0 && (
-                    <>
-                      <button 
-                        key="img-0"
-                        onClick={() => handleThumbnailClick(0)}
-                        className={`relative h-20 rounded-md overflow-hidden bg-white border ${activeImage === 0 ? 'border-[#4DA9FF]' : 'border-gray-200'} hover:border-[#4DA9FF] transition-all cursor-pointer`}
+                {/* Image Thumbnails - Cleaner Grid Layout */}
+                <div className="grid grid-cols-5 gap-3">
+                  {productData.images && productData.images.map((image, index) => (
+                    index < 5 && (
+                      <motion.button 
+                        key={`thumb-${index}`}
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleThumbnailClick(index)}
+                        className={`relative aspect-square rounded-lg overflow-hidden bg-white shadow-sm ${
+                          activeImage === index 
+                            ? 'ring-2 ring-[#4DA9FF] ring-offset-2' 
+                            : 'border border-gray-200 hover:border-[#4DA9FF]'
+                        } transition-all duration-200`}
                       >
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <Image
-                            src={productData.images[0]?.url || ''}
-                            alt={`${productData.name} thumbnail 1`}
-                            width={100}
-                            height={100}
-                            className="object-contain w-full h-full"
-                          />
-                        </div>
-                      </button>
-                      
-                      {productData.images[1] && (
-                        <button 
-                          key="img-1"
-                          onClick={() => handleThumbnailClick(1)}
-                          className={`relative h-20 rounded-md overflow-hidden bg-white border ${activeImage === 1 ? 'border-[#4DA9FF]' : 'border-gray-200'} hover:border-[#4DA9FF] transition-all cursor-pointer`}
-                        >
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Image
-                              src={productData.images[1]?.url || ''}
-                              alt={`${productData.name} thumbnail 2`}
-                              width={100}
-                              height={100}
-                              className="object-contain w-full h-full"
-                            />
-                          </div>
-                        </button>
-                      )}
-                      
-                      {productData.images[2] && (
-                        <button 
-                          key="img-2"
-                          onClick={() => handleThumbnailClick(2)}
-                          className={`relative h-20 rounded-md overflow-hidden bg-white border ${activeImage === 2 ? 'border-[#4DA9FF]' : 'border-gray-200'} hover:border-[#4DA9FF] transition-all cursor-pointer`}
-                        >
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Image
-                              src={productData.images[2]?.url || ''}
-                              alt={`${productData.name} thumbnail 3`}
-                              width={100}
-                              height={100}
-                              className="object-contain w-full h-full"
-                            />
-                          </div>
-                        </button>
-                      )}
-                      
-                      {productData.images[3] && (
-                        <button 
-                          key="img-3"
-                          onClick={() => handleThumbnailClick(3)}
-                          className={`relative h-20 rounded-md overflow-hidden bg-white border ${activeImage === 3 ? 'border-[#4DA9FF]' : 'border-gray-200'} hover:border-[#4DA9FF] transition-all cursor-pointer`}
-                        >
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Image
-                              src={productData.images[3]?.url || ''}
-                              alt={`${productData.name} thumbnail 4`}
-                              width={100}
-                              height={100}
-                              className="object-contain w-full h-full"
-                            />
-                          </div>
-                        </button>
-                      )}
-                    </>
-                  )}
+                        <Image
+                          src={image.url || ''}
+                          alt={`${productData.name} thumbnail ${index + 1}`}
+                          fill
+                          className="object-contain p-2"
+                          sizes="(max-width: 768px) 20vw, 10vw"
+                        />
+                      </motion.button>
+                    )
+                  ))}
                 </div>
               </div>
               
               {/* Right Side - Product Information */}
-              <div className="p-6 lg:p-8 bg-gray-50">
-                {/* Product Category Badge */}
-                <div className="mb-2">
-                  <motion.span 
-                    initial={{ scale: 1 }}
-                    whileHover={{ scale: 1.05 }}
-                    className={`${commonCardStyles.categoryBadge} inline-block text-xs px-3 py-1.5 rounded-full ${getCategoryColor(productData.categories[0].name)} shadow-sm transition-all duration-300 hover:shadow`}
-                  >
-                    {productData.categories[0].name}
-                  </motion.span>
-                </div>
-                
-                {/* Product Name */}
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-                  {productData.name}
-                </h1>
-                
-                {/* Brand */}
-                <p className="text-gray-600 mb-4">by <span className="text-[#4DA9FF] font-medium">{productData.brand}</span></p>
-                
-                {/* Rating */}
-                <div className="flex items-center mb-5">
-                  <div className="flex mr-2">
-                    {renderRatingStars(productData.ratings.average)}
-                  </div>
-                  <span className="text-gray-600 text-sm">{productData.reviews.length} reviews</span>
-                  <span className="mx-2 text-gray-300">|</span>
-                  <span className="text-green-600 font-medium flex items-center">
-                    <FaCheck size={12} className="mr-1" /> In Stock ({productData.best_vendor.stock})
-                  </span>
-                </div>
-                
-                {/* Price */}
-                <div className="mb-8">
-                  <div className="flex items-baseline">
-                    <span className="text-3xl font-bold text-[#4DA9FF]">${productData.best_vendor.price.toLocaleString()}</span>
-                    <span className="ml-2 text-sm bg-green-100 text-green-800 px-2 py-0.5 rounded">Free Shipping</span>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1">Financing options available at checkout</p>
-                </div>
-                
-                {/* Short Description */}
-                <p className="text-gray-700 mb-6">
-                  {productData.description.substring(0, 150)}...
-                </p>
-                
-                {/* Key Attributes List */}
+              <div className="p-6 lg:p-10 order-1 lg:order-2 border-b lg:border-b-0 lg:border-l border-gray-100">
+                {/* Product Title Section */}
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">Key Attributes</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4">
-                    {productData.attributes.slice(0, 4).map((attribute, index) => (
+                  <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+                    {productData.name}
+                  </h1>
+                  
+                  <div className="flex flex-wrap items-center gap-3 text-sm">
+                    <span className="text-[#4DA9FF] font-medium">by {productData.brand}</span>
+                    <span className="text-gray-300">|</span>
+                    <div className="flex items-center">
+                      <div className="flex mr-1.5">
+                        {renderRatingStars(productData.ratings.average)}
+                      </div>
+                      <Link href="#reviews" onClick={() => setActiveTab('reviews')} className="text-gray-600 hover:text-[#4DA9FF] transition-colors">
+                        {productData.reviews.length} reviews
+                      </Link>
+                    </div>
+                    <span className="text-gray-300">|</span>
+                    <span className="text-green-600 font-medium flex items-center">
+                      <FaCheck size={12} className="mr-1.5" /> In Stock
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Price Section */}
+                <div className="mb-8">
+                  <div className="flex flex-wrap items-end gap-3 mb-2">
+                    <span className="text-4xl font-bold bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] bg-clip-text text-transparent">
+                      ${productData.best_vendor.price.toLocaleString()}
+                    </span>
+                    {productData.best_vendor.compare_at_price && (
+                      <span className="text-xl text-gray-400 line-through">
+                        ${productData.best_vendor.compare_at_price.toLocaleString()}
+                      </span>
+                    )}
+                    {productData.best_vendor.compare_at_price && (
+                      <span className="bg-red-100 text-red-600 text-sm font-semibold px-2 py-1 rounded-md">
+                        Save ${(productData.best_vendor.compare_at_price - productData.best_vendor.price).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-3 text-sm font-medium">
+                    <div className="flex items-center text-gray-600">
+                      <FaShippingFast className="mr-1.5 text-[#4DA9FF]" />
+                      Free Shipping
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <FaCreditCard className="mr-1.5 text-[#4DA9FF]" />
+                      Financing Available
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <FaExchangeAlt className="mr-1.5 text-[#4DA9FF]" />
+                      30-Day Returns
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Description Preview */}
+                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 mb-8">
+                  <p className="text-gray-700 leading-relaxed">
+                    {productData.description.length > 250 
+                      ? `${productData.description.substring(0, 250)}...` 
+                      : productData.description}
+                  </p>
+                  {productData.description.length > 250 && (
+                    <button 
+                      onClick={() => setActiveTab('description')} 
+                      className="text-[#4DA9FF] font-medium text-sm mt-2 hover:underline flex items-center"
+                    >
+                      Read More <FaArrowRight className="ml-1 h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+                
+                {/* Key Features / Attributes */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                    <FaAward className="mr-2 text-[#4DA9FF]" />
+                    Key Features
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6">
+                    {productData.attributes.slice(0, 6).map((attribute, index) => (
                       <div key={index} className="flex items-start">
-                        <div className="flex-shrink-0 h-5 w-5 text-green-500 mr-2">
-                          <FaCheck className="h-5 w-5" />
+                        <div className="flex-shrink-0 p-1 rounded-full bg-blue-50 text-[#4DA9FF] mr-2">
+                          <FaCheck className="h-3 w-3" />
                         </div>
-                        <p className="text-gray-600"><span className="font-medium">{attribute.key}:</span> {attribute.value}</p>
+                        <p className="text-gray-700">
+                          <span className="font-medium text-gray-900">{attribute.key}:</span>{' '}
+                          {attribute.value}
+                        </p>
                       </div>
                     ))}
                   </div>
                 </div>
                 
                 {/* Add to Cart Section */}
-                <div className="mb-6">
-                  <div className="flex items-center space-x-4 mb-6">
-                    {/* Quantity Selector */}
-                    <div className="flex items-center border border-gray-300 rounded-lg">
-                      <button 
-                        onClick={decreaseQuantity}
-                        className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-[#4DA9FF] hover:bg-gray-100 rounded-l-lg"
-                      >
-                        -
-                      </button>
-                      <input
-                        type="number"
-                        min="1"
-                        max={productData.best_vendor.stock}
-                        value={quantity}
-                        onChange={handleQuantityChange}
-                        className="w-14 text-center border-x border-gray-300 h-10 focus:outline-none focus:ring-0 focus:border-gray-300 text-gray-700"
-                      />
-                      <button 
-                        onClick={increaseQuantity}
-                        className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-[#4DA9FF] hover:bg-gray-100 rounded-r-lg"
-                      >
-                        +
-                      </button>
+                <div className="mb-8 bg-gray-50 p-6 rounded-xl border border-gray-100">
+                  <div className="flex flex-wrap items-center gap-4 mb-4">
+                    <div className="flex">
+                      <p className="mr-4 font-medium text-gray-700">Quantity:</p>
+                      {/* Stylish quantity selector */}
+                      <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-white">
+                        <motion.button 
+                          whileTap={{ scale: 0.9 }}
+                          onClick={decreaseQuantity}
+                          className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-100"
+                          disabled={quantity <= 1}
+                        >
+                          <span className="text-xl font-medium">−</span>
+                        </motion.button>
+                        <input
+                          type="number"
+                          min="1"
+                          max={productData.best_vendor.stock}
+                          value={quantity}
+                          onChange={handleQuantityChange}
+                          className="w-12 text-center border-x border-gray-300 h-10 focus:outline-none focus:ring-0 bg-white text-gray-700"
+                        />
+                        <motion.button 
+                          whileTap={{ scale: 0.9 }}
+                          onClick={increaseQuantity}
+                          className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-100"
+                          disabled={quantity >= productData.best_vendor.stock}
+                        >
+                          <span className="text-xl font-medium">+</span>
+                        </motion.button>
+                      </div>
                     </div>
                     
-                    {/* Favorite Button */}
-                    <button 
-                      onClick={() => setIsFavorite(!isFavorite)}
-                      className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:text-red-500 hover:border-red-500"
-                    >
-                      {isFavorite ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
-                    </button>
+                    <div className="text-gray-500 text-sm">
+                      <span className="font-medium text-gray-900">{productData.best_vendor.stock}</span> units available
+                    </div>
                   </div>
                   
-                  {/* Action Buttons */}
-                  <div className="grid grid-cols-1 gap-4 relative">
+                  {/* Action Button */}
+                  <div className="relative">
                     <AnimatePresence>
                       {addedToCart ? (
                         <motion.div
@@ -462,125 +449,168 @@ export default function ProductDetail() {
                           exit={{ opacity: 0 }}
                           className="absolute inset-0 z-10"
                         >
-                          <div className="bg-green-500 text-white rounded-lg py-3 px-4 shadow-lg flex items-center justify-center w-full h-full">
-                            <FaCheck className="mr-2" size={18} />
-                            <span className="font-medium">Added to Cart!</span>
+                          <div className="bg-green-500 text-white rounded-xl py-4 px-4 shadow-lg flex items-center justify-center w-full h-full">
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                              className="bg-white rounded-full p-1 mr-3"
+                            >
+                              <FaCheck className="text-green-500" size={16} />
+                            </motion.div>
+                            <span className="font-medium text-lg">Added to Cart!</span>
                           </div>
                         </motion.div>
                       ) : null}
                     </AnimatePresence>
                     
                     <motion.button 
-                      whileHover={{ scale: 1.02 }}
+                      whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.5)" }}
                       whileTap={{ scale: 0.98 }}
-                      className={`flex items-center justify-center ${commonButtonStyles.primary}`}
+                      className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] text-white shadow-md hover:shadow-lg transition-all duration-300`}
                       onClick={handleAddToCart}
                     >
-                      <FaShoppingCart className="mr-2" />
+                      <FaShoppingCart className="mr-2" size={18} />
                       Add to Cart
                     </motion.button>
                   </div>
                 </div>
                 
                 {/* Additional Info */}
-                <div className="mt-8 border-t border-gray-200 pt-6">
-                  <div className="flex justify-between items-center text-sm text-gray-600 mb-3">
-                    <div>Model: <span className="text-gray-800 font-medium">{productData.name.replace(/\s+/g, '-').toUpperCase()}</span></div>
-                    <div>SKU: <span className="text-gray-800 font-medium">{productData.brand.substring(0, 2).toUpperCase()}-{productData.id}00{Math.floor(Math.random() * 900) + 100}</span></div>
+                <div className="border-t border-gray-200 pt-6">
+                  <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div>Model: <span className="text-gray-900 font-medium">{productData.name.replace(/\s+/g, '-').toUpperCase()}</span></div>
+                    <div>SKU: <span className="text-gray-900 font-medium">{productData.brand.substring(0, 2).toUpperCase()}-{productData.id}00{Math.floor(Math.random() * 900) + 100}</span></div>
+                    <div>Warranty: <span className="text-gray-900 font-medium">2 Years</span></div>
+                    <div>Support: <span className="text-gray-900 font-medium">24/7 Assistance</span></div>
                   </div>
-                  <p className="text-sm text-gray-600">Free 30-day returns & 2-year warranty included</p>
                 </div>
               </div>
             </div>
             
             {/* Product Details Tabs */}
-            <div className="border-t border-gray-200">
-              <div className="flex overflow-x-auto scrollbar-hide">
+            <div className="border-t border-gray-200 bg-white">
+              <div className="flex overflow-x-auto no-scrollbar border-b border-gray-200 px-4">
                 <button 
                   onClick={() => setActiveTab('description')} 
-                  className={`px-6 py-4 font-medium text-sm whitespace-nowrap ${
+                  className={`px-8 py-5 font-medium relative ${
                     activeTab === 'description' 
-                      ? 'border-b-2 border-[#4DA9FF] text-[#4DA9FF]' 
+                      ? 'text-[#4DA9FF]' 
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
                   Full Description
+                  {activeTab === 'description' && (
+                    <motion.div 
+                      layoutId="activeTab"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#4DA9FF]"
+                    />
+                  )}
                 </button>
                 
                 <button 
                   onClick={() => setActiveTab('specifications')} 
-                  className={`px-6 py-4 font-medium text-sm whitespace-nowrap ${
+                  className={`px-8 py-5 font-medium relative ${
                     activeTab === 'specifications' 
-                      ? 'border-b-2 border-[#4DA9FF] text-[#4DA9FF]' 
+                      ? 'text-[#4DA9FF]' 
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
                   Specifications
+                  {activeTab === 'specifications' && (
+                    <motion.div 
+                      layoutId="activeTab"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#4DA9FF]"
+                    />
+                  )}
                 </button>
                 
                 <button 
+                  id="reviews"
                   onClick={() => setActiveTab('reviews')} 
-                  className={`px-6 py-4 font-medium text-sm whitespace-nowrap ${
+                  className={`px-8 py-5 font-medium relative ${
                     activeTab === 'reviews' 
-                      ? 'border-b-2 border-[#4DA9FF] text-[#4DA9FF]' 
+                      ? 'text-[#4DA9FF]' 
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
                   Customer Reviews ({productData.reviews.length})
+                  {activeTab === 'reviews' && (
+                    <motion.div 
+                      layoutId="activeTab"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#4DA9FF]"
+                    />
+                  )}
                 </button>
               </div>
               
-              <div className="p-6 lg:p-8">
+              <div className="p-6 lg:p-10">
                 {/* Description Content */}
                 {activeTab === 'description' && (
                   <div className="prose max-w-none">
-                    <p className="mb-4">{productData.description}</p>                    
+                    <p className="mb-4 leading-relaxed text-gray-700">{productData.description}</p>                    
                   </div>
                 )}
                 
                 {/* Specifications Content */}
                 {activeTab === 'specifications' && (
                   <div>
-                    <table className="w-full text-left">
-                      <tbody>
-                        {productData.attributes.map((attr, index) => (
-                          <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                            <td className="px-6 py-4 font-medium text-gray-700 capitalize">{attr.key}</td>
-                            <td className="px-6 py-4 text-gray-700">{attr.value}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {productData.attributes.map((attr, index) => (
+                        <div key={index} className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                          <h4 className="text-sm uppercase tracking-wider text-gray-500 mb-2">{attr.key}</h4>
+                          <p className="font-medium text-gray-900">{attr.value}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
                 
                 {/* Reviews Content */}
                 {activeTab === 'reviews' && (
                   <div>
-                    <div className="mb-8">
-                      <h3 className="text-xl font-semibold mb-4">Customer Feedback</h3>
-                      <div className="flex items-center mb-2">
-                        <div className="flex mr-4">
-                          {renderRatingStars(productData.ratings.average)}
+                    <div className="bg-blue-50 rounded-xl p-6 mb-8 border border-blue-100">
+                      <div className="flex flex-wrap justify-between gap-6">
+                        <div>
+                          <h3 className="text-xl font-bold mb-2 text-gray-900">Customer Feedback</h3>
+                          <div className="flex items-center gap-3">
+                            <div className="flex">
+                              {renderRatingStars(productData.ratings.average)}
+                            </div>
+                            <span className="text-2xl font-bold text-gray-900">{productData.ratings.average.toFixed(1)}</span>
+                            <span className="text-gray-500">out of 5</span>
+                          </div>
+                          <p className="text-gray-700 mt-1">{productData.ratings.count} global ratings</p>
                         </div>
-                        <span className="text-2xl font-semibold text-gray-800">{productData.ratings.average.toFixed(1)}</span>
-                        <span className="text-gray-500 ml-2">out of 5</span>
+                        
+                        <div>
+                          <button className="bg-white px-6 py-3 rounded-lg border border-gray-200 hover:border-[#4DA9FF] text-gray-800 font-medium transition-colors">
+                            Write a Review
+                          </button>
+                        </div>
                       </div>
-                      <p className="text-gray-600">{productData.ratings.count} global ratings</p>
                     </div>
                     
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                       {productData.reviews.map((review, index) => (
-                        <div key={index} className="border-b border-gray-100 pb-6 last:border-b-0">
-                          <div className="flex justify-between mb-2">
-                            <p className="font-medium">{review.author}</p>
-                            <p className="text-gray-500 text-sm">{review.date}</p>
+                        <motion.div 
+                          key={index} 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="border-b border-gray-100 pb-8 last:border-b-0"
+                        >
+                          <div className="flex flex-wrap justify-between items-start mb-3">
+                            <div>
+                              <p className="font-bold text-lg">{review.author}</p>
+                              <div className="flex mt-1">
+                                {renderRatingStars(review.rating)}
+                              </div>
+                            </div>
+                            <p className="text-gray-500 text-sm bg-gray-100 px-3 py-1 rounded-full">{review.date}</p>
                           </div>
-                          <div className="flex mb-3">
-                            {renderRatingStars(review.rating)}
-                          </div>
-                          <p className="text-gray-700">{review.comment}</p>
-                        </div>
+                          <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+                        </motion.div>
                       ))}
                     </div>
                   </div>
@@ -590,8 +620,8 @@ export default function ProductDetail() {
           </div>
           
           {/* Related Products Section */}
-          <section className="mb-12">
-            <div className="flex justify-between items-center mb-6">
+          <section className="mb-16">
+            <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold text-gray-800">Related Products</h2>
               <Link 
                 href="/shop" 
@@ -606,61 +636,66 @@ export default function ProductDetail() {
                 <div className="w-10 h-10 border-4 border-t-4 border-[#4DA9FF] border-t-transparent rounded-full animate-spin"></div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {relatedProducts.map((product) => (
                   <motion.div 
                     key={product.id} 
-                    whileHover={{ y: -3 }}
-                    className={commonCardStyles.container}
+                    whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+                    className={`bg-white border border-gray-100 rounded-2xl overflow-hidden h-full flex flex-col transition-shadow duration-300`}
                   >
-                    <div className={commonCardStyles.imageContainer}>
-                      {/* Display actual robot image */}
-                      <div className={`${commonCardStyles.imagePlaceholder} bg-white`}>
+                    <div className="relative h-48 overflow-hidden bg-gray-100 group">
+                      <div className="absolute inset-0 flex items-center justify-center bg-white">
                         <Image
                           src={product.images?.[0]?.url || ''}
                           alt={product.name}
                           width={300}
                           height={300}
-                          className="object-contain w-full h-full"
+                          className="object-contain w-full h-full p-4"
                         />
                       </div>
-                      <div className={commonCardStyles.imageOverlay}></div>
-                      <button 
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-2 transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300"></div>
+                      
+                      <motion.button 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={(e) => handleQuickAddToCart(e, product.id)}
                         className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer transform translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
                       >
                         <FaShoppingCart size={16} />
-                      </button>
+                      </motion.button>
                     </div>
                     
-                    <div className={`${commonCardStyles.content} flex flex-col h-[200px]`}>
-                      <div className="flex justify-between items-start mb-auto">
-                        <div className="flex-1 min-w-0">
-                          <span className={`${commonCardStyles.categoryBadge} inline-block text-xs px-2 py-1 ${getCategoryColor(product.categories[0]?.name || 'Uncategorized')} rounded-full`}>
-                            {product.categories && product.categories.length > 0 
-                              ? product.categories[0].name 
-                              : 'Uncategorized'}
-                          </span>
-                          <Link href={`/product/${product.id}`}>
-                            <h3 className="font-bold text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors truncate">
-                              {product.name}
-                            </h3>
-                          </Link>
+                    <div className="p-5 flex flex-col flex-grow">
+                      <div className="mb-auto">
+                        <div className="flex justify-between items-start mb-2">
+                          {product.categories && product.categories.length > 0 && (
+                            <CategoryTag 
+                              category={product.categories[0].name}
+                              size="sm"
+                            />
+                          )}
                         </div>
-                        <span className="font-bold text-lg text-[#4DA9FF] ml-2 whitespace-nowrap">${product.best_vendor.price.toLocaleString()}</span>
+                        
+                        <Link href={`/product/${product.id}`}>
+                          <h3 className="font-bold text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors line-clamp-2 mb-1">
+                            {product.name}
+                          </h3>
+                        </Link>
+                        
+                        <div className="flex items-center mb-2">
+                          <div className="flex">
+                            {renderRatingStars(product.ratings.average)}
+                          </div>
+                          <span className="text-gray-500 text-xs ml-2">({product.ratings.count})</span>
+                        </div>
+                        
+                        <p className="text-xl font-bold text-[#4DA9FF]">${product.best_vendor.price.toLocaleString()}</p>
                       </div>
                       
-                      <div className="flex items-center mt-3">
-                        <div className="flex">
-                          {renderRatingStars(product.ratings.average)}
-                        </div>
-                        <span className="text-gray-500 text-xs ml-2">({product.ratings.count})</span>
-                      </div>
-                      
-                      <div className="mt-auto pt-4 pb-2">
+                      <div className="mt-4">
                         <Link 
                           href={`/product/${product.id}`}
-                          className={`w-full text-center ${commonButtonStyles.secondary}`}
+                          className="block w-full py-2.5 text-center border border-[#4DA9FF] text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white font-medium rounded-lg transition-colors duration-200"
                         >
                           View Details
                         </Link>
