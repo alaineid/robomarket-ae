@@ -9,53 +9,18 @@ import {
   FaSearch, FaCheck, FaHeart, FaBoxOpen, FaShieldAlt, FaBrain, 
   FaHeartbeat, FaIndustry, FaSpinner
 } from 'react-icons/fa';
+import { debounce } from 'lodash-es';
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css'; // Import rc-slider styles
 import Breadcrumbs from '@/components/Breadcrumbs';
 import ProductCard from '@/components/ProductCard';
 import { commonButtonStyles, commonLayoutStyles } from '@/styles/commonStyles';
-import { categories, brands } from '@/utils/types/product.types';
-
-// Define types for our data
-interface ProductRating {
-  average_rating: number;
-  rating_count: number;
-}
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  rating: number;
-  brand: string;
-  category: string;
-  description: string;
-  features: string[];
-  specifications: {
-    height: string;
-    weight: string;
-    battery: string;
-    processor: string;
-    memory: string;
-    connectivity: string;
-    sensors: string;
-  };
-  stock: number;
-  reviews: {
-    author: string;
-    date: string;
-    rating: number;
-    comment: string;
-  }[];
-  image: string;
-  images: string[];
-  product_ratings?: ProductRating[];
-  rating_count?: number;
-}
-
-interface ApiResponse {
-  products: Product[];
-  hasMore: boolean;
-  total: number;
-}
+import { 
+  categories, 
+  brands, 
+  Product, 
+  ApiResponse 
+} from '@/utils/types/product.types';
 
 interface ShopClientProps {
   initialData: ApiResponse;
@@ -84,7 +49,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
   const [mobileShowFilters, setMobileShowFilters] = useState(false);
   const [desktopShowFilters, setDesktopShowFilters] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
-  const [isInfiniteScrollEnabled, setIsInfiniteScrollEnabled] = useState(true); // Toggle for infinite scroll
+  const [isInfiniteScrollEnabled, setIsInfiniteScrollEnabled] = useState(false); // Set infinite scroll disabled by default
   const loaderRef = useRef<HTMLDivElement>(null);
 
   // State for collapsible filter sections
@@ -95,6 +60,58 @@ export default function ShopClient({ initialData }: ShopClientProps) {
     priceRange: false,
     rating: false
   });
+
+  // Apply filters, optionally overriding selectedBrands and sortBy
+  // Moved applyFilters definition before debouncedApplyFilters
+  const applyFilters = useCallback((overrideBrands?: string[], overrideSortBy?: string, overrideRating?: number) => {
+    const brandsToUse = overrideBrands ?? selectedBrands;
+    const sortToUse = overrideSortBy ?? sortBy;
+    const ratingToUse = typeof overrideRating === 'number' ? overrideRating : ratingFilter;
+
+    const params = new URLSearchParams();
+    if (searchTerm) params.append('search', searchTerm);
+    if (selectedCategories.length > 0) params.append('category', selectedCategories.join(','));
+    if (brandsToUse.length > 0) params.append('brand', brandsToUse.join(','));
+    if (priceRange[0] > 0) params.append('price_min', priceRange[0].toString());
+    if (priceRange[1] < 10000) params.append('price_max', priceRange[1].toString());
+    
+    if (ratingToUse > 0) {
+      params.append('rating', ratingToUse.toString());
+    }
+    
+    if (sortToUse) params.append('sort_by', sortToUse);
+    params.append('limit', '4'); // Changed from 20 to 4 robots per page
+    params.append('offset', '0'); // Always reset to first page for new filter applications
+
+    const url = `/api/products?${params.toString()}`;
+    
+    // Debug log
+    console.log('🔍 Calling API with filters:', url);
+    
+    setIsLoading(true);
+    fetch(url)
+      .then(response => {
+        console.log('📊 API Response status:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('📦 Received products:', data.products?.length || 0);
+        setProducts(data.products || []);
+        setOffset(data.products?.length || 0);
+        setHasMore(data.hasMore);
+        setIsFilterDirty(false);
+      })
+      .catch(error => {
+        console.error('❌ Error fetching products:', error);
+      })
+      .finally(() => setIsLoading(false));
+    
+    // Remove automatic closing of filters on mobile
+    // Mobile filters will remain open until user explicitly closes them
+  }, [searchTerm, selectedCategories, selectedBrands, priceRange, ratingFilter, sortBy, setIsLoading, setProducts, setOffset, setHasMore, setIsFilterDirty]);
+  
+  // Debounced version of applyFilters for search
+  const debouncedApplyFilters = useCallback(debounce(() => applyFilters(), 500), [applyFilters]);
 
   // Category icons mapping
   const CATEGORY_ICONS = {
@@ -115,7 +132,10 @@ export default function ShopClient({ initialData }: ShopClientProps) {
       const params = new URLSearchParams();
       
       if (searchTerm) params.append('search', searchTerm);
-      if (selectedCategories.length > 0) params.append('category', selectedCategories.join(','));
+      if (selectedCategories.length > 0) {
+        const categoryParam = selectedCategories.join(',');
+        params.append('category', categoryParam);
+      }
       if (selectedBrands.length > 0) params.append('brand', selectedBrands.join(','));
       if (priceRange[0] > 0) params.append('price_min', priceRange[0].toString());
       if (priceRange[1] < 10000) params.append('price_max', priceRange[1].toString());
@@ -123,7 +143,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
       if (sortBy) params.append('sort_by', sortBy);
       
       // Set limit for pagination
-      params.append('limit', '20');
+      params.append('limit', '4'); // Changed from 20 to 4 robots per page
       
       // If resetting products, start from offset 0, otherwise use current offset
       if (resetProducts) {
@@ -132,34 +152,89 @@ export default function ShopClient({ initialData }: ShopClientProps) {
         params.append('offset', offset.toString());
       }
       
-      // Fetch products
-      const response = await fetch(`/api/products?${params.toString()}`);
-      const data = await response.json();
+      const url = `/api/products?${params.toString()}`;
+      // Debug log
+      console.log('🔄 Loading more products:', url);
       
-      // Log full API response for debugging
-      console.log('API Response:', data);
-      console.log('First product sample:', data.products[0]);
+      // Fetch products
+      const response = await fetch(url);
+      console.log('📊 Load More Response status:', response.status);
+      
+      const data = await response.json();
+      console.log('📦 Received additional products:', data.products?.length || 0);
       
       if (resetProducts) {
         // Replace all products
-        setProducts(data.products);
-        setOffset(data.products.length);
+        setProducts(data.products || []);
+        setOffset(data.products?.length || 0);
       } else {
         // Append new products
-        setProducts(prev => [...prev, ...data.products]);
-        setOffset(prev => prev + data.products.length);
+        setProducts(prev => [...prev, ...(data.products || [])]);
+        setOffset(prev => prev + (data.products?.length || 0));
       }
-      
       setHasMore(data.hasMore);
       setIsFilterDirty(false);
-      
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error('❌ Error in fetchProducts:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [searchTerm, selectedCategories, selectedBrands, priceRange, ratingFilter, sortBy, offset]);
+  }, [searchTerm, selectedCategories, selectedBrands, priceRange, ratingFilter, sortBy, offset, products.length]);
   
+  // Apply filters with specific categories (bypassing React state timing issues)
+  const applyFiltersWithCategories = (categoryList: string[]) => {
+    try {
+      setIsLoading(true);
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (searchTerm) params.append('search', searchTerm);
+      if (categoryList && categoryList.length > 0) {
+        const categoryParam = categoryList.join(',');
+        params.append('category', categoryParam);
+      }
+      if (selectedBrands.length > 0) params.append('brand', selectedBrands.join(','));
+      if (priceRange[0] > 0) params.append('price_min', priceRange[0].toString());
+      if (priceRange[1] < 10000) params.append('price_max', priceRange[1].toString());
+      if (ratingFilter > 0) params.append('rating', ratingFilter.toString());
+      if (sortBy) params.append('sort_by', sortBy);
+      // Set limit and offset
+      params.append('limit', '4'); // Changed from 20 to 4 robots per page
+      params.append('offset', '0'); // Always reset to first page when applying filters
+      const url = `/api/products?${params.toString()}`;
+      
+      // Debug log
+      console.log('🏷️ Applying category filters:', url);
+      console.log('📋 Categories:', categoryList);
+      
+      // Fetch products
+      fetch(url)
+        .then(response => {
+          console.log('📊 Category Filter Response status:', response.status);
+          return response.json();
+        })
+        .then(data => {
+          console.log('📦 Received filtered products:', data.products?.length || 0);
+          // Replace all products
+          setProducts(data.products || []);
+          setOffset(data.products?.length || 0);
+          setHasMore(data.hasMore);
+          setIsFilterDirty(false);
+        })
+        .catch(error => {
+          console.error('❌ Error fetching products with explicit categories:', error);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+      
+      // Remove automatic closing of filters on mobile
+      // Mobile filters will remain open until user explicitly closes them
+    } catch (error) {
+      console.error('❌ Error in applyFiltersWithCategories:', error);
+      setIsLoading(false);
+    }
+  };
+
   // Handle infinite scroll
   const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
     const [entry] = entries;
@@ -230,50 +305,70 @@ export default function ShopClient({ initialData }: ShopClientProps) {
 
   // Toggle a category selection
   const toggleCategory = (category: string) => {
-    setSelectedCategories(prev => {
-      if (prev.includes(category)) {
-        return prev.filter(c => c !== category);
-      } else {
-        return [...prev, category];
-      }
-    });
+    // For toggling a category in quick filters, directly calculate the new state
+    // and use it for both the state update and immediate filtering
+    const newCategories = selectedCategories.includes(category)
+      ? selectedCategories.filter(c => c !== category)
+      : [...selectedCategories, category];
+    // Update state
+    setSelectedCategories(newCategories);
     setIsFilterDirty(true);
+    // Apply filters immediately with the new categories
+    setTimeout(() => {
+      applyFiltersWithCategories(newCategories);
+    }, 0);
   };
 
   // Toggle a brand selection
   const toggleBrand = (brand: string) => {
-    setSelectedBrands(prev => {
-      if (prev.includes(brand)) {
-        return prev.filter(b => b !== brand);
-      } else {
-        return [...prev, brand];
-      }
-    });
+    const newBrands = selectedBrands.includes(brand)
+      ? selectedBrands.filter(b => b !== brand)
+      : [...selectedBrands, brand];
+
+    setSelectedBrands(newBrands);
     setIsFilterDirty(true);
+
+    // Immediately apply filters after changing brands, using the newBrands directly
+    setTimeout(() => {
+      applyFilters(newBrands);
+    }, 0);
   };
 
   // Handle price range changes
   const handlePriceRangeChange = (min: number, max: number) => {
     setPriceRange([min, max]);
     setIsFilterDirty(true);
+    setTimeout(() => {
+      applyFilters();
+    }, 0);
   };
 
   // Handle rating filter change
   const handleRatingChange = (rating: number) => {
-    setRatingFilter(rating === ratingFilter ? 0 : rating);
+    // If the same rating is clicked again, reset to 0 (no filter)
+    const newRating = rating === ratingFilter ? 0 : rating;
+    setRatingFilter(newRating);
     setIsFilterDirty(true);
+    setTimeout(() => {
+      // Pass newRating directly to applyFilters
+      applyFilters(undefined, undefined, newRating);
+    }, 0);
   };
 
   // Handle sort order change
   const handleSortChange = (value: string) => {
     setSortBy(value);
     setIsFilterDirty(true);
+    setTimeout(() => {
+      applyFilters(undefined, value);
+    }, 0);
   };
   
   // Handle search input change
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setIsFilterDirty(true);
+    // debouncedApplyFilters will be called by useEffect
   };
 
   // Clear all filters
@@ -281,22 +376,23 @@ export default function ShopClient({ initialData }: ShopClientProps) {
     setSelectedCategories([]);
     setSelectedBrands([]);
     setPriceRange([0, 10000]);
-    setRatingFilter(0);
+    setRatingFilter(0); 
     setSearchTerm('');
     setSortBy('newest');
-    setIsFilterDirty(true);
+    setIsFilterDirty(true); 
+    // Apply filters immediately with reset values
+    applyFilters([], 'newest', 0); 
   };
 
-  // Apply filters
-  const applyFilters = () => {
-    // Reset products and fetch with current filters
-    fetchProducts(true);
-    
-    // Close mobile filters if on mobile
-    if (isMobileView) {
-      setMobileShowFilters(false);
+  // Effect to apply filters when searchTerm changes (debounced)
+  useEffect(() => {
+    // Apply filters if search term is not empty, or if it was just cleared (to reset results)
+    // and it's not the initial load (initialData is handled separately to avoid double fetch)
+    if (searchTerm !== '' || (searchTerm === '' && products.length > 0 && initialData.products && !initialData.products.some(p => products.includes(p)))) {
+      debouncedApplyFilters();
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps 
+  }, [searchTerm, debouncedApplyFilters]); // initialData.products and products removed to avoid re-triggering on product list update by other filters
 
   // Toggle section visibility
   const toggleSection = (section: string) => {
@@ -321,11 +417,6 @@ export default function ShopClient({ initialData }: ShopClientProps) {
   // Function to render a category icon
   const renderCategoryIcon = (category: string) => {
     return CATEGORY_ICONS[category as keyof typeof CATEGORY_ICONS] || <FaBoxOpen />;
-  };
-
-  // Toggle between Load More button and infinite scroll
-  const toggleInfiniteScroll = () => {
-    setIsInfiniteScrollEnabled(!isInfiniteScrollEnabled);
   };
 
   return (
@@ -634,32 +725,66 @@ export default function ShopClient({ initialData }: ShopClientProps) {
                         <input 
                           type="number"
                           value={priceRange[0]}
-                          onChange={(e) => handlePriceRangeChange(
-                            Math.min(Number(e.target.value), priceRange[1] - 100),
-                            priceRange[1]
-                          )}
+                          min={0}
+                          max={priceRange[1] - 1}
+                          onChange={(e) => {
+                            const newMin = Math.max(0, Math.min(Number(e.target.value), priceRange[1] - 1));
+                            handlePriceRangeChange(newMin, priceRange[1]);
+                          }}
                           className="w-20 h-8 px-2 border border-gray-200 rounded text-sm"
                         />
                         <span className="mx-2 text-gray-400">to</span>
                         <input 
                           type="number"
                           value={priceRange[1]}
-                          onChange={(e) => handlePriceRangeChange(
-                            priceRange[0],
-                            Math.max(Number(e.target.value), priceRange[0] + 100)
-                          )}
+                          min={priceRange[0] + 1}
+                          max={10000}
+                          onChange={(e) => {
+                            const newMax = Math.max(priceRange[0] + 1, Math.min(Number(e.target.value), 10000));
+                            handlePriceRangeChange(priceRange[0], newMax);
+                          }}
                           className="w-20 h-8 px-2 border border-gray-200 rounded text-sm"
                         />
                       </div>
-                      <input
-                        type="range"
-                        min="0"
-                        max="10000"
-                        step="100"
-                        value={priceRange[1]}
-                        onChange={(e) => handlePriceRangeChange(priceRange[0], parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-md appearance-none cursor-pointer accent-[#4DA9FF]"
-                      />
+                      
+                      {/* rc-slider dual-handle component */}
+                      <div className="py-4">
+                        <Slider
+                          range
+                          min={0}
+                          max={10000}
+                          step={100}
+                          value={[priceRange[0], priceRange[1]]}
+                          onChange={(values) => {
+                            if (Array.isArray(values) && values.length === 2) {
+                              handlePriceRangeChange(values[0], values[1]);
+                            }
+                          }}
+                          railStyle={{ backgroundColor: '#E5E7EB', height: 8 }}
+                          trackStyle={[{ backgroundColor: '#4DA9FF', height: 8 }]}
+                          handleStyle={[
+                            {
+                              backgroundColor: '#FFFFFF',
+                              borderColor: '#4DA9FF',
+                              height: 18,
+                              width: 18,
+                              marginLeft: 0,
+                              marginTop: -5,
+                              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                            },
+                            {
+                              backgroundColor: '#FFFFFF',
+                              borderColor: '#4DA9FF',
+                              height: 18,
+                              width: 18,
+                              marginLeft: 0,
+                              marginTop: -5,
+                              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                            },
+                          ]}
+                        />
+                      </div>
+
                       <div className="flex justify-between mt-2">
                         <span className="text-xs text-gray-500">${priceRange[0].toLocaleString()}</span>
                         <span className="text-xs text-gray-500">${priceRange[1].toLocaleString()}</span>
@@ -681,28 +806,103 @@ export default function ShopClient({ initialData }: ShopClientProps) {
                   </div>
                   {!collapsedSections.rating && (
                     <div className="space-y-2">
-                      {[5, 4, 3, 2, 1].map(rating => (
-                        <button
-                          key={rating}
-                          onClick={() => handleRatingChange(rating)}
-                          className={`flex items-center w-full p-2 rounded-lg transition-colors ${
-                            ratingFilter === rating ? 'bg-blue-50' : 'hover:bg-gray-50'
-                          }`}
-                        >
-                          <div className="flex">
-                            {Array(rating).fill(0).map((_, i) => (
-                              <FaStar key={i} className="text-yellow-400" />
-                            ))}
-                            {Array(5-rating).fill(0).map((_, i) => (
-                              <FaStar key={i} className="text-gray-300" />
-                            ))}
-                          </div>
-                          <span className="ml-2 text-sm text-gray-700">& Up</span>
-                          {ratingFilter === rating && (
-                            <FaCheck className="ml-auto text-[#4DA9FF]" size={14} />
-                          )}
-                        </button>
-                      ))}
+                      {/* Explicitly use numbers for ratings to avoid any potential issues */}
+                      <button
+                        onClick={() => handleRatingChange(5)}
+                        className={`flex items-center w-full p-2 rounded-lg transition-colors ${
+                          ratingFilter === 5 ? 'bg-blue-50' : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex">
+                          {Array(5).fill(0).map((_, i) => (
+                            <FaStar key={i} className="text-yellow-400" />
+                          ))}
+                        </div>
+                        <span className="ml-2 text-sm text-gray-700">& Up</span>
+                        {ratingFilter === 5 && (
+                          <FaCheck className="ml-auto text-[#4DA9FF]" size={14} />
+                        )}
+                      </button>
+                      
+                      <button
+                        onClick={() => handleRatingChange(4)}
+                        className={`flex items-center w-full p-2 rounded-lg transition-colors ${
+                          ratingFilter === 4 ? 'bg-blue-50' : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex">
+                          {Array(4).fill(0).map((_, i) => (
+                            <FaStar key={i} className="text-yellow-400" />
+                          ))}
+                          {Array(1).fill(0).map((_, i) => (
+                            <FaStar key={i} className="text-gray-300" />
+                          ))}
+                        </div>
+                        <span className="ml-2 text-sm text-gray-700">& Up</span>
+                        {ratingFilter === 4 && (
+                          <FaCheck className="ml-auto text-[#4DA9FF]" size={14} />
+                        )}
+                      </button>
+                      
+                      <button
+                        onClick={() => handleRatingChange(3)}
+                        className={`flex items-center w-full p-2 rounded-lg transition-colors ${
+                          ratingFilter === 3 ? 'bg-blue-50' : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex">
+                          {Array(3).fill(0).map((_, i) => (
+                            <FaStar key={i} className="text-yellow-400" />
+                          ))}
+                          {Array(2).fill(0).map((_, i) => (
+                            <FaStar key={i} className="text-gray-300" />
+                          ))}
+                        </div>
+                        <span className="ml-2 text-sm text-gray-700">& Up</span>
+                        {ratingFilter === 3 && (
+                          <FaCheck className="ml-auto text-[#4DA9FF]" size={14} />
+                        )}
+                      </button>
+                      
+                      <button
+                        onClick={() => handleRatingChange(2)}
+                        className={`flex items-center w-full p-2 rounded-lg transition-colors ${
+                          ratingFilter === 2 ? 'bg-blue-50' : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex">
+                          {Array(2).fill(0).map((_, i) => (
+                            <FaStar key={i} className="text-yellow-400" />
+                          ))}
+                          {Array(3).fill(0).map((_, i) => (
+                            <FaStar key={i} className="text-gray-300" />
+                          ))}
+                        </div>
+                        <span className="ml-2 text-sm text-gray-700">& Up</span>
+                        {ratingFilter === 2 && (
+                          <FaCheck className="ml-auto text-[#4DA9FF]" size={14} />
+                        )}
+                      </button>
+                      
+                      <button
+                        onClick={() => handleRatingChange(1)}
+                        className={`flex items-center w-full p-2 rounded-lg transition-colors ${
+                          ratingFilter === 1 ? 'bg-blue-50' : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex">
+                          {Array(1).fill(0).map((_, i) => (
+                            <FaStar key={i} className="text-yellow-400" />
+                          ))}
+                          {Array(4).fill(0).map((_, i) => (
+                            <FaStar key={i} className="text-gray-300" />
+                          ))}
+                        </div>
+                        <span className="ml-2 text-sm text-gray-700">& Up</span>
+                        {ratingFilter === 1 && (
+                          <FaCheck className="ml-auto text-[#4DA9FF]" size={14} />
+                        )}
+                      </button>
                     </div>
                   )}
                 </div>
@@ -717,17 +917,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
                     Reset All Filters
                   </motion.button>
                   
-                  <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={applyFilters}
-                    disabled={!isFilterDirty && !isMobileView}
-                    className={`${commonButtonStyles.primary} ${
-                      !isFilterDirty && !isMobileView ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                  >
-                    Apply Filters
-                  </motion.button>
+                  {/* Apply Filters button removed - filters are now applied automatically */}
                 </div>
               </div>
             </motion.div>
@@ -750,7 +940,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
                   <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   {searchTerm && (
                     <button 
-                      onClick={() => handleSearchChange('')}
+                      onClick={() => handleSearchChange('')} // Clear search term
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
                       <FaTimes size={14} />
@@ -758,14 +948,16 @@ export default function ShopClient({ initialData }: ShopClientProps) {
                   )}
                 </div>
                 
-                {/* Apply Search Button */}
+                {/* Apply Search Button - REMOVED */}
+                {/* 
                 <button 
-                  onClick={applyFilters}
+                  onClick={applyFilters} // This was the old button, now removed
                   className="md:w-auto w-full py-2 md:py-3 px-6 bg-[#4DA9FF] text-white rounded-full hover:bg-blue-500 transition-colors flex items-center justify-center gap-2"
                 >
                   <FaSearch className="text-white" size={14} />
                   <span>Search</span>
-                </button>
+                </button> 
+                */}
               </div>
             </div>
             
@@ -808,20 +1000,6 @@ export default function ShopClient({ initialData }: ShopClientProps) {
               </div>
             </div>
             
-            {/* Infinite Scroll Toggle (for bonus feature) */}
-            <div className="flex justify-end mb-4">
-              <button
-                onClick={toggleInfiniteScroll}
-                className={`text-xs md:text-sm px-3 py-1 rounded-full transition-colors ${
-                  isInfiniteScrollEnabled
-                    ? 'bg-[#4DA9FF] text-white'
-                    : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                {isInfiniteScrollEnabled ? 'Infinite Scroll: ON' : 'Infinite Scroll: OFF'}
-              </button>
-            </div>
-            
             {/* Recently Viewed Section */}
             {recentlyViewed.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6 border border-gray-100">
@@ -835,15 +1013,18 @@ export default function ShopClient({ initialData }: ShopClientProps) {
                     >
                       <div className="relative w-10 h-10 sm:w-12 sm:h-12 mb-2 sm:mb-0 sm:mr-3 flex-shrink-0">
                         <Image
-                          src={product.image}
+                          src={product.images[0]?.url || '/images/Algorythm.png'} 
                           alt={product.name}
                           fill
+                          sizes="(max-width: 768px) 40px, 48px"
                           className="object-contain"
                         />
                       </div>
                       <div className="text-center sm:text-left">
                         <p className="text-xs sm:text-sm font-medium text-gray-800 line-clamp-1">{product.name}</p>
-                        <p className="text-xs sm:text-sm text-[#4DA9FF]">${product.price.toLocaleString()}</p>
+                        {product.best_vendor && (
+                          <p className="text-xs sm:text-sm text-[#4DA9FF]">${product.best_vendor.price.toLocaleString()}</p>
+                        )}
                       </div>
                     </Link>
                   ))}
@@ -855,9 +1036,9 @@ export default function ShopClient({ initialData }: ShopClientProps) {
             {products.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 <AnimatePresence>
-                  {products.map(product => (
+                  {products.map((product, index) => (
                     <motion.div
-                      key={product.id}
+                      key={`${product.id}-${index}`}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
@@ -880,7 +1061,6 @@ export default function ShopClient({ initialData }: ShopClientProps) {
                 <button
                   onClick={() => {
                     clearFilters();
-                    applyFilters();
                   }}
                   className={commonButtonStyles.primary}
                 >
@@ -889,42 +1069,29 @@ export default function ShopClient({ initialData }: ShopClientProps) {
               </div>
             )}
             
-            {/* Load More / Loader for Infinite Scroll */}
+            {/* Load More Button */}
             {products.length > 0 && (
               <div className="mt-8 flex justify-center" ref={loaderRef}>
                 {hasMore ? (
-                  <>
-                    {!isInfiniteScrollEnabled ? (
-                      <button 
-                        onClick={() => fetchProducts()}
-                        disabled={isLoading}
-                        className={`${commonButtonStyles.primary} w-48 flex items-center justify-center gap-2 ${
-                          isLoading ? 'opacity-70 cursor-not-allowed' : ''
-                        }`}
-                      >
-                        {isLoading ? (
-                          <>
-                            <FaSpinner className="animate-spin" />
-                            Loading...
-                          </>
-                        ) : (
-                          'Load More Products'
-                        )}
-                      </button>
+                  <button 
+                    onClick={() => fetchProducts()}
+                    disabled={isLoading}
+                    className={`${commonButtonStyles.primary} w-48 flex items-center justify-center gap-2 ${
+                      isLoading ? 'opacity-70 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {isLoading ? (
+                      <>
+                        <FaSpinner className="animate-spin" />
+                        Loading...
+                      </>
                     ) : (
-                      <div className="flex items-center justify-center gap-2 text-gray-500">
-                        {isLoading && (
-                          <>
-                            <FaSpinner className="animate-spin" />
-                            Loading more robots...
-                          </>
-                        )}
-                      </div>
+                      'Load More Products'
                     )}
-                  </>
+                  </button>
                 ) : (
                   products.length > 0 && (
-                    <p className="text-gray-500 py-2">You&apos;ve reached the end of the catalog</p>
+                    <p className="text-gray-500 py-2">You've reached the end of the catalog</p>
                   )
                 )}
               </div>

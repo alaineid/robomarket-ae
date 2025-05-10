@@ -60,7 +60,7 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
               <div className="p-4 sm:p-6 bg-gray-50 flex flex-col">
                 <div className="relative w-full h-48 sm:h-64 bg-white rounded-lg overflow-hidden mb-4 sm:mb-6">
                   <Image
-                    src={product.images[currentImage] || product.image}
+                    src={product.images[currentImage]?.url || ''}
                     alt={product.name}
                     fill
                     className="object-contain"
@@ -75,7 +75,7 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
                       className={`w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-lg shadow-sm overflow-hidden relative flex-shrink-0 transition-all duration-200 ${currentImage === index ? 'border-2 border-[#4DA9FF] scale-105' : 'border border-gray-100 hover:border-gray-300'}`}
                     >
                       <Image
-                        src={image}
+                        src={image.url}
                         alt={`${product.name} thumbnail ${index + 1}`}
                         fill
                         className="object-contain p-1"
@@ -87,7 +87,9 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
               
               <div className="p-4 sm:p-6 overflow-y-auto">
                 <span className="inline-block px-2 sm:px-3 py-1 text-xs font-medium text-[#4DA9FF] bg-blue-50 rounded-full mb-2 sm:mb-3">
-                  {product.category}
+                  {product.categories && product.categories.length > 0 
+                    ? product.categories[0].name 
+                    : 'Uncategorized'}
                 </span>
                 
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
@@ -96,15 +98,15 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
                 
                 <div className="flex items-center mb-3 sm:mb-4">
                   <div className="flex mr-2">
-                    {renderRatingStars(product.rating)}
+                    {renderRatingStars(product.ratings.average)}
                   </div>
                   <span className="text-sm text-gray-500">
-                    ({product.reviews.length} reviews)
+                    ({product.ratings.count} reviews)
                   </span>
                 </div>
                 
                 <p className="text-xl sm:text-2xl font-bold text-[#4DA9FF] mb-3 sm:mb-4">
-                  ${product.price.toLocaleString()}
+                  ${product.best_vendor.price.toLocaleString()}
                 </p>
                 
                 <p className="text-gray-600 mb-4 sm:mb-6 line-clamp-3 text-sm sm:text-base">
@@ -117,20 +119,18 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
                     <span className="text-gray-600 text-sm">{product.brand}</span>
                   </div>
                   
-                  <div className="flex items-center">
-                    <span className="font-medium w-20 sm:w-24 text-gray-700 text-sm">Height:</span>
-                    <span className="text-gray-600 text-sm">{product.specifications.height}</span>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <span className="font-medium w-20 sm:w-24 text-gray-700 text-sm">Weight:</span>
-                    <span className="text-gray-600 text-sm">{product.specifications.weight}</span>
-                  </div>
+                  {/* Show first 3-4 attributes without filtering for specific keys */}
+                  {product.attributes.slice(0, 4).map((attr, index) => (
+                    <div key={index} className="flex items-center">
+                      <span className="font-medium w-20 sm:w-24 text-gray-700 text-sm capitalize">{attr.key}:</span>
+                      <span className="text-gray-600 text-sm">{attr.value}</span>
+                    </div>
+                  ))}
                   
                   <div className="flex items-center">
                     <span className="font-medium w-20 sm:w-24 text-gray-700 text-sm">Availability:</span>
-                    <span className={`${product.stock > 0 ? 'text-green-600' : 'text-red-500'} font-medium text-sm`}>
-                      {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
+                    <span className={`${product.best_vendor.stock > 0 ? 'text-green-600' : 'text-red-500'} font-medium text-sm`}>
+                      {product.best_vendor.stock > 0 ? `In Stock (${product.best_vendor.stock})` : 'Out of Stock'}
                     </span>
                   </div>
                 </div>

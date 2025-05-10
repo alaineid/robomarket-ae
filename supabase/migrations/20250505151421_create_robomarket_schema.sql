@@ -25,11 +25,7 @@ CREATE TABLE products (
     sku VARCHAR(50) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    brand VARCHAR(100),
-    weight DECIMAL(10, 2),
-    length DECIMAL(10, 2),
-    width DECIMAL(10, 2),
-    height DECIMAL(10, 2),
+    brand VARCHAR(100),    
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );

@@ -11,61 +11,12 @@ import WishlistButton from './ui/WishlistButton';
 import QuickView from './ui/QuickView';
 import { commonCardStyles } from '@/styles/commonStyles';
 
-interface ProductCardProps {
-  product: Product;
-  showCompare?: boolean;
-  onCompareToggle?: (product: Product, isComparing: boolean) => void;
-  isComparing?: boolean;
-}
-
 export default function ProductCard({ 
-  product
-}: ProductCardProps) {
-  const [showQuickView, setShowQuickView] = useState(false);
-  
-  // Debug log for product data
-  console.log('ProductCard data:', {
-    id: product.id,
-    name: product.name,
-    hasImage: !!product.image,
-    imageValue: product.image,
-    hasImages: Array.isArray(product.images),
-    imagesLength: Array.isArray(product.images) ? product.images.length : 0,
-    imagesValues: product.images,
-    rating: product.rating,
-    rating_count: product.rating_count,
-    categories: product.categories
-  });
-  
-  // Get rating value with fallbacks
-  const getRating = () => {
-    // Direct rating property
-    if (typeof product.rating === 'number') {
-      return product.rating;
-    }
-    
-    // Try to get from product_ratings array if available
-    if (Array.isArray(product.product_ratings) && product.product_ratings.length > 0) {
-      return product.product_ratings[0].average_rating || 0;
-    }
-    
-    return 0;
-  };
-  
-  // Get rating count with fallbacks
-  const getRatingCount = () => {
-    // Direct rating_count property
-    if (typeof product.rating_count === 'number') {
-      return product.rating_count;
-    }
-    
-    // Try to get from product_ratings array if available
-    if (Array.isArray(product.product_ratings) && product.product_ratings.length > 0) {
-      return product.product_ratings[0].rating_count || 0;
-    }
-    
-    return 0;
-  };
+  product 
+}: { 
+  product: Product 
+}) {
+  const [showQuickView, setShowQuickView] = useState(false);  
   
   // Function to render star ratings
   const renderRatingStars = (rating: number) => {
@@ -110,7 +61,7 @@ export default function ProductCard({
                 imgUrl ? (
                   <Image
                     key={idx}
-                    src={imgUrl}
+                    src={typeof imgUrl === 'string' ? imgUrl : ''}
                     alt={product.name + ' thumbnail ' + (idx + 1)}
                     width={40}
                     height={40}
@@ -123,24 +74,14 @@ export default function ProductCard({
           {/* Main Product Image */}
           <Link href={`/product/${product.id}`} className="block absolute inset-0 z-10">
             <div className={`${commonCardStyles.imagePlaceholder} bg-white`}>
-              {(product.image && product.image !== '') ? (
+              {(product.images && product.images.length > 0) ? (
                 <Image
-                  src={product.image}
-                  alt={product.name}
+                  src={product.images[0].url}
+                  alt={product.images[0].alt_text || product.name}
                   width={300}
                   height={300}
                   className="object-contain w-full h-full transform transition-transform duration-500 group-hover:scale-110"
-                  priority={false}
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                />
-              ) : Array.isArray(product.images) && product.images[0] ? (
-                <Image
-                  src={product.images[0]}
-                  alt={product.name}
-                  width={300}
-                  height={300}
-                  className="object-contain w-full h-full transform transition-transform duration-500 group-hover:scale-110"
-                  priority={false}
+                  priority={true}
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 />
               ) : (
@@ -152,7 +93,7 @@ export default function ProductCard({
           </Link>
           
           {/* Stock Status Badge - Only Out of Stock */}
-          {product.stock <= 0 && (
+          {(!product.best_vendor || !product.best_vendor.stock || product.best_vendor.stock <= 0) && (
             <div className="absolute top-2 right-2 z-20">
               <span className="inline-block px-2 py-0.5 text-xs font-medium text-white bg-red-500 rounded-full">
                 Out of Stock
@@ -178,25 +119,25 @@ export default function ProductCard({
               <p className="text-gray-600 text-xs">{product.brand}</p>
             </div>
             <span className="font-bold text-sm sm:text-base text-[#4DA9FF] ml-2 whitespace-nowrap">
-              ${typeof product.price === 'number' ? product.price.toLocaleString() : '0.00'}
+              ${typeof product.best_vendor.price === 'number' ? product.best_vendor.price.toLocaleString() : '0.00'}
             </span>
           </div>
           
           <div className="flex items-center justify-between mt-1">
             <div className="flex items-center">
               <div className="flex">
-                {renderRatingStars(getRating())}
+                {renderRatingStars(product.ratings.average)}
               </div>
-              <span className="text-gray-500 text-xs ml-1">{getRating().toFixed(1)}</span>
-              {getRatingCount() > 0 && (
-                <span className="text-gray-500 text-xs ml-1">({getRatingCount()})</span>
+              <span className="text-gray-500 text-xs ml-1">{product.ratings.average.toFixed(1)}</span>
+              {product.ratings.count > 0 && (
+                <span className="text-gray-500 text-xs ml-1">({product.ratings.count})</span>
               )}
             </div>
             <div className="flex flex-wrap gap-1">
               {Array.isArray(product.categories) && product.categories.length > 0 ? (
                 product.categories.map((cat, idx) => (
                   <span key={idx} className={`${commonCardStyles.categoryBadge} inline-block text-xs px-1.5 py-0.5`}>
-                    {cat}
+                    {cat.name || 'Category'}
                   </span>
                 ))
               ) : (
@@ -207,11 +148,11 @@ export default function ProductCard({
           
           {/* Key Features - Simplified for mobile */}
           <div className="mt-2 space-y-0.5 mb-auto">
-            {Array.isArray(product.features) && product.features.length > 0 ? (
-              product.features.slice(0, 1).map((feature, index) => (
+            {Array.isArray(product.attributes) && product.attributes.length > 0 ? (
+              product.attributes.slice(0, 1).map((attr, index) => (
                 <div key={index} className="flex items-start">
                   <FaCheck className="text-green-500 mt-0.5 mr-1 flex-shrink-0" size={10} />
-                  <p className="text-gray-600 text-xs line-clamp-1">{feature}</p>
+                  <p className="text-gray-600 text-xs line-clamp-1">{`${attr.key}: ${attr.value}`}</p>
                 </div>
               ))
             ) : null}

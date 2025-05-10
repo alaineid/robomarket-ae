@@ -1,126 +1,78 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product } from './types/product.types';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { Product } from '@/utils/types/product.types';
 
-interface WishlistContextProps {
-  wishlist: number[];
-  addToWishlist: (productId: number) => void;
-  removeFromWishlist: (productId: number) => void;
-  isInWishlist: (productId: number) => boolean;
-  wishlistProducts: Product[];
-  isLoading: boolean;
+interface WishlistContextType {
+  wishlistItems: Product[];
+  isInWishlist: (id: number) => boolean;
+  toggleWishlistItem: (product: Product) => void;
+  clearWishlist: () => void;
 }
 
-// Initial empty state for SSR
-const defaultWishlistContext: WishlistContextProps = {
-  wishlist: [],
-  addToWishlist: () => {},
-  removeFromWishlist: () => {},
-  isInWishlist: () => false,
-  wishlistProducts: [],
-  isLoading: false
-};
+const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
-const WishlistContext = createContext<WishlistContextProps>(defaultWishlistContext);
-
-export const useWishlist = () => useContext(WishlistContext);
-
-export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [wishlist, setWishlist] = useState<number[]>([]);
-  const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
-  const [mounted, setMounted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Load wishlist from localStorage only after component mounts
+export function WishlistProvider({ children }: { children: ReactNode }) {
+  const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
+  
+  // Load wishlist from localStorage on mount
   useEffect(() => {
     const savedWishlist = localStorage.getItem('wishlist');
     if (savedWishlist) {
       try {
-        setWishlist(JSON.parse(savedWishlist));
-      } catch {
-        console.error("Failed to parse wishlist from localStorage");
-        setWishlist([]);
+        setWishlistItems(JSON.parse(savedWishlist));
+      } catch (error) {
+        console.error('Failed to parse wishlist from localStorage', error);
+        setWishlistItems([]);
       }
     }
-    setMounted(true);
   }, []);
-
-  // Update wishlistProducts whenever wishlist changes
+  
+  // Save wishlist to localStorage when it changes
   useEffect(() => {
-    if (!mounted) return;
-    
-    // Fetch product details from API for each item in wishlist
-    const fetchWishlistProducts = async () => {
-      if (wishlist.length === 0) {
-        setWishlistProducts([]);
-        return;
+    localStorage.setItem('wishlist', JSON.stringify(wishlistItems));
+  }, [wishlistItems]);
+  
+  // Check if product is in wishlist
+  const isInWishlist = (id: number): boolean => {
+    return wishlistItems.some(item => item.id === id);
+  };
+  
+  // Toggle product in wishlist (add or remove)
+  const toggleWishlistItem = (product: Product): void => {
+    setWishlistItems(prevItems => {
+      if (isInWishlist(product.id)) {
+        return prevItems.filter(item => item.id !== product.id);
+      } else {
+        return [...prevItems, product];
       }
-      
-      setIsLoading(true);
-      
-      try {
-        const productPromises = wishlist.map(async (productId) => {
-          try {
-            const response = await fetch(`/api/products/${productId}`);
-            
-            if (!response.ok) {
-              console.error(`Failed to fetch product ${productId}: ${response.statusText}`);
-              return null;
-            }
-            
-            return await response.json();
-          } catch (error) {
-            console.error(`Error fetching product ${productId}:`, error);
-            return null;
-          }
-        });
-        
-        const products = await Promise.all(productPromises);
-        setWishlistProducts(products.filter(Boolean) as Product[]);
-      } catch (error) {
-        console.error("Error fetching wishlist products:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchWishlistProducts();
-    
-    // Save to localStorage
-    localStorage.setItem('wishlist', JSON.stringify(wishlist));
-  }, [wishlist, mounted]);
-
-  const addToWishlist = (productId: number) => {
-    if (!mounted) return;
-    
-    setWishlist(prev => {
-      if (prev.includes(productId)) {
-        return prev;
-      }
-      return [...prev, productId];
     });
   };
-
-  const removeFromWishlist = (productId: number) => {
-    if (!mounted) return;
-    setWishlist(prev => prev.filter(id => id !== productId));
+  
+  // Clear wishlist
+  const clearWishlist = (): void => {
+    setWishlistItems([]);
   };
-
-  const isInWishlist = (productId: number) => {
-    return wishlist.includes(productId);
-  };
-
+  
   return (
-    <WishlistContext.Provider value={{
-      wishlist,
-      addToWishlist,
-      removeFromWishlist,
-      isInWishlist,
-      wishlistProducts,
-      isLoading
-    }}>
+    <WishlistContext.Provider 
+      value={{ 
+        wishlistItems, 
+        isInWishlist, 
+        toggleWishlistItem,
+        clearWishlist
+      }}
+    >
       {children}
     </WishlistContext.Provider>
   );
+}
+
+// Custom hook to use the wishlist context
+export const useWishlist = (): WishlistContextType => {
+  const context = useContext(WishlistContext);
+  if (context === undefined) {
+    throw new Error('useWishlist must be used within a WishlistProvider');
+  }
+  return context;
 };

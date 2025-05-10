@@ -94,6 +94,7 @@ export default function Footer() {
                   fill
                   style={{ objectFit: 'contain' }}
                   priority
+                  sizes="(max-width: 768px) 144px, 144px"
                 />
               </div>
             </a>

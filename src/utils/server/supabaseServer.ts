@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { createClient as createSupabaseAdminClient } from '@supabase/supabase-js';
-import type { Database } from '../types/database.types';
+import type { Database } from '../types/supabase.types';
 
 // Server-side Supabase client with cookies
 export const createServerClient = () => {

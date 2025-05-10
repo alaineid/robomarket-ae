@@ -27,8 +27,10 @@ export default function CartPage() {
     return () => clearTimeout(timer);
   }, []);
   
-  // Calculate order subtotal - using cartTotal from context
-  const subtotal = cartTotal;
+  // Calculate order subtotal - using cartTotal from context with fallback to prevent NaN
+  const subtotal = isNaN(cartTotal) ? 
+    cartItems.reduce((sum, item) => sum + ((item.product?.best_vendor?.price || 0) * item.quantity), 0) : 
+    cartTotal;
   
   // Estimated shipping cost - free over $100, otherwise $15
   const shippingCost = subtotal > 100 ? 0 : 15;
@@ -125,12 +127,12 @@ export default function CartPage() {
                     <div key={index} className="p-5 border-b border-gray-100 last:border-b-0 grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
                       {/* Product Info */}
                       <div className="col-span-6 flex items-center space-x-4">
-                        {/* Product Image - Updated from placeholder */}
+                        {/* Product Image - Updated to use new image structure */}
                         <div className="w-20 h-20 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-200 overflow-hidden">
-                          {item.product?.image ? (
+                          {item.product?.images && item.product.images.length > 0 ? (
                             <Image
-                              src={item.product.image}
-                              alt={item.product?.name || 'Product image'}
+                              src={item.product.images[0].url}
+                              alt={item.product.images[0].alt_text || item.product?.name || 'Product image'}
                               width={80}
                               height={80}
                               className="object-contain w-full h-full"
@@ -152,7 +154,7 @@ export default function CartPage() {
                           
                           {/* Product Brand & Category */}
                           <div className="text-sm text-gray-500 mb-2">
-                            {item.product?.brand} • {item.product?.category}
+                            {item.product?.brand} • {item.product?.categories && item.product.categories.length > 0 ? item.product.categories[0].name : 'Uncategorized'}
                           </div>
                           
                           {/* Remove Button - Mobile Only */}
@@ -168,7 +170,7 @@ export default function CartPage() {
                       {/* Price */}
                       <div className="col-span-2 text-center">
                         <span className="sm:hidden font-medium mr-2 text-gray-700">Price:</span>
-                        <span className="text-gray-800 font-medium">${item.product?.price.toLocaleString() || '0.00'}</span>
+                        <span className="text-gray-800 font-medium">${item.product?.best_vendor?.price.toLocaleString() || '0.00'}</span>
                       </div>
                       
                       {/* Quantity Selector */}
@@ -184,7 +186,7 @@ export default function CartPage() {
                           <input
                             type="number"
                             min="1"
-                            max={item.product?.stock || 10}
+                            max={item.product?.best_vendor?.stock || 10}
                             value={item.quantity}
                             onChange={(e) => handleQuantityChange(item.productId, parseInt(e.target.value) || 1)}
                             className="w-12 text-center border-x border-gray-300 h-8 focus:outline-none focus:ring-0 focus:border-gray-300 text-gray-700"
@@ -203,7 +205,7 @@ export default function CartPage() {
                         <span className="sm:hidden font-medium mr-2 text-gray-700">Total:</span>
                         <div className="text-right">
                           <span className="font-bold text-[#4DA9FF]">
-                            ${((item.product?.price || 0) * item.quantity).toLocaleString()}
+                            ${((item.product?.best_vendor?.price || 0) * item.quantity).toLocaleString()}
                           </span>
                           
                           {/* Remove Button - Desktop Only */}
@@ -244,7 +246,7 @@ export default function CartPage() {
                   <div className="space-y-3 text-gray-700">
                     <div className="flex justify-between">
                       <span>Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
-                      <span className="font-medium">${subtotal.toLocaleString()}</span>
+                      <span className="font-medium">${isNaN(subtotal) ? '0.00' : subtotal.toLocaleString()}</span>
                     </div>
                     
                     <div className="flex justify-between">
@@ -256,7 +258,7 @@ export default function CartPage() {
                     
                     <div className="flex justify-between">
                       <span>Tax (5%)</span>
-                      <span className="font-medium">${taxAmount.toLocaleString()}</span>
+                      <span className="font-medium">${isNaN(taxAmount) ? '0.00' : taxAmount.toLocaleString()}</span>
                     </div>
                     
                     {promoCodeValid === true && (
@@ -268,7 +270,7 @@ export default function CartPage() {
                     
                     <div className="pt-3 mt-3 border-t border-dashed border-gray-200 flex justify-between">
                       <span className="font-bold text-gray-800">Total</span>
-                      <span className="font-bold text-xl text-[#4DA9FF]">${(promoCodeValid === true ? totalAmount - 20 : totalAmount).toLocaleString()}</span>
+                      <span className="font-bold text-xl text-[#4DA9FF]">${isNaN(totalAmount) ? '0.00' : (promoCodeValid === true ? totalAmount - 20 : totalAmount).toLocaleString()}</span>
                     </div>
                   </div>
                   

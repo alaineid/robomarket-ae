@@ -58,7 +58,7 @@ export default function ProductDetail() {
         setBreadcrumbs([
           { label: 'Home', path: '/', isCurrent: false },
           { label: 'Shop', path: '/shop', isCurrent: false },
-          { label: product.category, path: `/shop?category=${encodeURIComponent(product.category)}`, isCurrent: false },
+          { label: product.categories[0]?.name || 'Uncategorized', path: `/shop?category=${encodeURIComponent(product.categories[0]?.name || '')}`, isCurrent: false },
           { label: product.name, path: `/product/${product.id}`, isCurrent: true }
         ]);
         
@@ -118,7 +118,7 @@ export default function ProductDetail() {
     if (!productData) return;
     
     const value = parseInt(e.target.value);
-    if (!isNaN(value) && value > 0 && value <= productData.stock) {
+    if (!isNaN(value) && value > 0 && value <= productData.best_vendor.stock) {
       setQuantity(value);
     }
   };
@@ -126,7 +126,7 @@ export default function ProductDetail() {
   const increaseQuantity = () => {
     if (!productData) return;
     
-    if (quantity < productData.stock) {
+    if (quantity < productData.best_vendor.stock) {
       setQuantity(quantity + 1);
     }
   };
@@ -215,7 +215,7 @@ export default function ProductDetail() {
                 <div className="relative h-[400px] mb-5 rounded-lg overflow-hidden bg-white border border-gray-200">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Image
-                      src={productData.images?.[activeImage] || productData.image}
+                      src={productData.images?.[activeImage]?.url || ''}
                       alt={`${productData.name} - View ${activeImage + 1}`}
                       width={600}
                       height={600}
@@ -237,7 +237,7 @@ export default function ProductDetail() {
                       >
                         <div className="absolute inset-0 flex items-center justify-center">
                           <Image
-                            src={productData.images[0]}
+                            src={productData.images[0]?.url || ''}
                             alt={`${productData.name} thumbnail 1`}
                             width={100}
                             height={100}
@@ -254,7 +254,7 @@ export default function ProductDetail() {
                         >
                           <div className="absolute inset-0 flex items-center justify-center">
                             <Image
-                              src={productData.images[1]}
+                              src={productData.images[1]?.url || ''}
                               alt={`${productData.name} thumbnail 2`}
                               width={100}
                               height={100}
@@ -272,7 +272,7 @@ export default function ProductDetail() {
                         >
                           <div className="absolute inset-0 flex items-center justify-center">
                             <Image
-                              src={productData.images[2]}
+                              src={productData.images[2]?.url || ''}
                               alt={`${productData.name} thumbnail 3`}
                               width={100}
                               height={100}
@@ -290,7 +290,7 @@ export default function ProductDetail() {
                         >
                           <div className="absolute inset-0 flex items-center justify-center">
                             <Image
-                              src={productData.images[3]}
+                              src={productData.images[3]?.url || ''}
                               alt={`${productData.name} thumbnail 4`}
                               width={100}
                               height={100}
@@ -309,7 +309,7 @@ export default function ProductDetail() {
                 {/* Product Category Badge */}
                 <div className="mb-2">
                   <span className={commonCardStyles.categoryBadge}>
-                    {productData.category}
+                    {productData.categories[0].name}
                   </span>
                 </div>
                 
@@ -324,19 +324,19 @@ export default function ProductDetail() {
                 {/* Rating */}
                 <div className="flex items-center mb-5">
                   <div className="flex mr-2">
-                    {renderRatingStars(productData.rating)}
+                    {renderRatingStars(productData.ratings.average)}
                   </div>
                   <span className="text-gray-600 text-sm">{productData.reviews.length} reviews</span>
                   <span className="mx-2 text-gray-300">|</span>
                   <span className="text-green-600 font-medium flex items-center">
-                    <FaCheck size={12} className="mr-1" /> In Stock ({productData.stock})
+                    <FaCheck size={12} className="mr-1" /> In Stock ({productData.best_vendor.stock})
                   </span>
                 </div>
                 
                 {/* Price */}
                 <div className="mb-8">
                   <div className="flex items-baseline">
-                    <span className="text-3xl font-bold text-[#4DA9FF]">${productData.price.toLocaleString()}</span>
+                    <span className="text-3xl font-bold text-[#4DA9FF]">${productData.best_vendor.price.toLocaleString()}</span>
                     <span className="ml-2 text-sm bg-green-100 text-green-800 px-2 py-0.5 rounded">Free Shipping</span>
                   </div>
                   <p className="text-sm text-gray-500 mt-1">Financing options available at checkout</p>
@@ -347,17 +347,19 @@ export default function ProductDetail() {
                   {productData.description.substring(0, 150)}...
                 </p>
                 
-                {/* Key Features List */}
-                <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">Key Features</h3>
-                  <ul className="space-y-2">
-                    {productData.features.slice(0, 4).map((feature, index) => (
-                      <li key={index} className="flex items-start">
-                        <span className="text-[#4DA9FF] mr-2 mt-1">•</span>
-                        <span className="text-gray-700">{feature}</span>
-                      </li>
+                {/* Key Attributes List */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3">Key Attributes</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4">
+                    {productData.attributes.slice(0, 4).map((attribute, index) => (
+                      <div key={index} className="flex items-start">
+                        <div className="flex-shrink-0 h-5 w-5 text-green-500 mr-2">
+                          <FaCheck className="h-5 w-5" />
+                        </div>
+                        <p className="text-gray-600"><span className="font-medium">{attribute.key}:</span> {attribute.value}</p>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
                 
                 {/* Add to Cart Section */}
@@ -374,7 +376,7 @@ export default function ProductDetail() {
                       <input
                         type="number"
                         min="1"
-                        max={productData.stock}
+                        max={productData.best_vendor.stock}
                         value={quantity}
                         onChange={handleQuantityChange}
                         className="w-14 text-center border-x border-gray-300 h-10 focus:outline-none focus:ring-0 focus:border-gray-300 text-gray-700"
@@ -478,28 +480,7 @@ export default function ProductDetail() {
                 {/* Description Content */}
                 {activeTab === 'description' && (
                   <div className="prose max-w-none">
-                    <p className="mb-4">{productData.description}</p>
-                    <p className="mb-4">
-                      Experience the future with the {productData.name}. This advanced {productData.category.toLowerCase()} robot 
-                      combines cutting-edge artificial intelligence with elegant design to provide an unparalleled user experience.
-                      Whether you need help managing your schedule, controlling smart home devices, or simply want a companion, 
-                      the {productData.name} adapts to your unique needs.
-                    </p>
-                    <p className="mb-4">
-                      With its advanced mobility system, the {productData.name} can navigate smoothly through your 
-                      environment, avoiding obstacles and learning the layout over time to optimize its movement patterns. 
-                      The robot&apos;s expressive interface and intuitive interactions create a natural experience that feels 
-                      comfortable from day one.
-                    </p>
-                    <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">All Features</h3>
-                    <ul className="space-y-3">
-                      {productData.features.map((feature, index) => (
-                        <li key={index} className="flex items-center">
-                          <FaCheck className="text-green-500 mr-3" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <p className="mb-4">{productData.description}</p>                    
                   </div>
                 )}
                 
@@ -508,10 +489,10 @@ export default function ProductDetail() {
                   <div>
                     <table className="w-full text-left">
                       <tbody>
-                        {Object.entries(productData.specifications).map(([key, value], index) => (
+                        {productData.attributes.map((attr, index) => (
                           <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                            <td className="px-6 py-4 font-medium text-gray-700 capitalize">{key}</td>
-                            <td className="px-6 py-4 text-gray-700">{value}</td>
+                            <td className="px-6 py-4 font-medium text-gray-700 capitalize">{attr.key}</td>
+                            <td className="px-6 py-4 text-gray-700">{attr.value}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -526,12 +507,12 @@ export default function ProductDetail() {
                       <h3 className="text-xl font-semibold mb-4">Customer Feedback</h3>
                       <div className="flex items-center mb-2">
                         <div className="flex mr-4">
-                          {renderRatingStars(productData.rating)}
+                          {renderRatingStars(productData.ratings.average)}
                         </div>
-                        <span className="text-2xl font-semibold text-gray-800">{productData.rating}</span>
+                        <span className="text-2xl font-semibold text-gray-800">{productData.ratings.average.toFixed(1)}</span>
                         <span className="text-gray-500 ml-2">out of 5</span>
                       </div>
-                      <p className="text-gray-600">{productData.reviews.length} global ratings</p>
+                      <p className="text-gray-600">{productData.ratings.count} global ratings</p>
                     </div>
                     
                     <div className="space-y-6">
@@ -577,7 +558,7 @@ export default function ProductDetail() {
                     {/* Display actual robot image */}
                     <div className={`${commonCardStyles.imagePlaceholder} bg-white`}>
                       <Image
-                        src={product.image}
+                        src={product.images?.[0]?.url || ''}
                         alt={product.name}
                         width={300}
                         height={300}
@@ -597,7 +578,9 @@ export default function ProductDetail() {
                     <div className="flex justify-between items-start mb-auto">
                       <div className="flex-1 min-w-0">
                         <span className={commonCardStyles.categoryBadge}>
-                          {product.category}
+                          {product.categories && product.categories.length > 0 
+                            ? product.categories[0].name 
+                            : 'Uncategorized'}
                         </span>
                         <Link href={`/product/${product.id}`}>
                           <h3 className="font-bold text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors truncate">
@@ -606,14 +589,14 @@ export default function ProductDetail() {
                         </Link>
                         <p className="text-gray-600 text-sm mt-1">{product.brand}</p>
                       </div>
-                      <span className="font-bold text-lg text-[#4DA9FF] ml-2 whitespace-nowrap">${product.price.toLocaleString()}</span>
+                      <span className="font-bold text-lg text-[#4DA9FF] ml-2 whitespace-nowrap">${product.best_vendor.price.toLocaleString()}</span>
                     </div>
                     
                     <div className="flex items-center mt-3">
                       <div className="flex">
-                        {renderRatingStars(product.rating)}
+                        {renderRatingStars(product.ratings.average)}
                       </div>
-                      <span className="text-gray-500 text-xs ml-2">({product.reviews.length})</span>
+                      <span className="text-gray-500 text-xs ml-2">({product.ratings.count})</span>
                     </div>
                     
                     <div className="mt-auto pt-4 pb-2">
