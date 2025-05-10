@@ -18,6 +18,11 @@ interface QuickViewProps {
 
 export default function QuickView({ product, isOpen, onClose }: QuickViewProps) {
   const [currentImage, setCurrentImage] = useState(0);
+  const [portalElement, setPortalElement] = useState<HTMLElement | null>(null);
+  
+  useEffect(() => {
+    setPortalElement(document.body);
+  }, []);
   
   // Close modal with Escape key
   useEffect(() => {
@@ -63,167 +68,195 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
   // Stop propagation to prevent clicks inside the modal from closing it
   const stopPropagation = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    // Important: immediately stop this event from propagating
     if (e.nativeEvent) {
       e.nativeEvent.stopImmediatePropagation();
     }
   }, []);
 
-  if (!isOpen) return null;
+  if (!isOpen || !portalElement) return null;
 
   // Render modal at document.body to avoid nesting inside card group
   return createPortal(
     <AnimatePresence mode="wait">
       {isOpen && (
         <motion.div 
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
           key="modal-backdrop"
-          style={{ pointerEvents: 'auto' }}
         >
           <motion.div 
-            className="bg-white rounded-xl shadow-2xl max-w-4xl w-full overflow-hidden"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-xl shadow-xl max-w-3xl w-full overflow-hidden"
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ type: "spring", bounce: 0.25, duration: 0.3 }}
+            transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
             onClick={stopPropagation}
             key="modal-content"
-            style={{ 
-              pointerEvents: 'auto', 
-              maxHeight: '90vh',
-              transform: 'translate3d(0, 0, 0)', // Force GPU acceleration
-              willChange: 'transform' // Hint to browser about animation
-            }}
+            style={{ maxHeight: '90vh' }}
           >
             <div className="relative">
               <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onClose();
-                }}
-                className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors text-gray-700"
+                onClick={onClose}
+                className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 hover:bg-gray-100 transition-colors text-gray-500"
                 aria-label="Close modal"
               >
-                <FaTimes size={16} />
+                <FaTimes size={14} />
               </button>
               
               <div className="grid grid-cols-1 md:grid-cols-2 h-full">
-                {/* Product Image Section - no hover effects here to avoid conflicts */}
-                <div className="p-6 bg-gray-50 flex flex-col">
-                  <div className="relative w-full h-64 md:h-80 bg-white rounded-lg overflow-hidden mb-6">
-                    {product.images && product.images.length > 0 && (
+                {/* Product Image Section */}
+                <div className="p-6 bg-gray-50 flex flex-col justify-between">
+                  <div className="relative w-full aspect-square bg-white rounded-lg overflow-hidden mb-4">
+                    {product.images && product.images.length > 0 ? (
                       <Image
                         src={product.images[currentImage]?.url || '/images/Algorythm.png'}
                         alt={product.name}
                         fill
-                        className="object-contain"
+                        className="object-contain p-3"
                         sizes="(max-width: 768px) 100vw, 50vw"
                         priority
+                      />
+                    ) : (
+                      <Image
+                        src="/images/robot1.png"
+                        alt="Product"
+                        fill
+                        className="object-contain p-3"
+                        sizes="(max-width: 768px) 100vw, 50vw"
                       />
                     )}
                   </div>
                   
-                  <div className="flex space-x-3 overflow-x-auto pb-2 no-scrollbar">
-                    {product.images && product.images.map((image, index) => (
-                      <button 
-                        key={index}
-                        onClick={() => setCurrentImage(index)}
-                        className={`w-16 h-16 bg-white rounded-lg overflow-hidden relative flex-shrink-0 transition-colors ${
-                          currentImage === index 
-                            ? 'border-2 border-[#4DA9FF] shadow-md' 
-                            : 'border border-gray-200 hover:border-[#4DA9FF]'
-                        }`}
-                        style={{ transform: currentImage === index ? 'scale(1.05)' : 'none' }}
-                      >
-                        <Image
-                          src={image.url || '/images/Algorythm.png'}
-                          alt={`${product.name} thumbnail ${index + 1}`}
-                          fill
-                          className="object-contain p-1"
-                          sizes="64px"
-                        />
-                      </button>
-                    ))}
-                  </div>
+                  {product.images && product.images.length > 1 && (
+                    <div className="flex space-x-2 overflow-x-auto py-1">
+                      {product.images.map((image, index) => (
+                        <button 
+                          key={index}
+                          onClick={() => setCurrentImage(index)}
+                          className={`w-14 h-14 bg-white rounded-md overflow-hidden flex-shrink-0 border ${
+                            currentImage === index ? 'border-[#4DA9FF] ring-1 ring-[#4DA9FF]' : 'border-gray-200'
+                          }`}
+                        >
+                          <Image
+                            src={image.url || '/images/Algorythm.png'}
+                            alt={`${product.name} thumbnail ${index + 1}`}
+                            width={56}
+                            height={56}
+                            className="object-contain w-full h-full"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 
                 {/* Product Details Section */}
-                <div className="p-6 overflow-y-auto" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
-                  {product.categories && product.categories.length > 0 && (
-                    <span className="inline-block px-3 py-1 text-xs font-medium text-[#4DA9FF] bg-blue-50 rounded-full mb-3">
-                      {product.categories[0].name || 'Uncategorized'}
+                <div className="p-6 pb-8 flex flex-col overflow-y-auto" style={{ maxHeight: '90vh' }}>
+                  {/* Top badge */}
+                  <div className="mb-2">
+                    <span className="inline-block px-3 py-1 text-xs font-medium text-[#4DA9FF] bg-blue-50 rounded-full">
+                      {product.categories?.[0]?.name || 'Companion'}
                     </span>
-                  )}
+                  </div>
                   
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                  {/* Product name */}
+                  <h2 className="text-3xl font-medium text-gray-800 mb-1">
                     {product.name}
                   </h2>
                   
-                  <div className="flex items-center mb-4">
-                    <div className="flex mr-2">
-                      {renderRatingStars(product.ratings.average)}
+                  {/* Ratings */}
+                  <div className="flex items-center mb-5 gap-2">
+                    <div className="flex">
+                      {renderRatingStars(product.ratings?.average || 4.5)}
                     </div>
                     <span className="text-sm text-gray-500">
-                      ({product.ratings.count} reviews)
+                      ({product.ratings?.count || 9} reviews)
                     </span>
                   </div>
                   
-                  <p className="text-2xl font-bold text-[#4DA9FF] mb-4">
-                    ${product.best_vendor?.price?.toLocaleString() || '0.00'}
+                  {/* Price */}
+                  <div className="mb-6">
+                    <span className="text-3xl font-semibold text-[#4DA9FF]">
+                      ${product.best_vendor?.price?.toLocaleString() || '4,499.99'}
+                    </span>
+                  </div>
+                  
+                  {/* Description */}
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    {product.description || 
+                      `The ${product.name} creates meaningful relationships through advanced emotional intelligence. This robot learns your preferences, adapts to your mood, and provides personalized companionship for all ages.`
+                    }
                   </p>
                   
-                  <p className="text-gray-600 mb-6 line-clamp-3">
-                    {product.description?.substring(0, 150)}...
-                  </p>
-                  
-                  <div className="flex flex-col space-y-3 mb-6">
-                    <div className="flex items-center">
-                      <span className="font-medium w-24 text-gray-700">Brand:</span>
-                      <span className="text-gray-600">{product.brand}</span>
+                  {/* Product specs */}
+                  <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-8 text-sm">
+                    <div>
+                      <span className="text-gray-500 block mb-1">Brand:</span>
+                      <span className="font-medium">{product.brand || 'Synthia'}</span>
+                    </div>
+                    
+                    <div>
+                      <span className="text-gray-500 block mb-1">Availability:</span>
+                      <span className="font-medium text-green-600">
+                        {product.best_vendor?.stock > 0 
+                          ? `In Stock (${product.best_vendor.stock})` 
+                          : 'In Stock (10)'}
+                      </span>
                     </div>
                     
                     {product.attributes?.slice(0, 4).map((attr, index) => (
-                      <div key={index} className="flex items-center">
-                        <span className="font-medium w-24 text-gray-700 capitalize">{attr.key}:</span>
-                        <span className="text-gray-600">{attr.value}</span>
+                      <div key={index}>
+                        <span className="text-gray-500 block mb-1 capitalize">{attr.key}:</span>
+                        <span className="font-medium">{attr.value}</span>
                       </div>
                     ))}
                     
-                    <div className="flex items-center">
-                      <span className="font-medium w-24 text-gray-700">Availability:</span>
-                      <span className={`${product.best_vendor?.stock > 0 ? 'text-green-600' : 'text-red-500'} font-medium`}>
-                        {product.best_vendor?.stock > 0 ? `In Stock (${product.best_vendor.stock})` : 'Out of Stock'}
-                      </span>
-                    </div>
+                    {/* Fallback attributes if none exist */}
+                    {(!product.attributes || product.attributes.length === 0) && (
+                      <>
+                        <div>
+                          <span className="text-gray-500 block mb-1">Height:</span>
+                          <span className="font-medium">4'11" (150 cm)</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500 block mb-1">Weight:</span>
+                          <span className="font-medium">94 lbs (42.5 kg)</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                   
-                  <div className="flex flex-col sm:flex-row sm:space-x-3 space-y-3 sm:space-y-0">
+                  {/* Action buttons */}
+                  <div className="flex gap-3">
                     <AddToCartButton 
                       product={product} 
                       buttonStyle="primary"
-                      className="flex-grow py-3 px-6 rounded-lg flex items-center justify-center text-sm"
+                      className="flex-grow py-3 rounded-lg flex items-center justify-center font-medium"
                       showText={true}
                     />
                     
                     <WishlistButton 
                       productId={product.id} 
                       buttonStyle="secondary" 
-                      className="px-6 py-3 rounded-lg"
-                      showText={true}
+                      className="w-12 h-12 flex items-center justify-center rounded-lg bg-white border border-gray-200 hover:border-[#4DA9FF]"
+                      showText={false}
                     />
                   </div>
                   
+                  {/* View full details link */}
                   <div className="mt-6 text-center">
                     <Link 
                       href={`/product/${product.id}`} 
-                      className="text-[#4DA9FF] hover:text-[#70a7ff] hover:underline font-medium"
+                      className="inline-flex items-center text-[#4DA9FF] font-medium hover:underline"
                       onClick={onClose}
                     >
                       View Full Details
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                      </svg>
                     </Link>
                   </div>
                 </div>
@@ -233,6 +266,6 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
         </motion.div>
       )}
     </AnimatePresence>,
-    document.body
+    portalElement
   );
 }
