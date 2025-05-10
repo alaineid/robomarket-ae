@@ -25,8 +25,8 @@ async function fetchInitialProducts() {
     const baseUrl = await getBaseUrl();
     
     // Server-side fetch of initial products with proper base URL
-    // Updated to fetch 4 products instead of 20 to match client-side pagination
-    const res = await fetch(`${baseUrl}/api/products?limit=4`, {
+    // Updated to fetch 20 products instead of 4
+    const res = await fetch(`${baseUrl}/api/products?limit=20`, {
       cache: 'no-cache',  // Don't cache this response
     });
     

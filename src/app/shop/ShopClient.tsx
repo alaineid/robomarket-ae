@@ -71,7 +71,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
     price_max: priceRange[1] < 10000 ? priceRange[1] : undefined,
     rating: ratingFilter > 0 ? ratingFilter : undefined,
     sort_by: sortBy,
-    limit: 4,
+    limit: 20, // Changed from 4 to 20
     offset: 0
   };
 
@@ -85,7 +85,8 @@ export default function ShopClient({ initialData }: ShopClientProps) {
 
   // Extract products from query data - Always prioritize fetched data over initialData when filters are applied
   const products = selectedCategories.length > 0 || selectedBrands.length > 0 || 
-    searchTerm || ratingFilter > 0 || priceRange[0] > 0 || priceRange[1] < 10000 ? 
+    searchTerm || ratingFilter > 0 || priceRange[0] > 0 || priceRange[1] < 10000 ||
+    sortBy !== 'newest' ? 
     data?.products || [] : 
     data?.products || initialData.products || [];
     
@@ -193,7 +194,8 @@ export default function ShopClient({ initialData }: ShopClientProps) {
   useEffect(() => {
     // Only trigger this after initial mount
     if (selectedCategories.length > 0 || selectedBrands.length > 0 || 
-        searchTerm || ratingFilter > 0 || priceRange[0] > 0 || priceRange[1] < 10000) {
+        searchTerm || ratingFilter > 0 || priceRange[0] > 0 || priceRange[1] < 10000 ||
+        sortBy !== 'newest') {
       refetch();
     }
   }, [selectedCategories, selectedBrands, searchTerm, ratingFilter, priceRange, sortBy, refetch]);
