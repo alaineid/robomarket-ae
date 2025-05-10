@@ -1,14 +1,12 @@
-import { cookies } from 'next/headers';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { createClient as createSupabaseAdminClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../types/supabase.types';
 
-// Server-side Supabase client with cookies
-export const createServerClient = () => {
-  return createServerComponentClient<Database>({
-    cookies: () => Promise.resolve(cookies()),
-  });
-};
+export function createServerAnonClient() {
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 // Admin client (for server-side admin tasks, bypassing RLS)
 export const createServerAdminClient = () => {
@@ -19,5 +17,5 @@ export const createServerAdminClient = () => {
     throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL');
   }
 
-  return createSupabaseAdminClient<Database>(supabaseUrl, supabaseServiceKey);
+  return createClient(supabaseUrl, supabaseServiceKey);
 };

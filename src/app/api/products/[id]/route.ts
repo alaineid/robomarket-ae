@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerAdminClient } from '@/utils/server/supabaseServer';
+import { createServerAnonClient } from '@/utils/server/supabaseServer';
 
 const MATVIEW_SELECT = `*`;
 
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
   }
 
-  const supabase = createServerAdminClient();
+  const supabase = createServerAnonClient();
   const { data, error } = await supabase
     .from('product_full')
     .select(MATVIEW_SELECT)
