@@ -4,6 +4,9 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { headers } from 'next/headers';
 
+// Tell Next.js this page should be dynamically rendered
+export const dynamic = 'force-dynamic';
+
 // Function to determine the base URL from request headers
 async function getBaseUrl() {
   // Get host from headers

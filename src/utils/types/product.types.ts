@@ -69,6 +69,7 @@ export interface ApiResponse {
   products: Product[];
   hasMore: boolean;
   total: number;
+  nextOffset?: number; // Adding the nextOffset that the API actually returns
 }
 
 // Legacy interface for backward compatibility

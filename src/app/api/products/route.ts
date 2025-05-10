@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerAdminClient } from '@/utils/server/supabaseServer';
 
-// shared SELECT on the materialized view
 const MATVIEW_SELECT = '*';
 
 export async function GET(request: Request) {
@@ -18,25 +17,17 @@ export async function GET(request: Request) {
   let query = supabase.from('product_full').select(MATVIEW_SELECT);
   let countQuery = supabase.from('product_full').select('id', { count: 'exact' });
 
-  // Apply featured filter
   if (featured) {
     query = query.not('featured_position', 'is', null);
     countQuery = countQuery.not('featured_position', 'is', null);
   }
 
-  // ───────────────────────────── Category filter ──────────────────────────────
   if (category) {
-    const categoriesArr = category         // "Companion,Utility" ⇒ ["Companion","Utility"]
-      .split(',')
-      .map(c => c.trim())
-      .filter(Boolean);
-
-    // overlap (OR-semantics) → any element of array matches
-    query      = query.overlaps('category_names', categoriesArr);
+    const categoriesArr = category.split(',').map(c => c.trim()).filter(Boolean);
+    query = query.overlaps('category_names', categoriesArr);
     countQuery = countQuery.overlaps('category_names', categoriesArr);
   }
 
-  // Apply brand filter
   if (brand) {
     const brandsArr = brand.split(',').map(b => b.trim()).filter(Boolean);
     if (brandsArr.length === 1) {
@@ -48,13 +39,11 @@ export async function GET(request: Request) {
     }
   }
 
-  // Apply search filter (name, description)
   if (search) {
     query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
     countQuery = countQuery.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
   }
 
-  // Apply price filter
   const priceMin = Number(url.searchParams.get('price_min')) || 0;
   const priceMax = Number(url.searchParams.get('price_max')) || Number.MAX_SAFE_INTEGER;
 
@@ -68,60 +57,57 @@ export async function GET(request: Request) {
     countQuery = countQuery.lte('best_vendor->price', priceMax);
   }
 
-  // Apply rating filter
   const rating = Number(url.searchParams.get('rating')) || 0;
   if (rating > 0) {
-    // The issue was here - we need to subtract a small amount from the rating value
-    // to make sure we include all products with the specified rating or higher
-    // For example: when rating=4, we want to include 4, 4.1, 4.2, etc.
     const floorRating = Math.floor(rating);
     query = query.gte('ratings->average', floorRating);
     countQuery = countQuery.gte('ratings->average', floorRating);
   }
 
-  // Get total count
   const { count: totalCount, error: countError } = await countQuery;
   if (countError) {
+    console.error('Count query error:', countError);
     return NextResponse.json({ error: countError.message }, { status: 500 });
   }
 
-  // Apply sorting
   switch (sortBy) {
     case 'featured':
-      query = query.order('featured_position', { ascending: true });
+      query = query.order('featured_position', { ascending: true }).order('id', { ascending: true });
       break;
     case 'newest':
-      query = query.order('created_at', { ascending: false });
+      query = query.order('created_at', { ascending: false }).order('id', { ascending: true });
       break;
     case 'price-asc':
-      query = query.order('best_vendor->price', { ascending: true });
+      query = query.order('best_vendor->price', { ascending: true }).order('id', { ascending: true });
       break;
     case 'price-desc':
-      query = query.order('best_vendor->price', { ascending: false });
+      query = query.order('best_vendor->price', { ascending: false }).order('id', { ascending: true });
       break;
     case 'rating':
-      query = query.order('ratings->average', { ascending: false });
+      query = query.order('ratings->average', { ascending: false }).order('id', { ascending: true });
       break;
     case 'popularity':
-      query = query.order('ratings->count', { ascending: false });
+      query = query.order('ratings->count', { ascending: false }).order('id', { ascending: true });
       break;
     default:
-      query = query.order('created_at', { ascending: false });
+      query = query.order('created_at', { ascending: false }).order('id', { ascending: true });
   }
 
-  // Apply pagination
   const { data, error } = await query.range(offset, offset + limit - 1);
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   const finalProducts = data || [];
+  const totalItems = totalCount || 0;
+  const newOffset = offset + limit;
+  const hasMore = newOffset < totalItems;
 
-  // Return response with metadata
   return NextResponse.json({
     products: finalProducts,
-    hasMore: offset + finalProducts.length < (totalCount || 0),
-    total: featured ? finalProducts.length : totalCount || 0,
+    hasMore,
+    total: totalItems,
+    nextOffset: newOffset,
   }, {
     headers: {
       'Cache-Control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=300',

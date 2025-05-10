@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FaRegHeart, FaHeart } from 'react-icons/fa';
 import { useWishlist } from '@/utils/wishlistContext';
 import { motion } from 'framer-motion';
+import { Product } from '@/utils/types/product.types';
 
 interface WishlistButtonProps {
   productId: number;
@@ -18,7 +19,7 @@ export default function WishlistButton({
   showText = false,
   buttonStyle = 'icon'
 }: WishlistButtonProps) {
-  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { isInWishlist, toggleWishlistItem } = useWishlist();
   const [isAnimating, setIsAnimating] = useState(false);
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
@@ -27,11 +28,26 @@ export default function WishlistButton({
     
     setIsAnimating(true);
     
-    if (isInWishlist(productId)) {
-      removeFromWishlist(productId);
-    } else {
-      addToWishlist(productId);
-    }
+    // Create a minimal product object with required fields
+    // Using Partial<Product> to properly type the minimal object
+    const productObj: Partial<Product> = { 
+      id: productId,
+      sku: '',
+      name: '',
+      description: '',
+      brand: '',
+      created_at: '',
+      updated_at: '',
+      ratings: { average: 0, count: 0 },
+      categories: [],
+      images: [],
+      attributes: [],
+      vendor_products: [],
+      best_vendor: { vendor: { id: 0, name: '', email: null, phone: null, website: null }, vendor_sku: null, price: 0, stock: 0 },
+      reviews: []
+    };
+    
+    toggleWishlistItem(productObj as Product);
     
     setTimeout(() => {
       setIsAnimating(false);

@@ -15,7 +15,8 @@ import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { commonButtonStyles, commonCardStyles } from '@/styles/commonStyles';
 import { useCart } from '@/utils/cartContext';
-import { Product } from '@/utils/types/product.types';
+import { useProduct, useProducts } from '@/utils/queryHooks';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface BreadcrumbItem {
   label: string;
@@ -27,59 +28,68 @@ export default function ProductDetail() {
   const params = useParams();
   const productId = parseInt(params?.id as string ?? '0');
   const { addToCart } = useCart();
+  const queryClient = useQueryClient();
   
-  const [productData, setProductData] = useState<Product | null>(null);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  // State for UI
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState('description');
-  const [loading, setLoading] = useState(true);
   const [addedToCart, setAddedToCart] = useState(false);
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
 
-  // Load product data based on ID using API instead of local data
+  // Fetch product data using React Query
+  const { 
+    data: productData, 
+    isLoading: isLoadingProduct,
+    error: productError 
+  } = useProduct(productId);
+
+  // Fetch related products based on the product category
+  const {
+    data: relatedProductsData,
+    isLoading: isLoadingRelated
+  } = useProducts({
+    category: productData?.categories?.[0]?.name,
+    limit: 4
+  });
+
+  // Filter related products to exclude the current one
+  const relatedProducts = relatedProductsData?.products?.filter(p => p.id !== productId) || [];
+
+  // Update breadcrumbs when product data loads
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch product data from API
-        const response = await fetch(`/api/products/${productId}`);
-        
-        if (!response.ok) {
-          throw new Error('Product not found');
+    if (productData) {
+      // Save product to recently viewed
+      const saveToRecentlyViewed = () => {
+        try {
+          const recentlyViewed = localStorage.getItem('recentlyViewed');
+          let viewedIds: number[] = recentlyViewed ? JSON.parse(recentlyViewed) : [];
+          
+          // Remove current product if it exists and add it to the front
+          viewedIds = viewedIds.filter(id => id !== productData.id);
+          viewedIds.unshift(productData.id);
+          
+          // Limit to 10 recent products
+          viewedIds = viewedIds.slice(0, 10);
+          
+          localStorage.setItem('recentlyViewed', JSON.stringify(viewedIds));
+        } catch (error) {
+          console.error('Error saving recently viewed products:', error);
         }
-        
-        const product = await response.json();
-        setProductData(product);
-        
-        // Build custom breadcrumbs including the product name
-        setBreadcrumbs([
-          { label: 'Home', path: '/', isCurrent: false },
-          { label: 'Shop', path: '/shop', isCurrent: false },
-          { label: product.categories[0]?.name || 'Uncategorized', path: `/shop?category=${encodeURIComponent(product.categories[0]?.name || '')}`, isCurrent: false },
-          { label: product.name, path: `/product/${product.id}`, isCurrent: true }
-        ]);
-        
-        // Fetch related products (products in the same category)
-        const relatedResponse = await fetch(`/api/products?category=${encodeURIComponent(product.category)}&limit=4`);
-        const relatedData = await relatedResponse.json();
-        
-        // Filter out the current product from related products
-        const filteredProducts = relatedData.products.filter((p: Product) => p.id !== productId);
-        setRelatedProducts(filteredProducts.slice(0, 4)); // Limit to 4 related products
-      } catch (error) {
-        console.error('Error fetching product:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    if (productId) {
-      fetchProduct();
+      };
+      
+      // Build breadcrumbs
+      setBreadcrumbs([
+        { label: 'Home', path: '/', isCurrent: false },
+        { label: 'Shop', path: '/shop', isCurrent: false },
+        { label: productData.categories[0]?.name || 'Uncategorized', path: `/shop?category=${encodeURIComponent(productData.categories[0]?.name || '')}`, isCurrent: false },
+        { label: productData.name, path: `/product/${productData.id}`, isCurrent: true }
+      ]);
+      
+      saveToRecentlyViewed();
     }
-  }, [productId]);
+  }, [productData]);
 
   // Reset activeImage when product changes
   useEffect(() => {
@@ -88,7 +98,6 @@ export default function ProductDetail() {
 
   // Main image and thumbnail handling function
   const handleThumbnailClick = (index: number) => {
-    console.log(`Clicking thumbnail ${index}`);
     setActiveImage(index);
   };
   
@@ -147,6 +156,9 @@ export default function ProductDetail() {
       setTimeout(() => {
         setAddedToCart(false);
       }, 2500);
+
+      // Prefetch cart data
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
     }
   };
   
@@ -155,10 +167,13 @@ export default function ProductDetail() {
     e.preventDefault();
     e.stopPropagation();
     addToCart(productId, 1);
+    
+    // Prefetch cart data
+    queryClient.invalidateQueries({ queryKey: ['cart'] });
   };
 
   // Loading state
-  if (loading) {
+  if (isLoadingProduct) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -174,7 +189,7 @@ export default function ProductDetail() {
   }
 
   // Product not found
-  if (!productData) {
+  if (!productData || productError) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -547,70 +562,76 @@ export default function ProductDetail() {
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((product) => (
-                <motion.div 
-                  key={product.id} 
-                  whileHover={{ y: -3 }}
-                  className={commonCardStyles.container}
-                >
-                  <div className={commonCardStyles.imageContainer}>
-                    {/* Display actual robot image */}
-                    <div className={`${commonCardStyles.imagePlaceholder} bg-white`}>
-                      <Image
-                        src={product.images?.[0]?.url || ''}
-                        alt={product.name}
-                        width={300}
-                        height={300}
-                        className="object-contain w-full h-full"
-                      />
-                    </div>
-                    <div className={commonCardStyles.imageOverlay}></div>
-                    <button 
-                      onClick={(e) => handleQuickAddToCart(e, product.id)}
-                      className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer transform translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
-                    >
-                      <FaShoppingCart size={16} />
-                    </button>
-                  </div>
-                  
-                  <div className={`${commonCardStyles.content} flex flex-col h-[200px]`}>
-                    <div className="flex justify-between items-start mb-auto">
-                      <div className="flex-1 min-w-0">
-                        <span className={commonCardStyles.categoryBadge}>
-                          {product.categories && product.categories.length > 0 
-                            ? product.categories[0].name 
-                            : 'Uncategorized'}
-                        </span>
-                        <Link href={`/product/${product.id}`}>
-                          <h3 className="font-bold text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors truncate">
-                            {product.name}
-                          </h3>
-                        </Link>
-                        <p className="text-gray-600 text-sm mt-1">{product.brand}</p>
+            {isLoadingRelated ? (
+              <div className="flex justify-center py-8">
+                <div className="w-10 h-10 border-4 border-t-4 border-[#4DA9FF] border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {relatedProducts.map((product) => (
+                  <motion.div 
+                    key={product.id} 
+                    whileHover={{ y: -3 }}
+                    className={commonCardStyles.container}
+                  >
+                    <div className={commonCardStyles.imageContainer}>
+                      {/* Display actual robot image */}
+                      <div className={`${commonCardStyles.imagePlaceholder} bg-white`}>
+                        <Image
+                          src={product.images?.[0]?.url || ''}
+                          alt={product.name}
+                          width={300}
+                          height={300}
+                          className="object-contain w-full h-full"
+                        />
                       </div>
-                      <span className="font-bold text-lg text-[#4DA9FF] ml-2 whitespace-nowrap">${product.best_vendor.price.toLocaleString()}</span>
-                    </div>
-                    
-                    <div className="flex items-center mt-3">
-                      <div className="flex">
-                        {renderRatingStars(product.ratings.average)}
-                      </div>
-                      <span className="text-gray-500 text-xs ml-2">({product.ratings.count})</span>
-                    </div>
-                    
-                    <div className="mt-auto pt-4 pb-2">
-                      <Link 
-                        href={`/product/${product.id}`}
-                        className={`w-full text-center ${commonButtonStyles.secondary}`}
+                      <div className={commonCardStyles.imageOverlay}></div>
+                      <button 
+                        onClick={(e) => handleQuickAddToCart(e, product.id)}
+                        className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4DA9FF] hover:bg-[#4DA9FF] hover:text-white transition-all duration-300 cursor-pointer transform translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
                       >
-                        View Details
-                      </Link>
+                        <FaShoppingCart size={16} />
+                      </button>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                    
+                    <div className={`${commonCardStyles.content} flex flex-col h-[200px]`}>
+                      <div className="flex justify-between items-start mb-auto">
+                        <div className="flex-1 min-w-0">
+                          <span className={commonCardStyles.categoryBadge}>
+                            {product.categories && product.categories.length > 0 
+                              ? product.categories[0].name 
+                              : 'Uncategorized'}
+                          </span>
+                          <Link href={`/product/${product.id}`}>
+                            <h3 className="font-bold text-lg text-gray-800 hover:text-[#4DA9FF] transition-colors truncate">
+                              {product.name}
+                            </h3>
+                          </Link>
+                          <p className="text-gray-600 text-sm mt-1">{product.brand}</p>
+                        </div>
+                        <span className="font-bold text-lg text-[#4DA9FF] ml-2 whitespace-nowrap">${product.best_vendor.price.toLocaleString()}</span>
+                      </div>
+                      
+                      <div className="flex items-center mt-3">
+                        <div className="flex">
+                          {renderRatingStars(product.ratings.average)}
+                        </div>
+                        <span className="text-gray-500 text-xs ml-2">({product.ratings.count})</span>
+                      </div>
+                      
+                      <div className="mt-auto pt-4 pb-2">
+                        <Link 
+                          href={`/product/${product.id}`}
+                          className={`w-full text-center ${commonButtonStyles.secondary}`}
+                        >
+                          View Details
+                        </Link>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </section>
         </div>
       </main>

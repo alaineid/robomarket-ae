@@ -4,34 +4,32 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import {
   FaStar, FaFilter, FaTimes, FaChevronDown, FaChevronRight,
-  FaSearch, FaCheck, FaHeart, FaBoxOpen, FaShieldAlt, FaBrain, 
+  FaSearch, FaCheck, FaHeart, FaBoxOpen, FaShieldAlt, FaBrain,
   FaHeartbeat, FaIndustry, FaSpinner
 } from 'react-icons/fa';
 import { debounce } from 'lodash-es';
 import Slider from 'rc-slider';
-import 'rc-slider/assets/index.css'; // Import rc-slider styles
+import 'rc-slider/assets/index.css';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import ProductCard from '@/components/ProductCard';
 import { commonButtonStyles, commonLayoutStyles } from '@/styles/commonStyles';
-import { 
-  categories, 
-  brands, 
-  Product, 
-  ApiResponse 
+import {
+  categories,
+  brands,
+  Product,
+  ApiResponse
 } from '@/utils/types/product.types';
+import { useProducts } from '@/utils/queryHooks';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ShopClientProps {
   initialData: ApiResponse;
 }
 
 export default function ShopClient({ initialData }: ShopClientProps) {
-  // State for products and pagination
-  const [products, setProducts] = useState<Product[]>(initialData.products || []);
-  const [hasMore, setHasMore] = useState<boolean>(initialData.hasMore || false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [offset, setOffset] = useState(initialData.products?.length || 0);
+  const queryClient = useQueryClient();
   
   // State for filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,15 +39,18 @@ export default function ShopClient({ initialData }: ShopClientProps) {
   const [sortBy, setSortBy] = useState('newest');
   const [ratingFilter, setRatingFilter] = useState(0);
   
+  // Pagination state
+  const [, setOffset] = useState(initialData.products?.length || 0);
+  
   // State for recently viewed products
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   
   // State for UI
-  const [isFilterDirty, setIsFilterDirty] = useState(false);
+  const [, setIsFilterDirty] = useState(false);
   const [mobileShowFilters, setMobileShowFilters] = useState(false);
   const [desktopShowFilters, setDesktopShowFilters] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
-  const [isInfiniteScrollEnabled, setIsInfiniteScrollEnabled] = useState(false); // Set infinite scroll disabled by default
+  const [isInfiniteScrollEnabled] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
 
   // State for collapsible filter sections
@@ -61,57 +62,34 @@ export default function ShopClient({ initialData }: ShopClientProps) {
     rating: false
   });
 
-  // Apply filters, optionally overriding selectedBrands and sortBy
-  // Moved applyFilters definition before debouncedApplyFilters
-  const applyFilters = useCallback((overrideBrands?: string[], overrideSortBy?: string, overrideRating?: number) => {
-    const brandsToUse = overrideBrands ?? selectedBrands;
-    const sortToUse = overrideSortBy ?? sortBy;
-    const ratingToUse = typeof overrideRating === 'number' ? overrideRating : ratingFilter;
+  // Create filter object for React Query
+  const filters = {
+    search: searchTerm,
+    category: selectedCategories.length > 0 ? selectedCategories.join(',') : undefined,
+    brand: selectedBrands.length > 0 ? selectedBrands.join(',') : undefined,
+    price_min: priceRange[0] > 0 ? priceRange[0] : undefined,
+    price_max: priceRange[1] < 10000 ? priceRange[1] : undefined,
+    rating: ratingFilter > 0 ? ratingFilter : undefined,
+    sort_by: sortBy,
+    limit: 4,
+    offset: 0
+  };
 
-    const params = new URLSearchParams();
-    if (searchTerm) params.append('search', searchTerm);
-    if (selectedCategories.length > 0) params.append('category', selectedCategories.join(','));
-    if (brandsToUse.length > 0) params.append('brand', brandsToUse.join(','));
-    if (priceRange[0] > 0) params.append('price_min', priceRange[0].toString());
-    if (priceRange[1] < 10000) params.append('price_max', priceRange[1].toString());
-    
-    if (ratingToUse > 0) {
-      params.append('rating', ratingToUse.toString());
-    }
-    
-    if (sortToUse) params.append('sort_by', sortToUse);
-    params.append('limit', '4'); // Changed from 20 to 4 robots per page
-    params.append('offset', '0'); // Always reset to first page for new filter applications
+  // Use React Query for product fetching, hydrate first page with initialData
+  const { 
+    data, 
+    isLoading, 
+    fetchNextPage,
+    isFetchingNextPage,
+    refetch  } = useProducts(filters, initialData);
 
-    const url = `/api/products?${params.toString()}`;
+  // Extract products from query data - Always prioritize fetched data over initialData when filters are applied
+  const products = selectedCategories.length > 0 || selectedBrands.length > 0 || 
+    searchTerm || ratingFilter > 0 || priceRange[0] > 0 || priceRange[1] < 10000 ? 
+    data?.products || [] : 
+    data?.products || initialData.products || [];
     
-    // Debug log
-    console.log('🔍 Calling API with filters:', url);
-    
-    setIsLoading(true);
-    fetch(url)
-      .then(response => {
-        console.log('📊 API Response status:', response.status);
-        return response.json();
-      })
-      .then(data => {
-        console.log('📦 Received products:', data.products?.length || 0);
-        setProducts(data.products || []);
-        setOffset(data.products?.length || 0);
-        setHasMore(data.hasMore);
-        setIsFilterDirty(false);
-      })
-      .catch(error => {
-        console.error('❌ Error fetching products:', error);
-      })
-      .finally(() => setIsLoading(false));
-    
-    // Remove automatic closing of filters on mobile
-    // Mobile filters will remain open until user explicitly closes them
-  }, [searchTerm, selectedCategories, selectedBrands, priceRange, ratingFilter, sortBy, setIsLoading, setProducts, setOffset, setHasMore, setIsFilterDirty]);
-  
-  // Debounced version of applyFilters for search
-  const debouncedApplyFilters = useCallback(debounce(() => applyFilters(), 500), [applyFilters]);
+  const hasMore = data?.hasMore ?? initialData.hasMore ?? false;
 
   // Category icons mapping
   const CATEGORY_ICONS = {
@@ -123,126 +101,52 @@ export default function ShopClient({ initialData }: ShopClientProps) {
     'Industrial': <FaIndustry />
   };
 
-  // Function to fetch products from API with filters
-  const fetchProducts = useCallback(async (resetProducts = false) => {
-    try {
-      setIsLoading(true);
-      
-      // Build query parameters
-      const params = new URLSearchParams();
-      
-      if (searchTerm) params.append('search', searchTerm);
-      if (selectedCategories.length > 0) {
-        const categoryParam = selectedCategories.join(',');
-        params.append('category', categoryParam);
-      }
-      if (selectedBrands.length > 0) params.append('brand', selectedBrands.join(','));
-      if (priceRange[0] > 0) params.append('price_min', priceRange[0].toString());
-      if (priceRange[1] < 10000) params.append('price_max', priceRange[1].toString());
-      if (ratingFilter > 0) params.append('rating', ratingFilter.toString());
-      if (sortBy) params.append('sort_by', sortBy);
-      
-      // Set limit for pagination
-      params.append('limit', '4'); // Changed from 20 to 4 robots per page
-      
-      // If resetting products, start from offset 0, otherwise use current offset
-      if (resetProducts) {
-        params.append('offset', '0');
-      } else {
-        params.append('offset', offset.toString());
-      }
-      
-      const url = `/api/products?${params.toString()}`;
-      // Debug log
-      console.log('🔄 Loading more products:', url);
-      
-      // Fetch products
-      const response = await fetch(url);
-      console.log('📊 Load More Response status:', response.status);
-      
-      const data = await response.json();
-      console.log('📦 Received additional products:', data.products?.length || 0);
-      
-      if (resetProducts) {
-        // Replace all products
-        setProducts(data.products || []);
-        setOffset(data.products?.length || 0);
-      } else {
-        // Append new products
-        setProducts(prev => [...prev, ...(data.products || [])]);
-        setOffset(prev => prev + (data.products?.length || 0));
-      }
-      setHasMore(data.hasMore);
-      setIsFilterDirty(false);
-    } catch (error) {
-      console.error('❌ Error in fetchProducts:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [searchTerm, selectedCategories, selectedBrands, priceRange, ratingFilter, sortBy, offset, products.length]);
-  
-  // Apply filters with specific categories (bypassing React state timing issues)
-  const applyFiltersWithCategories = (categoryList: string[]) => {
-    try {
-      setIsLoading(true);
-      // Build query parameters
-      const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-      if (categoryList && categoryList.length > 0) {
-        const categoryParam = categoryList.join(',');
-        params.append('category', categoryParam);
-      }
-      if (selectedBrands.length > 0) params.append('brand', selectedBrands.join(','));
-      if (priceRange[0] > 0) params.append('price_min', priceRange[0].toString());
-      if (priceRange[1] < 10000) params.append('price_max', priceRange[1].toString());
-      if (ratingFilter > 0) params.append('rating', ratingFilter.toString());
-      if (sortBy) params.append('sort_by', sortBy);
-      // Set limit and offset
-      params.append('limit', '4'); // Changed from 20 to 4 robots per page
-      params.append('offset', '0'); // Always reset to first page when applying filters
-      const url = `/api/products?${params.toString()}`;
-      
-      // Debug log
-      console.log('🏷️ Applying category filters:', url);
-      console.log('📋 Categories:', categoryList);
-      
-      // Fetch products
-      fetch(url)
-        .then(response => {
-          console.log('📊 Category Filter Response status:', response.status);
-          return response.json();
-        })
-        .then(data => {
-          console.log('📦 Received filtered products:', data.products?.length || 0);
-          // Replace all products
-          setProducts(data.products || []);
-          setOffset(data.products?.length || 0);
-          setHasMore(data.hasMore);
-          setIsFilterDirty(false);
-        })
-        .catch(error => {
-          console.error('❌ Error fetching products with explicit categories:', error);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-      
-      // Remove automatic closing of filters on mobile
-      // Mobile filters will remain open until user explicitly closes them
-    } catch (error) {
-      console.error('❌ Error in applyFiltersWithCategories:', error);
-      setIsLoading(false);
-    }
-  };
+  // Load more products
+  const fetchMoreProducts = useCallback(async () => {
+    if (isFetchingNextPage || !hasMore) return;
+    
+    // Update offset for the next page
+    setOffset(prev => prev + 4);
+    
+    // Fetch next page with updated offset
+    await fetchNextPage();
+  }, [fetchNextPage, hasMore, isFetchingNextPage]); // Removed offset dependency
 
   // Handle infinite scroll
   const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
     const [entry] = entries;
-    // Only load more if visible, has more products, not already loading, and infinite scroll is enabled
-    if (entry?.isIntersecting && hasMore && !isLoading && isInfiniteScrollEnabled) {
-      fetchProducts();
+    if (entry?.isIntersecting && hasMore && !isLoading && !isFetchingNextPage && isInfiniteScrollEnabled) {
+      fetchMoreProducts();
     }
-  }, [hasMore, isLoading, isInfiniteScrollEnabled, fetchProducts]);
+  }, [hasMore, isLoading, isFetchingNextPage, isInfiniteScrollEnabled, fetchMoreProducts]);
+  
+  // Fetch recently viewed products
+  const fetchRecentlyViewedProducts = useCallback(async (ids: number[]) => {
+    if (!ids.length) return;
+    
+    try {
+      // Limit to 4 most recent
+      const limitedIds = ids.slice(0, 4);
+      const productsData = await Promise.all(
+        limitedIds.map(async (id) => {
+          // Pre-fetch and cache with React Query
+          const data = await queryClient.fetchQuery({
+            queryKey: ['product', id],
+            queryFn: async () => {
+              const response = await fetch(`/api/products/${id}`);
+              if (!response.ok) return null;
+              return response.json() as Promise<Product>;
+            },
+          });
+          return data;
+        })
+      );
+      setRecentlyViewed(productsData.filter((p): p is Product => p !== null));
+    } catch (error) {
+       
+      console.error('Failed to fetch recently viewed products:', error);
+    }
+  }, [queryClient]);
   
   // Set up intersection observer for infinite scroll
   useEffect(() => {
@@ -283,40 +187,30 @@ export default function ShopClient({ initialData }: ShopClientProps) {
     return () => {
       window.removeEventListener('resize', checkIfMobile);
     };
-  }, []);
+  }, [fetchRecentlyViewedProducts]); // Added fetchRecentlyViewedProducts dependency
   
-  // Fetch recently viewed products
-  const fetchRecentlyViewedProducts = async (ids: number[]) => {
-    if (!ids.length) return;
-    
-    try {
-      // Limit to 4 most recent
-      const limitedIds = ids.slice(0, 4);
-      const promises = limitedIds.map(id => 
-        fetch(`/api/products/${id}`).then(res => res.json())
-      );
-      
-      const products = await Promise.all(promises);
-      setRecentlyViewed(products.filter(Boolean));
-    } catch (error) {
-      console.error('Failed to fetch recently viewed products:', error);
+  // Force refetch when filters change
+  useEffect(() => {
+    // Only trigger this after initial mount
+    if (selectedCategories.length > 0 || selectedBrands.length > 0 || 
+        searchTerm || ratingFilter > 0 || priceRange[0] > 0 || priceRange[1] < 10000) {
+      refetch();
     }
-  };
-
+  }, [selectedCategories, selectedBrands, searchTerm, ratingFilter, priceRange, sortBy, refetch]);
+  
   // Toggle a category selection
   const toggleCategory = (category: string) => {
-    // For toggling a category in quick filters, directly calculate the new state
-    // and use it for both the state update and immediate filtering
     const newCategories = selectedCategories.includes(category)
       ? selectedCategories.filter(c => c !== category)
       : [...selectedCategories, category];
+    
     // Update state
     setSelectedCategories(newCategories);
     setIsFilterDirty(true);
-    // Apply filters immediately with the new categories
-    setTimeout(() => {
-      applyFiltersWithCategories(newCategories);
-    }, 0);
+    setOffset(0); // Reset pagination when filters change
+    
+    // Refetch with new filters
+    queryClient.invalidateQueries({ queryKey: ['products'] });
   };
 
   // Toggle a brand selection
@@ -327,20 +221,22 @@ export default function ShopClient({ initialData }: ShopClientProps) {
 
     setSelectedBrands(newBrands);
     setIsFilterDirty(true);
-
-    // Immediately apply filters after changing brands, using the newBrands directly
-    setTimeout(() => {
-      applyFilters(newBrands);
-    }, 0);
+    setOffset(0); // Reset pagination when filters change
+    
+    // Refetch with new filters
+    queryClient.invalidateQueries({ queryKey: ['products'] });
   };
 
   // Handle price range changes
   const handlePriceRangeChange = (min: number, max: number) => {
     setPriceRange([min, max]);
     setIsFilterDirty(true);
-    setTimeout(() => {
-      applyFilters();
-    }, 0);
+    setOffset(0); // Reset pagination when filters change
+    
+    // Debounce for slider dragging
+    debounce(() => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    }, 300)();
   };
 
   // Handle rating filter change
@@ -349,26 +245,32 @@ export default function ShopClient({ initialData }: ShopClientProps) {
     const newRating = rating === ratingFilter ? 0 : rating;
     setRatingFilter(newRating);
     setIsFilterDirty(true);
-    setTimeout(() => {
-      // Pass newRating directly to applyFilters
-      applyFilters(undefined, undefined, newRating);
-    }, 0);
+    setOffset(0); // Reset pagination when filters change
+    
+    // Refetch with new filters
+    queryClient.invalidateQueries({ queryKey: ['products'] });
   };
 
   // Handle sort order change
   const handleSortChange = (value: string) => {
     setSortBy(value);
     setIsFilterDirty(true);
-    setTimeout(() => {
-      applyFilters(undefined, value);
-    }, 0);
+    setOffset(0); // Reset pagination when filters change
+    
+    // Refetch with new filters
+    queryClient.invalidateQueries({ queryKey: ['products'] });
   };
   
   // Handle search input change
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setIsFilterDirty(true);
-    // debouncedApplyFilters will be called by useEffect
+    setOffset(0); // Reset pagination when filters change
+    
+    // Debounce search input
+    debounce(() => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    }, 500)();
   };
 
   // Clear all filters
@@ -380,19 +282,11 @@ export default function ShopClient({ initialData }: ShopClientProps) {
     setSearchTerm('');
     setSortBy('newest');
     setIsFilterDirty(true); 
-    // Apply filters immediately with reset values
-    applyFilters([], 'newest', 0); 
+    setOffset(0);
+    
+    // Refetch with cleared filters
+    queryClient.invalidateQueries({ queryKey: ['products'] });
   };
-
-  // Effect to apply filters when searchTerm changes (debounced)
-  useEffect(() => {
-    // Apply filters if search term is not empty, or if it was just cleared (to reset results)
-    // and it's not the initial load (initialData is handled separately to avoid double fetch)
-    if (searchTerm !== '' || (searchTerm === '' && products.length > 0 && initialData.products && !initialData.products.some(p => products.includes(p)))) {
-      debouncedApplyFilters();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps 
-  }, [searchTerm, debouncedApplyFilters]); // initialData.products and products removed to avoid re-triggering on product list update by other filters
 
   // Toggle section visibility
   const toggleSection = (section: string) => {
@@ -916,8 +810,6 @@ export default function ShopClient({ initialData }: ShopClientProps) {
                   >
                     Reset All Filters
                   </motion.button>
-                  
-                  {/* Apply Filters button removed - filters are now applied automatically */}
                 </div>
               </div>
             </motion.div>
@@ -947,17 +839,6 @@ export default function ShopClient({ initialData }: ShopClientProps) {
                     </button>
                   )}
                 </div>
-                
-                {/* Apply Search Button - REMOVED */}
-                {/* 
-                <button 
-                  onClick={applyFilters} // This was the old button, now removed
-                  className="md:w-auto w-full py-2 md:py-3 px-6 bg-[#4DA9FF] text-white rounded-full hover:bg-blue-500 transition-colors flex items-center justify-center gap-2"
-                >
-                  <FaSearch className="text-white" size={14} />
-                  <span>Search</span>
-                </button> 
-                */}
               </div>
             </div>
             
@@ -968,6 +849,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
                   onClick={() => {
                     setSelectedCategories([]);
                     setIsFilterDirty(true);
+                    queryClient.invalidateQueries({ queryKey: ['products'] });
                   }}
                   className={`px-3 py-2 rounded-full text-xs md:text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
                     selectedCategories.length === 0
@@ -1033,12 +915,17 @@ export default function ShopClient({ initialData }: ShopClientProps) {
             )}
             
             {/* Products Grid */}
-            {products.length > 0 ? (
+            {isLoading && products.length === 0 ? (
+              <div className="flex justify-center items-center py-20">
+                <div className="w-12 h-12 border-4 border-t-4 border-[#4DA9FF] border-t-transparent rounded-full animate-spin"></div>
+                <span className="ml-3 text-gray-600">Loading products...</span>
+              </div>
+            ) : products.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 <AnimatePresence>
-                  {products.map((product, index) => (
+                  {products.map((product) => (
                     <motion.div
-                      key={`${product.id}-${index}`}
+                      key={product.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
@@ -1059,9 +946,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
                   We couldn&apos;t find any robots matching your current filters. Try adjusting your filters or search terms.
                 </p>
                 <button
-                  onClick={() => {
-                    clearFilters();
-                  }}
+                  onClick={clearFilters}
                   className={commonButtonStyles.primary}
                 >
                   Clear All Filters
@@ -1073,14 +958,14 @@ export default function ShopClient({ initialData }: ShopClientProps) {
             {products.length > 0 && (
               <div className="mt-8 flex justify-center" ref={loaderRef}>
                 {hasMore ? (
-                  <button 
-                    onClick={() => fetchProducts()}
-                    disabled={isLoading}
+                  <button
+                    onClick={fetchMoreProducts}
+                    disabled={isFetchingNextPage || isLoading}
                     className={`${commonButtonStyles.primary} w-48 flex items-center justify-center gap-2 ${
-                      isLoading ? 'opacity-70 cursor-not-allowed' : ''
+                      isFetchingNextPage || isLoading ? 'opacity-70 cursor-not-allowed' : ''
                     }`}
                   >
-                    {isLoading ? (
+                    {isFetchingNextPage || isLoading ? (
                       <>
                         <FaSpinner className="animate-spin" />
                         Loading...
@@ -1091,7 +976,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
                   </button>
                 ) : (
                   products.length > 0 && (
-                    <p className="text-gray-500 py-2">You've reached the end of the catalog</p>
+                    <p className="text-gray-500 py-2">You&apos;ve reached the end of the catalog</p>
                   )
                 )}
               </div>

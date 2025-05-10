@@ -4,53 +4,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import ProductCard from './ProductCard';
+import { useFeaturedProducts } from '@/utils/queryHooks';
 import { Product } from '@/utils/types/product.types';
 
-async function getFeaturedProducts(limit = 6): Promise<Product[]> {
-  try {
-    console.log('Starting to fetch featured products via main API...');
-    
-    const response = await fetch(`/api/products?featured=true&limit=${limit}&sort_by=featured`, {
-      next: { revalidate: 600 } // Cache for 10 minutes
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error fetching featured products: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data.products || [];
-  } catch (error) {
-    console.error('Error in getFeaturedProducts:', error);
-    return [];
-  }
-}
-
 export default function FeaturedRobots() {
-  const [featuredRobots, setFeaturedRobots] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
   const carouselRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Load featured products on component mount
-  useEffect(() => {
-    const loadProducts = async () => {
-      console.log('FeaturedRobots: Attempting to load products...');
-      try {
-        const products = await getFeaturedProducts(8); // Fetch up to 8 featured products
-        console.log('FeaturedRobots: Products loaded:', products);
-        setFeaturedRobots(products);
-        setLoading(false);
-      } catch (error) {
-        console.error('FeaturedRobots: Error loading products:', error);
-        setLoading(false);
-      }
-    };
-    
-    loadProducts();
-  }, []);
+  // Use React Query hook for featured products
+  const { data: featuredRobots = [], isLoading, error } = useFeaturedProducts(8);
 
   // Update items per page based on screen size
   useEffect(() => {
@@ -113,7 +77,7 @@ export default function FeaturedRobots() {
     return featuredRobots.slice(startIndex, startIndex + itemsPerPage);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <section id="featured-robots" className="py-16 bg-gray-50 px-4 lg:px-8">
         <div className="container mx-auto">
@@ -130,8 +94,8 @@ export default function FeaturedRobots() {
     );
   }
 
-  // If no products, don't render anything
-  if (featuredRobots.length === 0) {
+  // If error or no products, don't render anything
+  if (error || featuredRobots.length === 0) {
     return null;
   }
   
@@ -180,7 +144,7 @@ export default function FeaturedRobots() {
               itemsPerPage === 3 ? 'grid-cols-3' : 
               'grid-cols-4'
             }`}>
-              {currentRobots.map((product) => (
+              {currentRobots.map((product: Product) => (
                 <div key={product.id} className="h-full">
                   <ProductCard product={product} />
                 </div>

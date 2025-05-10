@@ -658,10 +658,10 @@ export default function CheckoutPage() {
                               <div key={index} className="p-4 flex items-center border-b last:border-b-0">
                                 {/* Product Image - Updated from placeholder */}
                                 <div className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-200 overflow-hidden">
-                                  {item.product?.image ? (
+                                  {item.product?.images? (
                                     <Image
-                                      src={item.product.image}
-                                      alt={item.product?.name || 'Product image'}
+                                      src={item.product.images[0]?.url || '/placeholder.png'}
+                                      alt={item.product.images[0]?.alt_text || 'Product image'}
                                       width={64}
                                       height={64}
                                       className="object-contain w-full h-full"
@@ -677,7 +677,7 @@ export default function CheckoutPage() {
                                 </div>
                                 
                                 <div className="font-bold text-[#4DA9FF]">
-                                  ${((item.product?.price || 0) * item.quantity).toLocaleString()}
+                                  ${((item.product?.best_vendor.price || 0) * item.quantity).toLocaleString()}
                                 </div>
                               </div>
                             ))}
@@ -813,11 +813,11 @@ export default function CheckoutPage() {
                         <div key={index} className="flex justify-between text-sm">
                           <div className="flex items-center">
                             {/* Small image thumbnail in the order summary */}
-                            {item.product?.image && (
+                            {item.product?.images && item.product.images.length > 0 && (
                               <div className="w-8 h-8 mr-2 rounded overflow-hidden border border-gray-200 flex-shrink-0">
                                 <Image 
-                                  src={item.product.image}
-                                  alt={item.product?.name || 'Product thumbnail'}
+                                  src={item.product.images[0]?.url || '/placeholder.png'}
+                                  alt={item.product.images[0]?.alt_text || 'Product thumbnail'}
                                   width={32}
                                   height={32}
                                   className="object-contain w-full h-full"
@@ -830,7 +830,7 @@ export default function CheckoutPage() {
                                 : item.product?.name || 'Product'}
                             </span>
                           </div>
-                          <span className="font-medium">${((item.product?.price || 0) * item.quantity).toLocaleString()}</span>
+                          <span className="font-medium">${((item.product?.best_vendor?.price || 0) * item.quantity).toLocaleString()}</span>
                         </div>
                       ))}
                     </div>
