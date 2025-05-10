@@ -317,33 +317,43 @@ export default function ShopClient({ initialData }: ShopClientProps) {
 
   return (
     <div className={commonLayoutStyles.mainContent}>
-      <div className={commonLayoutStyles.section}>
-        {/* Breadcrumbs Navigation */}
-        <Breadcrumbs 
-          items={[
-            { label: 'Home', href: '/' },
-            { label: 'Shop', href: '/shop', active: true }
-          ]}
-        />
-        
-        {/* Page Title & Filter Toggle */}
-        <div className="flex justify-between items-center mb-6 mt-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-            Shop Robots
-          </h1>
+      {/* Shop Hero Section */}
+      <div className="bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-6 mb-6 border-b border-gray-100">
+        <div className={commonLayoutStyles.section}>
+          {/* Breadcrumbs Navigation */}
+          <Breadcrumbs 
+            items={[
+              { label: 'Home', href: '/' },
+              { label: 'Shop', href: '/shop', active: true }
+            ]}
+          />
           
-          {/* Mobile filter toggle button */}
-          {isMobileView && (
-            <button
-              onClick={toggleFilters}
-              className="flex items-center justify-center bg-gray-100 text-gray-700 p-2 rounded-lg shadow-sm hover:bg-gray-200 transition-colors"
-              aria-label={showFilters ? 'Hide Filters' : 'Show Filters'}
-            >
-              <FaFilter size={14} />
-            </button>
-          )}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-6 mb-8">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2 font-heading tracking-tight">
+                Discover Amazing Robots
+              </h1>
+              <p className="text-gray-600 max-w-xl">
+                Find the perfect robotic companion or utility assistant for your home or business.
+              </p>
+            </div>
+            
+            {/* Mobile filter toggle button */}
+            {isMobileView && (
+              <button
+                onClick={toggleFilters}
+                className="mt-4 md:mt-0 flex items-center justify-center bg-white text-gray-700 p-3 rounded-lg shadow-sm hover:bg-gray-50 border border-gray-200 transition-colors"
+                aria-label={showFilters ? 'Hide Filters' : 'Show Filters'}
+              >
+                <FaFilter size={14} className="mr-2" />
+                <span>Filters</span>
+              </button>
+            )}
+          </div>
         </div>
+      </div>
         
+      <div className={commonLayoutStyles.section}>
         <div className="flex flex-col lg:flex-row gap-6 relative">
           {/* Show Filter Button - Visible when filters are hidden on desktop */}
           {!showFilters && !isMobileView && (
@@ -371,27 +381,30 @@ export default function ShopClient({ initialData }: ShopClientProps) {
             exit={{ opacity: 0 }}
           >
             <motion.div 
-              className={`bg-white shadow-lg border border-gray-100 ${
+              className={`bg-white shadow-xl rounded-2xl border border-gray-100 ${
                 isMobileView 
-                  ? 'mx-4 my-16 rounded-xl max-h-[80vh] overflow-y-auto' 
+                  ? 'mx-4 my-16 max-h-[80vh] overflow-y-auto' 
                   : 'rounded-xl p-6 sticky top-8'
               }`}
               initial={isMobileView ? { y: 50 } : { opacity: 0 }}
               animate={showFilters ? { y: 0, opacity: 1 } : { opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-             <div className="sticky top-0 z-10 bg-white p-4 lg:p-0 border-b border-gray-100 flex justify-between items-center mb-6">
-              <h2 className="font-bold text-xl text-gray-800">Filters</h2>
-              <div 
-                  className="flex justify-between items-center mb-3 cursor-pointer" 
+              <div className="sticky top-0 z-10 bg-white p-4 lg:p-0 border-b border-gray-100 flex justify-between items-center mb-6">
+                <h2 className="font-bold text-xl text-gray-800 flex items-center">
+                  <FaFilter className="text-[#4DA9FF] mr-2" size={16} /> 
+                  <span>Filter Products</span>
+                </h2>
+                <button 
+                  className="text-gray-400 hover:text-gray-600 transition-colors" 
                   onClick={() => toggleFilters()}
+                  aria-label="Close filters"
                 >
-                  <FaTimes 
-                    size={16} className="text-gray-400 text-sm"
-                  />
-                </div>                  
-            </div>
-              
+                  <FaTimes size={16} />
+                </button>                  
+              </div>
+
+              {/* The rest of filters panel remains unchanged */}
               <div className="p-4 lg:p-0">
                 {/* Categories filter with icons */}
                 <div className="mb-6">
@@ -820,24 +833,26 @@ export default function ShopClient({ initialData }: ShopClientProps) {
           {/* Main Products Area */}
           <main className={`${showFilters && !isMobileView ? 'lg:w-3/4' : 'w-full'}`}>
             {/* Search and Sort */}
-            <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+            <div className="bg-white rounded-2xl shadow-sm p-5 mb-6 border border-gray-100">
               <div className="flex flex-col md:flex-row md:items-center gap-4">
                 {/* Search Bar */}
                 <div className="relative flex-grow">
                   <input
                     type="text"
-                    placeholder="Search robots..."
+                    placeholder="Search for robots by name, brand, or category..."
                     value={searchTerm}
                     onChange={(e) => handleSearchChange(e.target.value)}
-                    className="pl-10 pr-4 py-2 md:py-3 w-full border border-gray-200 rounded-full bg-gray-50 focus:outline-none focus:ring-1 focus:ring-[#4DA9FF] focus:border-transparent transition text-sm md:text-base"
+                    className="pl-12 pr-4 py-3 w-full border border-gray-200 rounded-full bg-blue-50/30 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:border-transparent transition-all duration-300 text-sm md:text-base"
                   />
-                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#4DA9FF]">
+                    <FaSearch size={16} />
+                  </div>
                   {searchTerm && (
                     <button 
                       onClick={() => handleSearchChange('')} // Clear search term
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                     >
-                      <FaTimes size={14} />
+                      <FaTimes size={16} />
                     </button>
                   )}
                 </div>
@@ -846,33 +861,35 @@ export default function ShopClient({ initialData }: ShopClientProps) {
             
             {/* Category Quick Filters */}
             <div className="mb-6">
-              <div className="flex overflow-x-auto pb-2 md:pb-0 md:flex-wrap gap-2 mt-2 no-scrollbar">
+              <div className="flex overflow-x-auto pb-2 md:pb-0 md:flex-wrap gap-3 mt-2 no-scrollbar">
                 <button
                   onClick={() => {
                     setSelectedCategories([]);
                     setIsFilterDirty(true);
                     queryClient.invalidateQueries({ queryKey: ['products'] });
                   }}
-                  className={`px-3 py-2 rounded-full text-xs md:text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
+                  className={`px-4 py-2.5 rounded-full text-xs md:text-sm font-medium transition-all duration-300 whitespace-nowrap flex-shrink-0 ${
                     selectedCategories.length === 0
-                      ? 'bg-[#4DA9FF] text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] text-white shadow-md'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
                   }`}
                 >
-                  All
+                  All Categories
                 </button>
                 
                 {categories.map((category, index) => (
                   <button
                     key={index}
                     onClick={() => toggleCategory(category)}
-                    className={`px-3 py-2 rounded-full text-xs md:text-sm font-medium flex items-center gap-1.5 transition-colors whitespace-nowrap flex-shrink-0 ${
+                    className={`px-4 py-2.5 rounded-full text-xs md:text-sm font-medium flex items-center gap-2 transition-all duration-300 whitespace-nowrap flex-shrink-0 ${
                       selectedCategories.includes(category)
-                        ? 'bg-[#4DA9FF] text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] text-white shadow-md'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
                     }`}
                   >
-                    <span className="text-sm">
+                    <span className={`${
+                      selectedCategories.includes(category) ? 'text-white' : 'text-[#4DA9FF]'
+                    }`}>
                       {renderCategoryIcon(category)}
                     </span>
                     {category}
@@ -886,28 +903,31 @@ export default function ShopClient({ initialData }: ShopClientProps) {
             
             {/* Recently Viewed Section */}
             {recentlyViewed.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6 border border-gray-100">
-                <h3 className="font-bold text-lg sm:text-xl mb-3 sm:mb-4 text-gray-800">Recently Viewed</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+              <div className="bg-gradient-to-r from-blue-50 to-white rounded-2xl shadow-sm p-6 mb-8 border border-blue-100">
+                <div className="flex items-center mb-4">
+                  <h3 className="font-bold text-xl text-gray-800">Recently Viewed</h3>
+                  <div className="ml-3 h-1 w-10 bg-gradient-to-r from-[#4DA9FF] to-blue-300 rounded-full"></div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {recentlyViewed.map(product => (
                     <Link 
                       key={product.id}
                       href={`/product/${product.id}`}
-                      className="flex flex-col sm:flex-row items-center p-2 sm:p-3 rounded-lg hover:bg-gray-50 border border-gray-100 transition-colors"
+                      className="flex flex-col sm:flex-row items-center p-3 rounded-xl hover:bg-white border border-gray-100 transition-all duration-300 hover:shadow-md transform hover:-translate-y-1"
                     >
-                      <div className="relative w-10 h-10 sm:w-12 sm:h-12 mb-2 sm:mb-0 sm:mr-3 flex-shrink-0">
+                      <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2 sm:mb-0 sm:mr-4 flex-shrink-0 bg-white rounded-lg p-1">
                         <Image
                           src={product.images[0]?.url || '/images/Algorythm.png'} 
                           alt={product.name}
                           fill
-                          sizes="(max-width: 768px) 40px, 48px"
-                          className="object-contain"
+                          sizes="(max-width: 768px) 48px, 64px"
+                          className="object-contain p-1"
                         />
                       </div>
                       <div className="text-center sm:text-left">
-                        <p className="text-xs sm:text-sm font-medium text-gray-800 line-clamp-1">{product.name}</p>
+                        <p className="text-sm font-medium text-gray-800 line-clamp-1">{product.name}</p>
                         {product.best_vendor && (
-                          <p className="text-xs sm:text-sm text-[#4DA9FF]">${product.best_vendor.price.toLocaleString()}</p>
+                          <p className="text-sm font-semibold bg-gradient-to-r from-[#4DA9FF] to-blue-600 bg-clip-text text-transparent">${product.best_vendor.price.toLocaleString()}</p>
                         )}
                       </div>
                     </Link>
@@ -918,52 +938,67 @@ export default function ShopClient({ initialData }: ShopClientProps) {
             
             {/* Products Grid */}
             {isLoading && products.length === 0 ? (
-              <div className="flex justify-center items-center py-20">
-                <div className="w-12 h-12 border-4 border-t-4 border-[#4DA9FF] border-t-transparent rounded-full animate-spin"></div>
-                <span className="ml-3 text-gray-600">Loading products...</span>
+              <div className="flex flex-col justify-center items-center py-20">
+                <div className="w-16 h-16 border-4 border-t-4 border-[#4DA9FF] border-t-transparent rounded-full animate-spin mb-4"></div>
+                <span className="text-gray-600 font-medium">Finding the perfect robots for you...</span>
               </div>
             ) : products.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6"
+              >
                 <AnimatePresence>
-                  {products.map((product) => (
+                  {products.map((product, index) => (
                     <motion.div
                       key={product.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
+                      transition={{ duration: 0.3, delay: index % 4 * 0.1 }}
+                      className="transform transition-all duration-300 hover:-translate-y-1"
                     >
                       <ProductCard product={product} />
                     </motion.div>
                   ))}
                 </AnimatePresence>
-              </div>
+              </motion.div>
             ) : (
-              <div className="bg-white rounded-lg shadow-sm p-6 sm:p-12 border border-gray-100 text-center">
-                <div className="mx-auto w-16 h-16 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4 sm:mb-6">
-                  <FaSearch size={24} className="text-gray-300" />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="bg-white rounded-xl shadow-sm p-8 sm:p-12 border border-gray-100 text-center"
+              >
+                <div className="mx-auto w-20 h-20 sm:w-28 sm:h-28 bg-blue-50 rounded-full flex items-center justify-center mb-6">
+                  <FaSearch size={32} className="text-[#4DA9FF] opacity-70" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-medium text-gray-700 mb-2">No robots found</h3>
-                <p className="text-sm sm:text-base text-gray-500 max-w-md mx-auto mb-4 sm:mb-6">
+                <h3 className="text-2xl sm:text-3xl font-medium text-gray-800 mb-3">No robots found</h3>
+                <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto mb-6 sm:mb-8">
                   We couldn&apos;t find any robots matching your current filters. Try adjusting your filters or search terms.
                 </p>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={clearFilters}
-                  className={commonButtonStyles.primary}
+                  className={`${commonButtonStyles.primary} px-8`}
                 >
                   Clear All Filters
-                </button>
-              </div>
+                </motion.button>
+              </motion.div>
             )}
             
             {/* Load More Button */}
             {products.length > 0 && (
-              <div className="mt-8 flex justify-center" ref={loaderRef}>
+              <div className="mt-12 flex justify-center" ref={loaderRef}>
                 {hasMore ? (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={fetchMoreProducts}
                     disabled={isFetchingNextPage || isLoading}
-                    className={`${commonButtonStyles.primary} w-48 flex items-center justify-center gap-2 ${
+                    className={`bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] text-white font-bold py-3 px-8 rounded-full shadow-md hover:shadow-lg transition-all w-auto flex items-center justify-center gap-3 ${
                       isFetchingNextPage || isLoading ? 'opacity-70 cursor-not-allowed' : ''
                     }`}
                   >
@@ -973,12 +1008,20 @@ export default function ShopClient({ initialData }: ShopClientProps) {
                         Loading...
                       </>
                     ) : (
-                      'Load More Products'
+                      <>
+                        <span>Load More Robots</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L11 12.586V6a1 1 0 012 0v6.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </>
                     )}
-                  </button>
+                  </motion.button>
                 ) : (
                   products.length > 0 && (
-                    <p className="text-gray-500 py-2">You&apos;ve reached the end of the catalog</p>
+                    <div className="text-center">
+                      <p className="text-gray-500 py-2 mb-2">You&apos;ve explored our entire robot collection!</p>
+                      <div className="h-1 w-16 bg-gradient-to-r from-[#4DA9FF] to-blue-300 rounded-full mx-auto"></div>
+                    </div>
                   )
                 )}
               </div>

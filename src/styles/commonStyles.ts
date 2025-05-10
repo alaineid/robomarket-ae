@@ -17,12 +17,12 @@ export const commonButtonStyles = {
 
 // Common card styles for consistent product display
 export const commonCardStyles = {
-  container: "bg-white border border-gray-100 rounded-lg shadow-sm overflow-hidden hover:shadow transition-all duration-300",
-  imageContainer: "relative h-56 w-full overflow-hidden group",
-  imageOverlay: "absolute inset-0 bg-gradient-to-t from-black/70 to-transparent",
-  imagePlaceholder: "absolute inset-0 bg-white flex items-center justify-center transition-transform duration-500 group-hover:scale-110",
-  content: "p-5",
-  categoryBadge: "inline-block px-3 py-1 text-xs font-medium text-[#4DA9FF] bg-blue-50 rounded-full mb-2"
+  container: "bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden h-full flex flex-col hover:shadow-md transition-all duration-300",
+  imageContainer: "relative h-48 md:h-52 w-full overflow-hidden bg-gray-50 group",
+  imageOverlay: "absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-2 transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300",
+  imagePlaceholder: "absolute inset-0 bg-white flex items-center justify-center",
+  content: "p-4 flex flex-col flex-grow",
+  categoryBadge: "inline-block px-2 py-0.5 text-xs font-medium rounded-full"
 };
 
 // Common form styles
