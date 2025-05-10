@@ -207,16 +207,11 @@ export default function Header() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
           <Link
-  href="/shop"
-  className="px-3 py-1.5 bg-gradient-to-r from-blue-400 to-[#4DA9FF] text-white rounded-md font-medium tracking-wide text-sm shadow hover:brightness-110 transition"
->
-  Shop Robots
-</Link>
-
-
-
-
-
+              href="/shop"
+              className="px-3 py-1.5 bg-gradient-to-r from-blue-400 to-[#4DA9FF] text-white rounded-md font-medium tracking-wide text-sm shadow hover:brightness-110 transition"
+            >
+              Shop Robots
+            </Link>            
             <Link href="/about" className="text-gray-700 hover:text-[#4DA9FF] font-medium relative group transition duration-200">
               About Us
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full transition-all duration-300"></span>

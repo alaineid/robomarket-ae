@@ -305,14 +305,13 @@ export default function ProductDetail() {
               {/* Right Side - Product Information */}
               <div className="p-6 lg:p-10 order-1 lg:order-2 border-b lg:border-b-0 lg:border-l border-gray-100">
                 {/* Product Title Section */}
-                <div className="mb-6">
+                <div className="mb-4">
                   <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
                     {productData.name}
                   </h1>
                   
                   <div className="flex flex-wrap items-center gap-3 text-sm">
                     <span className="text-[#4DA9FF] font-medium">by {productData.brand}</span>
-                    <span className="text-gray-300">|</span>
                     <div className="flex items-center">
                       <div className="flex mr-1.5">
                         {renderRatingStars(productData.ratings.average)}
@@ -321,32 +320,19 @@ export default function ProductDetail() {
                         {productData.reviews.length} reviews
                       </Link>
                     </div>
-                    <span className="text-gray-300">|</span>
                     <span className="text-green-600 font-medium flex items-center">
                       <FaCheck size={12} className="mr-1.5" /> In Stock
                     </span>
                   </div>
                 </div>
                 
-                {/* Price Section */}
-                <div className="mb-8">
-                  <div className="flex flex-wrap items-end gap-3 mb-2">
-                    <span className="text-4xl font-bold bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] bg-clip-text text-transparent">
-                      ${productData.best_vendor.price.toLocaleString()}
-                    </span>
-                    {productData.best_vendor.compare_at_price && (
-                      <span className="text-xl text-gray-400 line-through">
-                        ${productData.best_vendor.compare_at_price.toLocaleString()}
-                      </span>
-                    )}
-                    {productData.best_vendor.compare_at_price && (
-                      <span className="bg-red-100 text-red-600 text-sm font-semibold px-2 py-1 rounded-md">
-                        Save ${(productData.best_vendor.compare_at_price - productData.best_vendor.price).toLocaleString()}
-                      </span>
-                    )}
+                {/* Price Section - Simplified */}
+                <div className="mb-6">
+                  <div className="text-4xl font-bold text-[#4DA9FF] mb-3">
+                    ${productData.best_vendor.price.toLocaleString()}
                   </div>
                   
-                  <div className="flex flex-wrap gap-3 text-sm font-medium">
+                  <div className="flex flex-wrap gap-4 text-sm">
                     <div className="flex items-center text-gray-600">
                       <FaShippingFast className="mr-1.5 text-[#4DA9FF]" />
                       Free Shipping
@@ -379,7 +365,7 @@ export default function ProductDetail() {
                   )}
                 </div>
                 
-                {/* Key Features / Attributes */}
+                {/* Key Features / Attributes - Simplified to match reference design */}
                 <div className="mb-8">
                   <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
                     <FaAward className="mr-2 text-[#4DA9FF]" />
@@ -400,141 +386,64 @@ export default function ProductDetail() {
                   </div>
                 </div>
                 
-                {/* Add to Cart Section */}
-                <div className="mb-8 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100 relative overflow-hidden">
-                  {/* Robot-themed decorative elements */}
-                  <div className="absolute right-0 top-0 w-36 h-36 opacity-5">
-                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="fill-[#4DA9FF]">
-                      <path d="M40,60 L160,60 L160,140 L40,140 Z M70,30 L130,30 L130,60 L70,60 Z M50,140 L80,140 L80,170 L50,170 Z M120,140 L150,140 L150,170 L120,170 Z M95,140 L105,140 L105,150 L95,150 Z" />
-                      <circle cx="80" cy="100" r="10" />
-                      <circle cx="120" cy="100" r="10" />
-                    </svg>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mb-4 relative z-10">
+                {/* Add to Cart Section - Simplified */}
+                <div className="mb-6 bg-blue-50 p-6 rounded-xl border border-blue-100">
+                  {/* Quantity and stock section */}
+                  <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                     <div className="flex items-center">
-                      <p className="mr-4 font-medium text-gray-700">Quantity:</p>
-                      {/* Improved quantity selector */}
-                      <div className="flex items-center">
-                        <div className="flex border border-blue-300 rounded-lg overflow-hidden bg-white shadow-sm">
-                          <motion.button 
-                            whileTap={{ scale: 0.95 }}
-                            onClick={decreaseQuantity}
-                            className="w-12 h-12 flex items-center justify-center text-gray-700 hover:bg-blue-50"
-                            disabled={quantity <= 1}
-                          >
-                            <span className="text-2xl font-medium">−</span>
-                          </motion.button>
-                          
-                          <div className="relative min-w-[50px] w-12 h-12">
-                            <input
-                              type="text"
-                              value={quantity}
-                              onChange={handleQuantityChange}
-                              className="absolute inset-0 text-center border-x border-blue-300 h-full w-full focus:outline-none bg-white text-gray-700"
-                              aria-label="Quantity"
-                            />
-                          </div>
-                          
-                          <motion.button 
-                            whileTap={{ scale: 0.95 }}
-                            onClick={increaseQuantity}
-                            className="w-12 h-12 flex items-center justify-center text-gray-700 hover:bg-blue-50"
-                            disabled={quantity >= productData.best_vendor.stock}
-                          >
-                            <span className="text-2xl font-medium">+</span>
-                          </motion.button>
+                      <p className="font-medium text-gray-700 mr-4">Quantity:</p>
+                      {/* Quantity selector */}
+                      <div className="flex border border-blue-300 rounded-lg overflow-hidden bg-white shadow-sm">
+                        <button 
+                          onClick={decreaseQuantity}
+                          className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-blue-50"
+                          disabled={quantity <= 1}
+                        >
+                          <span className="text-xl font-medium">−</span>
+                        </button>
+                        
+                        <div className="relative w-12 h-10">
+                          <input
+                            type="text"
+                            value={quantity}
+                            onChange={handleQuantityChange}
+                            className="absolute inset-0 text-center border-x border-blue-300 h-full w-full focus:outline-none bg-white text-gray-700"
+                            aria-label="Quantity"
+                          />
                         </div>
+                        
+                        <button 
+                          onClick={increaseQuantity}
+                          className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-blue-50"
+                          disabled={quantity >= productData.best_vendor.stock}
+                        >
+                          <span className="text-xl font-medium">+</span>
+                        </button>
                       </div>
                     </div>
                     
-                    <div className="flex items-center">
-                      <span className="font-medium text-green-600 mr-2 flex items-center">
+                    <div className="flex items-center bg-white px-3 py-1.5 rounded-lg">
+                      <span className="font-medium text-green-600 mr-1.5 flex items-center">
                         <FaCheck size={12} className="mr-1.5" />
                         In Stock:
                       </span>
-                      <span className="font-medium text-gray-900">{productData.best_vendor.stock}</span> units
+                      <span className="font-medium text-gray-900">{productData.best_vendor.stock} units</span>
                     </div>
                   </div>
                   
-                  {/* Action Button */}
-                  <div className="relative">
-                    <AnimatePresence>
-                      {addedToCart ? (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0 }}
-                          className="absolute inset-0 z-10"
-                        >
-                          <div className="bg-green-500 text-white rounded-xl py-4 px-4 shadow-lg flex items-center justify-center w-full h-full">
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                              className="bg-white rounded-full p-1 mr-3"
-                            >
-                              <FaCheck className="text-green-500" size={16} />
-                            </motion.div>
-                            <span className="font-medium text-lg">Added to Cart!</span>
-                          </div>
-                        </motion.div>
-                      ) : null}
-                    </AnimatePresence>
-                    
-                    <motion.button 
-                      whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.5)" }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] text-white shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden"
-                      onClick={handleAddToCart}
-                    >
-                      {/* Animated circuit-board pattern in background */}
-                      <div className="absolute inset-0 opacity-10">
-                        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                          <pattern id="circuit" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                            <path d="M0,20 L40,20 M20,0 L20,40 M10,10 L30,30 M30,10 L10,30" stroke="white" strokeWidth="1" fill="none" />
-                          </pattern>
-                          <rect width="100%" height="100%" fill="url(#circuit)" />
-                        </svg>
-                      </div>
-                      <div className="mr-3 bg-white/20 p-2 rounded-full">
-                        <FaShoppingCart size={18} />
-                      </div>
-                      <span className="mr-2">Add to Cart</span>
-                      <span className="text-xs bg-white/30 py-1 px-2 rounded-full">Power Up Your Home</span>
-                    </motion.button>
-                  </div>
-                  
-                  {/* Robot benefits */}
-                  <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-gray-600 relative z-10">
-                    <div className="flex items-center">
-                      <div className="bg-blue-100 p-1.5 rounded-full mr-2">
-                        <FaShippingFast className="text-[#4DA9FF]" size={12} />
-                      </div>
-                      Fast Robot Delivery
-                    </div>
-                    <div className="flex items-center">
-                      <div className="bg-blue-100 p-1.5 rounded-full mr-2">
-                        <FaCreditCard className="text-[#4DA9FF]" size={12} />
-                      </div>
-                      Financing Available
-                    </div>
-                    <div className="flex items-center">
-                      <div className="bg-blue-100 p-1.5 rounded-full mr-2">
-                        <FaExchangeAlt className="text-[#4DA9FF]" size={12} />
-                      </div>
-                      30-Day Returns
-                    </div>
-                    <div className="flex items-center">
-                      <div className="bg-blue-100 p-1.5 rounded-full mr-2">
-                        <FaAward className="text-[#4DA9FF]" size={12} />
-                      </div>
-                      Extended Warranty
-                    </div>
-                  </div>
+                  {/* Add to Cart Button */}
+                  <button 
+                    className="w-full py-3 rounded-lg font-bold text-lg flex items-center justify-center bg-[#4DA9FF] text-white shadow-md hover:bg-[#3D89FF] transition-colors"
+                    onClick={handleAddToCart}
+                  >
+                    <FaShoppingCart size={18} className="mr-3" />
+                    Add to Cart
+                  </button>
                 </div>
                 
-                {/* Additional Info */}
+                {/* Remove duplicate benefit icons - these are shown above */}
+                
+                {/* Additional Info - Keep this section */}
                 <div className="border-t border-gray-200 pt-6">
                   <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
                     <div>Model: <span className="text-gray-900 font-medium">{productData.name.replace(/\s+/g, '-').toUpperCase()}</span></div>
