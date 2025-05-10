@@ -402,39 +402,44 @@ export default function ProductDetail() {
                 
                 {/* Add to Cart Section */}
                 <div className="mb-8 bg-gray-50 p-6 rounded-xl border border-gray-100">
-                  <div className="flex flex-wrap items-center gap-4 mb-4">
-                    <div className="flex">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
                       <p className="mr-4 font-medium text-gray-700">Quantity:</p>
-                      {/* Stylish quantity selector */}
-                      <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-white">
-                        <motion.button 
-                          whileTap={{ scale: 0.9 }}
-                          onClick={decreaseQuantity}
-                          className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-100"
-                          disabled={quantity <= 1}
-                        >
-                          <span className="text-xl font-medium">−</span>
-                        </motion.button>
-                        <input
-                          type="number"
-                          min="1"
-                          max={productData.best_vendor.stock}
-                          value={quantity}
-                          onChange={handleQuantityChange}
-                          className="w-12 text-center border-x border-gray-300 h-10 focus:outline-none focus:ring-0 bg-white text-gray-700"
-                        />
-                        <motion.button 
-                          whileTap={{ scale: 0.9 }}
-                          onClick={increaseQuantity}
-                          className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-100"
-                          disabled={quantity >= productData.best_vendor.stock}
-                        >
-                          <span className="text-xl font-medium">+</span>
-                        </motion.button>
+                      {/* Improved quantity selector */}
+                      <div className="flex items-center">
+                        <div className="flex border border-gray-300 rounded-lg overflow-hidden bg-white">
+                          <motion.button 
+                            whileTap={{ scale: 0.95 }}
+                            onClick={decreaseQuantity}
+                            className="w-12 h-12 flex items-center justify-center text-gray-700 hover:bg-gray-50"
+                            disabled={quantity <= 1}
+                          >
+                            <span className="text-2xl font-medium">−</span>
+                          </motion.button>
+                          
+                          <div className="relative min-w-[50px] w-12 h-12">
+                            <input
+                              type="text"
+                              value={quantity}
+                              onChange={handleQuantityChange}
+                              className="absolute inset-0 text-center border-x border-gray-300 h-full w-full focus:outline-none bg-white text-gray-700"
+                              aria-label="Quantity"
+                            />
+                          </div>
+                          
+                          <motion.button 
+                            whileTap={{ scale: 0.95 }}
+                            onClick={increaseQuantity}
+                            className="w-12 h-12 flex items-center justify-center text-gray-700 hover:bg-gray-50"
+                            disabled={quantity >= productData.best_vendor.stock}
+                          >
+                            <span className="text-2xl font-medium">+</span>
+                          </motion.button>
+                        </div>
                       </div>
                     </div>
                     
-                    <div className="text-gray-500 text-sm">
+                    <div className="text-gray-500">
                       <span className="font-medium text-gray-900">{productData.best_vendor.stock}</span> units available
                     </div>
                   </div>
