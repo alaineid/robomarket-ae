@@ -4,7 +4,13 @@ import { useState, useEffect, useRef, Fragment } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Logo from './Logo';
-import { Menu, Transition } from '@headlessui/react';
+import { 
+  Menu, 
+  MenuButton, 
+  MenuItems, 
+  MenuItem, 
+  Transition 
+} from '@headlessui/react';
 import { 
   FaUserCircle, 
   FaShoppingCart, 
@@ -200,10 +206,17 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-            <Link href="/shop" className="text-gray-700 hover:text-[#4DA9FF] font-medium relative group transition duration-200">
-              Shop Robots
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full transition-all duration-300"></span>
-            </Link>
+          <Link
+  href="/shop"
+  className="px-3 py-1.5 bg-gradient-to-r from-blue-400 to-[#4DA9FF] text-white rounded-md font-medium tracking-wide text-sm shadow hover:brightness-110 transition"
+>
+  Shop Robots
+</Link>
+
+
+
+
+
             <Link href="/about" className="text-gray-700 hover:text-[#4DA9FF] font-medium relative group transition duration-200">
               About Us
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full transition-all duration-300"></span>
@@ -217,13 +230,13 @@ export default function Header() {
             <div className="flex space-x-6 ml-4">
               {/* Account Dropdown Menu */}
               <Menu as="div" className="relative">
-                <Menu.Button className="text-gray-700 hover:text-[#4DA9FF] transition-colors duration-200 group flex items-center">
+                <MenuButton className="text-gray-700 hover:text-[#4DA9FF] transition-colors duration-200 group flex items-center">
                   <div className="relative flex items-center">
                     <FaUserCircle className="text-2xl transform group-hover:scale-110 transition-transform duration-200" />
                     <FaChevronDown className="ml-1 h-3 w-3 text-gray-500 group-hover:text-[#4DA9FF]" />
                     <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full group-hover:left-0 transition-all duration-300"></span>
                   </div>
-                </Menu.Button>
+                </MenuButton>
                 <Transition
                   as={Fragment}
                   enter="transition ease-out duration-100"
@@ -233,7 +246,7 @@ export default function Header() {
                   leaveFrom="transform opacity-100 scale-100"
                   leaveTo="transform opacity-0 scale-95"
                 >
-                  <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none divide-y divide-gray-100 z-50 py-1">
+                  <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none divide-y divide-gray-100 z-50 py-1">
                     {/* Menu changes based on login state */}
                     {isLoggedIn ? (
                       <>
@@ -246,87 +259,66 @@ export default function Header() {
                           </p>
                         </div>
                         <div className="py-1">
-                          <Menu.Item>
-                            {({ active }) => (
-                              <Link
-                                href="/account"
-                                className={`${
-                                  active ? "bg-gray-50 text-[#4DA9FF]" : "text-gray-700"
-                                } flex items-center px-4 py-2 text-sm`}
-                              >
-                                <FaUser className="mr-3 h-4 w-4" />
-                                My Profile
-                              </Link>
-                            )}
-                          </Menu.Item>
-                          <Menu.Item>
-                            {({ active }) => (
-                              <Link
-                                href="/wishlist"
-                                className={`${
-                                  active ? "bg-gray-50 text-[#4DA9FF]" : "text-gray-700"
-                                } flex items-center px-4 py-2 text-sm`}
-                              >
-                                <FaHeart className="mr-3 h-4 w-4" />
-                                Wishlist
-                              </Link>
-                            )}
-                          </Menu.Item>
-                        </div>
-                        <div className="py-1">
-                          <Menu.Item>
-                            {({ active }) => (
-                              <button
-                                onClick={() => setIsLoggedIn(false)}
-                                className={`${
-                                  active ? "bg-gray-50 text-[#4DA9FF]" : "text-gray-700"
-                                } flex w-full items-center px-4 py-2 text-sm`}
-                              >
-                                <FaSignOutAlt className="mr-3 h-4 w-4" />
-                                Sign out
-                              </button>
-                            )}
-                          </Menu.Item>
+                          <MenuItem>
+                            <Link
+                              href="/account"
+                              className="hover:bg-gray-50 hover:text-[#4DA9FF] text-gray-700 flex items-center px-4 py-2 text-sm"
+                            >
+                              <FaUser className="mr-3 h-4 w-4" />
+                              My Profile
+                            </Link>
+                          </MenuItem>
+                          <MenuItem>
+                            <Link
+                              href="/wishlist"
+                              className="hover:bg-gray-50 hover:text-[#4DA9FF] text-gray-700 flex items-center px-4 py-2 text-sm"
+                            >
+                              <FaHeart className="mr-3 h-4 w-4" />
+                              Wishlist
+                            </Link>
+                          </MenuItem>
+
+                          <MenuItem>
+                            <button
+                              onClick={() => setIsLoggedIn(false)}
+                              className="hover:bg-gray-50 hover:text-[#4DA9FF] text-gray-700 flex items-center px-4 py-2 text-sm w-full text-left"
+                            >
+                              <FaSignOutAlt className="mr-3 h-4 w-4" />
+                              Sign out
+                            </button>
+                          </MenuItem>
                         </div>
                       </>
                     ) : (
                       <div className="py-1">
-                        <Menu.Item>
-                          {({ active }) => (
+                          <MenuItem>
                             <Link
                               href="/login"
-                              className={`${
-                                active ? "bg-gray-50 text-[#4DA9FF]" : "text-gray-700"
-                              } flex items-center px-4 py-2 text-sm`}
-                              onClick={() => setIsLoggedIn(true)} // For demo purposes
+                              onClick={() => setIsLoggedIn(true)}
+                              className="hover:bg-gray-50 hover:text-[#4DA9FF] text-gray-700 flex items-center px-4 py-2 text-sm"
                             >
                               <FaSignInAlt className="mr-3 h-4 w-4" />
                               Login
                             </Link>
-                          )}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (
+                          </MenuItem>
+                          <MenuItem>
                             <Link
                               href="/signup"
-                              className={`${
-                                active ? "bg-gray-50 text-[#4DA9FF]" : "text-gray-700"
-                              } flex items-center px-4 py-2 text-sm`}
+                              className="hover:bg-gray-50 hover:text-[#4DA9FF] text-gray-700 flex items-center px-4 py-2 text-sm"
                             >
                               <FaUserPlus className="mr-3 h-4 w-4" />
                               Sign up
                             </Link>
-                          )}
-                        </Menu.Item>
+                          </MenuItem>
                       </div>
                     )}
-                  </Menu.Items>
+                  </MenuItems>
                 </Transition>
               </Menu>
               
               {/* Cart Dropdown */}
               <Menu as="div" className="relative">
-                <Menu.Button className="text-gray-700 hover:text-[#4DA9FF] transition-colors duration-200 group">
+                <MenuButton className="text-gray-700 hover:text-[#4DA9FF] transition-colors duration-200 group">
                   <div className="relative">
                     <FaShoppingCart className="text-2xl transform group-hover:scale-110 transition-transform duration-200" />
                     {cartCount > 0 && (
@@ -336,17 +328,17 @@ export default function Header() {
                     )}
                     <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full group-hover:left-0 transition-all duration-300"></span>
                   </div>
-                </Menu.Button>
+                </MenuButton>
                 <Transition
                   as={Fragment}
                   enter="transition ease-out duration-100"
                   enterFrom="transform opacity-0 scale-95"
                   enterTo="transform opacity-100 scale-100"
-                  leave="transition ease-in duration-75"
+                  leave="transition ease-in duration-75"  
                   leaveFrom="transform opacity-100 scale-100"
                   leaveTo="transform opacity-0 scale-95"
                 >
-                  <Menu.Items className="absolute right-0 mt-2 w-80 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none divide-y divide-gray-100 z-50 py-1">
+                  <MenuItems className="absolute right-0 mt-2 w-80 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none divide-y divide-gray-100 z-50 py-1">
                     <div className="px-4 py-3">
                       <h3 className="text-sm font-medium text-gray-900">Your Cart</h3>
                     </div>
@@ -355,46 +347,47 @@ export default function Header() {
                       <>
                         <div className="py-2 max-h-60 overflow-y-auto">
                           {cartItems.map((item) => (
-                            <Menu.Item key={item.productId}>
-                              {({ active }) => (
-                                <div className={`${active ? "bg-gray-50" : ""} px-4 py-2 flex items-center`}>
-                                  {/* Product Image */}
-                                  <div className="w-10 h-10 relative bg-gray-100 rounded-md overflow-hidden mr-3 flex-shrink-0">
-                                    {item.product?.images && item.product.images[0] && (
-                                      <Image
-                                        src={item.product.images[0].url}
-                                        alt={item.product?.name || "Product"}
-                                        fill
-                                        className="object-cover"
-                                      />
-                                    )}
-                                  </div>
-                                  
-                                  {/* Product Info */}
-                                  <div className="flex-1 min-w-0">
-                                    <Link href={`/product/${item.productId}`} className="text-sm font-medium text-gray-800 hover:text-[#4DA9FF] truncate block">
-                                      {item.product?.name || "Product"}
-                                    </Link>
-                                    <div className="flex justify-between items-center mt-1">
-                                      <span className="text-xs text-gray-500">
-                                        Qty: {item.quantity}
-                                      </span>
-                                      <span className="text-xs font-medium text-[#4DA9FF]">
-                                        ${((item.product?.best_vendor?.price || 0) * item.quantity).toFixed(2)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  
-                                  {/* Remove Button */}
-                                  <button
-                                    onClick={() => removeFromCart(item.productId)}
-                                    className="ml-2 text-gray-400 hover:text-red-500 p-1"
-                                  >
-                                    <FaTrash size={12} />
-                                  </button>
+                            <MenuItem 
+                              as="div"
+                              key={item.productId}
+                            >
+                              <div className="hover:bg-gray-50 px-4 py-2 flex items-center">
+                                {/* Product Image */}
+                                <div className="w-10 h-10 relative bg-gray-100 rounded-md overflow-hidden mr-3 flex-shrink-0">
+                                  {item.product?.images && item.product.images[0] && (
+                                    <Image
+                                      src={item.product.images[0].url}
+                                      alt={item.product?.name || "Product"}
+                                      fill
+                                      className="object-cover"
+                                    />
+                                  )}
                                 </div>
-                              )}
-                            </Menu.Item>
+                                
+                                {/* Product Info */}
+                                <div className="flex-1 min-w-0">
+                                  <Link href={`/product/${item.productId}`} className="text-sm font-medium text-gray-800 hover:text-[#4DA9FF] truncate block">
+                                    {item.product?.name || "Product"}
+                                  </Link>
+                                  <div className="flex justify-between items-center mt-1">
+                                    <span className="text-xs text-gray-500">
+                                      Qty: {item.quantity}
+                                    </span>
+                                    <span className="text-xs font-medium text-[#4DA9FF]">
+                                      ${((item.product?.best_vendor?.price || 0) * item.quantity).toFixed(2)}
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                {/* Remove Button */}
+                                <button
+                                  onClick={() => removeFromCart(item.productId)}
+                                  className="ml-2 text-gray-400 hover:text-red-500 p-1"
+                                >
+                                  <FaTrash size={12} />
+                                </button>
+                              </div>
+                            </MenuItem>
                           ))}
                         </div>
                         
@@ -424,7 +417,7 @@ export default function Header() {
                         </Link>
                       </div>
                     )}
-                  </Menu.Items>
+                  </MenuItems>
                 </Transition>
               </Menu>
             </div>
