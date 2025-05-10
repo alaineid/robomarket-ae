@@ -14,7 +14,7 @@ export default function FeaturedRobots() {
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Use React Query hook for featured products
-  const { data: featuredRobots = [], isLoading, error } = useFeaturedProducts(8);
+  const { data: featuredRobots = [], isLoading, error } = useFeaturedProducts();
 
   // Update items per page based on screen size
   useEffect(() => {
@@ -60,20 +60,9 @@ export default function FeaturedRobots() {
     setCurrentPage(prev => (prev < totalPages - 1 ? prev + 1 : 0));
   };
 
-  // Get current robots to display
+  // Return products for the current page without wrapping around to avoid duplicates
   const getCurrentRobots = () => {
     const startIndex = currentPage * itemsPerPage;
-    if (featuredRobots.length <= itemsPerPage) {
-      return featuredRobots;
-    }
-    
-    // Handle wrap-around for circular navigation
-    if (startIndex + itemsPerPage > featuredRobots.length) {
-      const firstPart = featuredRobots.slice(startIndex);
-      const secondPart = featuredRobots.slice(0, itemsPerPage - firstPart.length);
-      return [...firstPart, ...secondPart];
-    }
-    
     return featuredRobots.slice(startIndex, startIndex + itemsPerPage);
   };
 
