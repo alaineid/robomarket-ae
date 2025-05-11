@@ -9,7 +9,7 @@ import {
   FaCheck, FaArrowRight, FaShoppingCart, FaHeart, FaRegHeart,
   FaShippingFast, FaAward, FaCreditCard, FaExchangeAlt
 } from 'react-icons/fa';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -37,7 +37,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState('description');
-  const [addedToCart, setAddedToCart] = useState(false);
+  const [setAddedToCart] = useState(false);
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
 
   // Fetch product data using React Query

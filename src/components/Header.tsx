@@ -25,7 +25,6 @@ import {
   FaTrash
 } from 'react-icons/fa';
 import { useCart } from '@/utils/cartContext';
-import { commonButtonStyles } from '@/styles/commonStyles';
 
 export default function Header() {
   const { cartCount, cartItems, removeFromCart } = useCart();
