@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/utils/supabaseClient';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,9 +40,9 @@ export default function LoginForm() {
         router.push('/shop');
         router.refresh(); // Refresh to update auth state in the UI
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Login error:', err);
-      setError(err.message || 'Failed to sign in. Please check your credentials.');
+      setError(err instanceof Error ? err.message : 'Failed to sign in. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -64,9 +66,9 @@ export default function LoginForm() {
       }
 
       alert('Password reset link sent to your email');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Reset password error:', err);
-      setError(err.message || 'Failed to send reset password email.');
+      setError(err instanceof Error ? err.message : 'Failed to send reset password email.');
     } finally {
       setLoading(false);
     }
@@ -109,15 +111,25 @@ export default function LoginForm() {
               Forgot Password?
             </button>
           </div>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:border-transparent"
-            placeholder="Enter your password"
-            required
-          />
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:border-transparent"
+              placeholder="Enter your password"
+              required
+            />
+            <button 
+              type="button" 
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            </button>
+          </div>
         </div>
         
         <button
@@ -132,7 +144,7 @@ export default function LoginForm() {
         
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium">
               Sign Up
             </Link>

@@ -37,7 +37,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState('description');
-  const [setAddedToCart] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
 
   // Fetch product data using React Query
@@ -433,11 +433,15 @@ export default function ProductDetail() {
                   
                   {/* Add to Cart Button */}
                   <button 
-                    className="w-full py-3 rounded-lg font-bold text-lg flex items-center justify-center bg-[#4DA9FF] text-white shadow-md hover:bg-[#3D89FF] transition-colors"
+                    className={`w-full py-3 rounded-lg font-bold text-lg flex items-center justify-center ${
+                      addedToCart 
+                        ? 'bg-green-500 hover:bg-green-600' 
+                        : 'bg-[#4DA9FF] hover:bg-[#3D89FF]'
+                    } text-white shadow-md transition-colors`}
                     onClick={handleAddToCart}
                   >
                     <FaShoppingCart size={18} className="mr-3" />
-                    Add to Cart
+                    {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
                   </button>
                 </div>
                 

@@ -1,6 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../types/supabase.types';
 
+/**
+ * Server-side client using anon key (with RLS)
+ * Safe for SSR and server components.
+ */
 export function createServerAnonClient() {
   return createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,14 +12,17 @@ export function createServerAnonClient() {
   );
 }
 
-// Admin client (for server-side admin tasks, bypassing RLS)
-export const createServerAdminClient = () => {
+/**
+ * Server-side admin client (bypasses RLS)
+ * ⚠️ Use only in secure backend code (e.g. API routes, cron jobs).
+ */
+export function createServerAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !supabaseServiceKey) {
+  if (!supabaseUrl || !serviceRoleKey) {
     throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL');
   }
 
-  return createClient(supabaseUrl, supabaseServiceKey);
-};
+  return createClient<Database>(supabaseUrl, serviceRoleKey);
+}
