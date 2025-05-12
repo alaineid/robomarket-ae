@@ -104,7 +104,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [cart, mounted]);
 
   // Calculate cart total and count
-  const cartTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const cartTotal = cartItems.reduce((sum, item) => {
+    // Use the product's vendor price if available, otherwise fall back to the stored price
+    const price = item.product?.best_vendor?.price || item.price;
+    return sum + (price * item.quantity);
+  }, 0);
   const cartCount = cartItems.reduce((count, item) => count + item.quantity, 0);
 
   // Cart operations

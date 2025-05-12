@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image'; // Add Image import
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { 
   FaLock, 
@@ -13,11 +13,14 @@ import {
   FaExclamationTriangle,
   FaShoppingCart
 } from 'react-icons/fa';
+import { Country, State, City } from 'country-state-city';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { commonButtonStyles } from '@/styles/commonStyles';
 import { useCart } from '@/utils/cartContext';
+
+// Initialize i18n-iso-countries with English locale
 
 // Form types
 interface ShippingInfo {
@@ -30,6 +33,7 @@ interface ShippingInfo {
   state: string;
   zipCode: string;
   country: string;
+  countryName?: string;
 }
 
 interface PaymentInfo {
@@ -57,7 +61,7 @@ export default function CheckoutPage() {
     city: '',
     state: '',
     zipCode: '',
-    country: 'United States'
+    country: 'United Arab Emirates'
   });
   
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({
@@ -70,7 +74,7 @@ export default function CheckoutPage() {
   });
   
   // Order summary calculations
-  const subtotal = cartTotal;
+  const subtotal = cartTotal || 0; // Ensure subtotal is not NaN
   const shippingCost = subtotal > 100 ? 0 : 15;
   const taxAmount = subtotal * 0.05;
   const totalAmount = subtotal + shippingCost + taxAmount;
@@ -86,7 +90,7 @@ export default function CheckoutPage() {
     if (!shippingInfo.email) errors.email = "Email is required";
     if (!shippingInfo.address) errors.address = "Address is required";
     if (!shippingInfo.city) errors.city = "City is required";
-    if (!shippingInfo.zipCode) errors.zipCode = "ZIP code is required";
+    if (!shippingInfo.zipCode) errors.zipCode = "Postal code is required";
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -162,6 +166,32 @@ export default function CheckoutPage() {
     setCurrentStep(4);
     clearCart();
     window.scrollTo(0, 0);
+  };
+  
+  // Set initial state for selected country (UAE)
+  useEffect(() => {
+    // Find the UAE country object
+    const uaeCountry = Country.getAllCountries().find(country => country.isoCode === 'AE');
+    if (uaeCountry) {
+      setShippingInfo(prev => ({
+        ...prev,
+        country: 'AE',  // Store ISO code for better state management
+        countryName: uaeCountry.name  // Store name for display purposes
+      }));
+    }
+  }, []);
+  
+  // Handle country change to update states/emirates accordingly
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const countryCode = e.target.value;
+    const countryObj = Country.getAllCountries().find(c => c.isoCode === countryCode);
+    
+    setShippingInfo(prev => ({
+      ...prev,
+      country: countryCode,
+      countryName: countryObj?.name || '',
+      state: '' // Reset state when country changes
+    }));
   };
   
   // Empty cart check
@@ -253,7 +283,7 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
             
             {/* Main Content - Left Column */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-3">
               {currentStep === 4 ? (
                 // Full-width layout for order confirmation
                 <div className="lg:col-span-3">
@@ -368,7 +398,7 @@ export default function CheckoutPage() {
                       </div>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
-                        <div>
+                      <div>
                           <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1.5">First Name *</label>
                           <input
                             type="text"
@@ -402,6 +432,32 @@ export default function CheckoutPage() {
                             <p className="text-red-600 text-xs mt-1.5 flex items-center">
                               <span className="inline-block w-1 h-1 bg-red-600 rounded-full mr-1.5"></span>
                               {formErrors.lastName}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="sm:col-span-2">
+                          <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1.5">Address *</label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              id="address"
+                              name="address"
+                              value={shippingInfo.address}
+                              onChange={handleShippingChange}
+                              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] transition-shadow duration-150 pl-10"
+                              placeholder="123 Main St, Apt 4B"
+                            />
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          </div>
+                          {formErrors.address && (
+                            <p className="text-red-600 text-xs mt-1.5 flex items-center">
+                              <span className="inline-block w-1 h-1 bg-red-600 rounded-full mr-1.5"></span>
+                              {formErrors.address}
                             </p>
                           )}
                         </div>
@@ -452,84 +508,6 @@ export default function CheckoutPage() {
                             </div>
                           </div>
                         </div>
-                        
-                        <div className="sm:col-span-2">
-                          <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1.5">Address *</label>
-                          <div className="relative">
-                            <input
-                              type="text"
-                              id="address"
-                              name="address"
-                              value={shippingInfo.address}
-                              onChange={handleShippingChange}
-                              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] transition-shadow duration-150 pl-10"
-                              placeholder="123 Main St, Apt 4B"
-                            />
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                          </div>
-                          {formErrors.address && (
-                            <p className="text-red-600 text-xs mt-1.5 flex items-center">
-                              <span className="inline-block w-1 h-1 bg-red-600 rounded-full mr-1.5"></span>
-                              {formErrors.address}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div>
-                          <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1.5">City *</label>
-                          <input
-                            type="text"
-                            id="city"
-                            name="city"
-                            value={shippingInfo.city}
-                            onChange={handleShippingChange}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] transition-shadow duration-150"
-                            placeholder="Enter city"
-                          />
-                          {formErrors.city && (
-                            <p className="text-red-600 text-xs mt-1.5 flex items-center">
-                              <span className="inline-block w-1 h-1 bg-red-600 rounded-full mr-1.5"></span>
-                              {formErrors.city}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div>
-                          <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1.5">State</label>
-                          <input
-                            type="text"
-                            id="state"
-                            name="state"
-                            value={shippingInfo.state}
-                            onChange={handleShippingChange}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] transition-shadow duration-150"
-                            placeholder="Enter state"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1.5">ZIP Code *</label>
-                          <input
-                            type="text"
-                            id="zipCode"
-                            name="zipCode"
-                            value={shippingInfo.zipCode}
-                            onChange={handleShippingChange}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] transition-shadow duration-150"
-                            placeholder="Enter ZIP code"
-                          />
-                          {formErrors.zipCode && (
-                            <p className="text-red-600 text-xs mt-1.5 flex items-center">
-                              <span className="inline-block w-1 h-1 bg-red-600 rounded-full mr-1.5"></span>
-                              {formErrors.zipCode}
-                            </p>
-                          )}
-                        </div>
-                        
                         <div>
                           <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1.5">Country *</label>
                           <div className="relative">
@@ -537,14 +515,27 @@ export default function CheckoutPage() {
                               id="country"
                               name="country"
                               value={shippingInfo.country}
-                              onChange={handleShippingChange}
+                              onChange={(e) => {
+                                handleCountryChange(e);
+                                // Reset state and city when country changes
+                                setShippingInfo(prev => ({
+                                  ...prev,
+                                  country: e.target.value,
+                                  state: '',
+                                  city: ''
+                                }));
+                              }}
                               className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] transition-shadow duration-150 appearance-none pl-10 pr-10 bg-white"
                             >
-                              <option value="United States">United States</option>
-                              <option value="Canada">Canada</option>
-                              <option value="Mexico">Mexico</option>
-                              <option value="United Kingdom">United Kingdom</option>
-                              <option value="Australia">Australia</option>
+                              {/* Filter only GCC countries */}
+                              {Country.getAllCountries()
+                                .filter(country => 
+                                  ['AE', 'SA', 'KW', 'QA', 'BH', 'OM'].includes(country.isoCode))
+                                .map((country) => (
+                                  <option key={country.isoCode} value={country.isoCode}>
+                                    {country.name}
+                                  </option>
+                              ))}
                             </select>
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
@@ -558,6 +549,107 @@ export default function CheckoutPage() {
                             </div>
                           </div>
                         </div>
+
+                        <div>
+                          <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1.5">Emirate/Province *</label>
+                          <div className="relative">
+                            <select
+                              id="state"
+                              name="state"
+                              value={shippingInfo.state}
+                              onChange={(e) => {
+                                handleShippingChange(e);
+                                // Reset city when state changes
+                                setShippingInfo(prev => ({
+                                  ...prev,
+                                  state: e.target.value,
+                                  city: ''
+                                }));
+                              }}
+                              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] transition-shadow duration-150 appearance-none pl-10"
+                            >
+                              <option value="">Select Emirate/Province</option>
+                              {State.getStatesOfCountry(shippingInfo.country).map((region) => (
+                                <option key={region.isoCode} value={region.isoCode}>{region.name}</option>
+                              ))}
+                            </select>
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                              </svg>
+                            </div>
+                          </div>
+                          {formErrors.state && (
+                            <p className="text-red-600 text-xs mt-1.5 flex items-center">
+                              <span className="inline-block w-1 h-1 bg-red-600 rounded-full mr-1.5"></span>
+                              {formErrors.state}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1.5">City *</label>
+                          <div className="relative">
+                            <select
+                              id="city"
+                              name="city"
+                              value={shippingInfo.city}
+                              onChange={handleShippingChange}
+                              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] transition-shadow duration-150 appearance-none pl-10"
+                              disabled={!shippingInfo.state}
+                            >
+                              <option value="">Select City</option>
+                              {City.getCitiesOfState(
+                                shippingInfo.country,
+                                shippingInfo.state
+                              )?.map((city) => (
+                                <option key={city.name} value={city.name}>{city.name}</option>
+                              ))}
+                            </select>
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                              </svg>
+                            </div>
+                          </div>
+                          {formErrors.city && (
+                            <p className="text-red-600 text-xs mt-1.5 flex items-center">
+                              <span className="inline-block w-1 h-1 bg-red-600 rounded-full mr-1.5"></span>
+                              {formErrors.city}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1.5">Postal Code *</label>
+                          <input
+                            type="text"
+                            id="zipCode"
+                            name="zipCode"
+                            value={shippingInfo.zipCode}
+                            onChange={handleShippingChange}
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] transition-shadow duration-150"
+                            placeholder="Enter postal code"
+                          />
+                          {formErrors.zipCode && (
+                            <p className="text-red-600 text-xs mt-1.5 flex items-center">
+                              <span className="inline-block w-1 h-1 bg-red-600 rounded-full mr-1.5"></span>
+                              {formErrors.zipCode}
+                            </p>
+                          )}
+                        </div>
+
+                        
                       </div>
                       
                       {/* Shipping Note */}
@@ -802,7 +894,7 @@ export default function CheckoutPage() {
                                     CVV *
                                     <span className="ml-1 group relative">
                                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 cursor-help" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                                       </svg>
                                       <span className="absolute bottom-full mb-2 w-36 rounded bg-gray-800 p-2 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
                                         The 3-4 digit code on the back of your card
@@ -916,7 +1008,7 @@ export default function CheckoutPage() {
                             </p>
                             <div className="bg-gray-100 p-4 rounded-lg border border-gray-200 flex items-start">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2h2a1 1 0 100-2H9z" clipRule="evenodd" />
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                               </svg>
                               <p className="text-sm text-gray-600">
                                 Apple Pay works on macOS devices with Touch ID or when paired with an iPhone or Apple Watch that has Apple Pay set up.
@@ -1215,10 +1307,10 @@ export default function CheckoutPage() {
                 
               )}
             
-            {/* Order Summary - Right Column */}
-            <div className="lg:col-span-1">
-              {currentStep < 4 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
+            {/* Order Summary - Below Main Content */}
+            {currentStep < 4 && (
+              <div className="lg:col-span-3">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                   <div className="p-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
                     <h2 className="font-bold text-xl text-gray-800">Order Summary</h2>
                   </div>
@@ -1321,11 +1413,11 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
             </div>
           </div>
         </div>
-      </div>
       </main>
       <Footer />
     </div>
