@@ -4,15 +4,15 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CartProvider } from '@/utils/cartContext';
 import { WishlistProvider } from '@/utils/wishlistContext';
-import { AuthProvider } from '@/utils/authContext';
+import { GlobalProvider } from '@/lib/context/GlobalContext';
 
-// Create a client
+// Create a QueryClient instance
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false, // default: true
+      refetchOnWindowFocus: false, // Disable refetching on window focus
       staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
+      retry: 1, // Retry failed queries once
     },
   },
 });
@@ -22,19 +22,16 @@ export default function ClientProviders({
 }: { 
   children: React.ReactNode 
 }) {
-  // Return children directly to ensure consistent server/client rendering
-  // The providers themselves handle their initialization logic
+  // Wrap children with necessary providers
   return (
-    <>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              {children}
-            </WishlistProvider>
-          </CartProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </>
+    <QueryClientProvider client={queryClient}>
+      <GlobalProvider>
+        <CartProvider>
+          <WishlistProvider>
+            {children}
+          </WishlistProvider>
+        </CartProvider>
+      </GlobalProvider>
+    </QueryClientProvider>
   );
 }

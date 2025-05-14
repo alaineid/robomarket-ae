@@ -20,7 +20,7 @@ import {
   brands,
   Product,
   ApiResponse
-} from '@/utils/types/product.types';
+} from '@/lib/product';
 import { useProducts } from '@/utils/queryHooks';
 import { useQueryClient } from '@tanstack/react-query';
 

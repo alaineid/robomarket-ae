@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerAnonClient } from '@/utils/server/supabaseServer';
-
-const MATVIEW_SELECT = `*`;
+import { createSSRClient } from '@/lib/supabase/server';
 
 export async function GET(request: Request) {
   const idParam = request.url.split('/').pop();
@@ -11,15 +9,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
   }
 
-  const supabase = createServerAnonClient();
+  const supabase = await createSSRClient();
   const { data, error } = await supabase
     .from('product_full')
-    .select(MATVIEW_SELECT)
+    .select('*')
     .eq('id', id)
     .single();
 
   if (error) {
-    console.error('GET /api/products/[id] error', error);
+    console.error('GET /products/[id] error', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
   if (!data) {

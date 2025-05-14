@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/utils/supabaseClient';
+import { createSPASassClient } from '@/lib/supabase/client';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function LoginForm() {
@@ -25,8 +25,11 @@ export default function LoginForm() {
 
     try {
       setLoading(true);
-      
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+
+      const supabase = await createSPASassClient();
+      const client = supabase.getSupabaseClient();
+
+      const { data, error: signInError } = await client.auth.signInWithPassword({
         email,
         password,
       });
@@ -38,7 +41,7 @@ export default function LoginForm() {
       if (data.user) {
         // Redirect to the shop page after successful login
         router.push('/shop');
-        router.refresh(); // Refresh to update auth state in the UI
+        router.refresh(); // Update auth state in the UI
       }
     } catch (err: unknown) {
       console.error('Login error:', err);
@@ -56,8 +59,11 @@ export default function LoginForm() {
 
     try {
       setLoading(true);
-      
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+
+      const supabase = await createSPASassClient();
+      const client = supabase.getSupabaseClient();
+
+      const { error: resetError } = await client.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
@@ -82,7 +88,7 @@ export default function LoginForm() {
             <p>{error}</p>
           </div>
         )}
-        
+
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
             Email Address
@@ -97,7 +103,7 @@ export default function LoginForm() {
             required
           />
         </div>
-        
+
         <div>
           <div className="flex justify-between items-center mb-1">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
@@ -131,7 +137,7 @@ export default function LoginForm() {
             </button>
           </div>
         </div>
-        
+
         <button
           type="submit"
           disabled={loading}
@@ -141,7 +147,7 @@ export default function LoginForm() {
         >
           {loading ? 'Logging in...' : 'Log In'}
         </button>
-        
+
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
             Don&apos;t have an account?{' '}

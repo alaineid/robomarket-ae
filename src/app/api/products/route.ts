@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerAnonClient } from '@/utils/server/supabaseServer';
+import { createSSRClient } from '@/lib/supabase/server';
 
 const MATVIEW_SELECT = '*';
 
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   const brand = url.searchParams.get('brand') || '';
   const search = url.searchParams.get('search') || '';
 
-  const supabase = createServerAnonClient();
+  const supabase = await createSSRClient();
   let query = supabase.from('product_full').select(MATVIEW_SELECT);
   let countQuery = supabase.from('product_full').select('id', { count: 'exact' });
 
