@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/services/supabaseClient';
 import * as EmailValidator from 'email-validator';
 import zxcvbn from 'zxcvbn';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { signupAction } from '@/components/actions/authActions'; // Import the signupAction
 
 export default function SignupForm() {
   const router = useRouter();
@@ -15,11 +15,11 @@ export default function SignupForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isPending, startTransition] = useTransition(); // Use transition for improved loading state management
   
   // Password strength state
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -75,9 +75,10 @@ export default function SignupForm() {
     }
   }, [password]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    setSuccessMessage(null);
     
     // Form validation
     if (!firstName || !lastName || !email || !password) {
@@ -106,67 +107,44 @@ export default function SignupForm() {
       return;
     }
 
-    try {
-      setLoading(true);
-      
-      // First check if the user already exists
-      const { data: userData, error: userError } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: false
-        }
-      });
+    // Create FormData object to use with signupAction
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('password', password);
+    formData.append('firstName', firstName);
+    formData.append('lastName', lastName);
+    
+    // Use startTransition to handle the async operation
+    startTransition(async () => {
+      try {
+        // Call the signupAction with the FormData
+        const result = await signupAction(formData);
 
-      // If there's no error in the OTP request but we got data, it means the user exists
-      if (!userError && userData) {
-        setError('An account with this email already exists. Please log in instead.');
-        setLoading(false);
-        return;
-      }
-      
-      // If we get here, the user doesn't exist, so we can try to sign them up
-      const { data, error: signupError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            full_name: `${firstName} ${lastName}`,
-          }
+        if (result?.error) {
+          setError(result.error.message);
+          return;
         }
-      });
 
-      if (signupError) {
-        // More comprehensive check for user already existing
-        if (
-          signupError.message.toLowerCase().includes('user already registered') ||
-          signupError.message.toLowerCase().includes('already exists') ||
-          signupError.message.toLowerCase().includes('already registered') ||
-          signupError.message.toLowerCase().includes('duplicate') ||
-          signupError.status === 400
-        ) {
-          setError('An account with this email already exists. Please log in instead.');
-        } else {
-          throw signupError;
+        if (result?.success) {
+          setSuccessMessage(result.success.message);
+          
+          // Reset form fields
+          setFirstName('');
+          setLastName('');
+          setEmail('');
+          setPassword('');
+          setConfirmPassword('');
+          
+          // Redirect to login after a delay
+          setTimeout(() => {
+            router.push('/login');
+          }, 3000);
         }
-        return;
+      } catch (err: unknown) {
+        console.error('Error during signup:', err);
+        setError(err instanceof Error ? err.message : 'An error occurred during signup. Please try again.');
       }
-
-      if (data.user) {
-        setSuccessMessage('Registration successful! Please check your email for verification.');
-        
-        // Redirect to login after a delay
-        setTimeout(() => {
-          router.push('/login');
-        }, 3000);
-      }
-    } catch (err: unknown) {
-      console.error('Error during signup:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred during signup. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   // Helper function to get password strength color
@@ -382,12 +360,22 @@ export default function SignupForm() {
           
           <button
             type="submit"
-            disabled={loading}
+            disabled={isPending}
             className={`w-full bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center ${
-              loading ? 'opacity-70 cursor-not-allowed' : ''
+              isPending ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {isPending ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Creating Account...
+              </>
+            ) : (
+              'Sign Up'
+            )}
           </button>
           
           <div className="text-center mt-4">

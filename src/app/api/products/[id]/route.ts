@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerAnonClient } from '@/services/supabaseServer';
+import { createClient } from '@/supabase/server';
 
 const MATVIEW_SELECT = `*`;
 
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
   }
 
-  const supabase = createServerAnonClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('product_full')
     .select(MATVIEW_SELECT)

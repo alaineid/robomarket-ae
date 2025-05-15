@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/services/supabaseClient';
+import { loginAction } from '@/components/actions/authActions'; // Adjust the import based on your project structure
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { createClient } from '@/supabase/client'; // Import the Supabase client
 
 export default function LoginForm() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,20 +25,20 @@ export default function LoginForm() {
     try {
       setLoading(true);
       
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // Create FormData for server action
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('password', password);
 
-      if (signInError) {
-        throw signInError;
+      // Call the login action from authActions.ts
+      const result = await loginAction(formData);
+      
+      // If there's an error, display it
+      if (result?.error) {
+        throw new Error(result.error.message);
       }
-
-      if (data.user) {
-        // Redirect to the shop page after successful login
-        router.push('/shop');
-        router.refresh(); // Refresh to update auth state in the UI
-      }
+      
+      // No need to manually redirect as loginAction handles redirection
     } catch (err: unknown) {
       console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'Failed to sign in. Please check your credentials.');
@@ -57,6 +56,7 @@ export default function LoginForm() {
     try {
       setLoading(true);
       
+      const supabase = createClient();
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });

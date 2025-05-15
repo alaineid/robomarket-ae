@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product } from '@/types/product.types';
+import { fetchWithAuth } from '@/utils/fetchWithAuth';
 
 interface CartItem {
   productId: number;
@@ -69,14 +70,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const productPromises = cart.map(async (item) => {
           try {
-            const response = await fetch(`/api/products/${item.productId}`);
+            const product = await fetchWithAuth<Product>(`/api/products/${item.productId}`, {
+              skipCache: true
+            });
             
-            if (!response.ok) {
-              console.error(`Failed to fetch product ${item.productId}: ${response.statusText}`);
-              return null;
-            }
-            
-            const product = await response.json();
             return { ...item, product };
           } catch (error) {
             console.error(`Error fetching product ${item.productId}:`, error);
@@ -93,6 +90,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
     
+    // Only fetch if we have items and are mounted
     if (cart.length > 0) {
       fetchCartProducts();
     } else {
@@ -116,15 +114,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!mounted) return;
     
     try {
-      // Fetch the product to get its current price
-      const response = await fetch(`/api/products/${productId}`);
-      
-      if (!response.ok) {
-        console.error(`Failed to fetch product ${productId}: ${response.statusText}`);
-        return;
-      }
-      
-      const product = await response.json();
+      // Fetch the product to get its current price using our utility
+      const product = await fetchWithAuth<Product>(`/api/products/${productId}`, {
+        skipCache: true
+      });
       
       setCart(prevCart => {
         const existingItem = prevCart.find(item => item.productId === productId);
@@ -136,7 +129,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
               : item
           );
         } else {
-          return [...prevCart, { productId, quantity, price: product.price }];
+          // Use best vendor price or 0 if not available
+          const price = product.best_vendor?.price || 0;
+          return [...prevCart, { productId, quantity, price }];
         }
       });
     } catch (error) {

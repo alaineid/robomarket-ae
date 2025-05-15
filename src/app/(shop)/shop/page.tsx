@@ -28,10 +28,16 @@ async function fetchInitialProducts() {
     // Updated to fetch 20 products instead of 4
     const res = await fetch(`${baseUrl}/api/products?limit=20`, {
       cache: 'no-cache',  // Don't cache this response
+      // Add credentials to ensure cookies are sent with the request
+      credentials: 'include',
+      headers: {
+        'Cache-Control': 'no-cache',
+      }
     });
     
     if (!res.ok) {
-      throw new Error('Failed to fetch products');
+      const errorText = await res.text().catch(() => 'No error details available');
+      throw new Error(`Failed to fetch products: ${res.status} ${res.statusText} - ${errorText}`);
     }
     
     return res.json();

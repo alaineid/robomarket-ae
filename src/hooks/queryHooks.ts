@@ -3,6 +3,7 @@
  */
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { Product, ApiResponse } from '@/types/product.types';
+import { fetchWithAuth } from '@/utils/fetchWithAuth';
 
 // Fetch products with filters
 export function useProducts(
@@ -44,14 +45,10 @@ export function useProducts(
       params.append('limit', pageSize.toString());
       params.append('offset', pageParam.toString());
       
-      // Make API request
-      const response = await fetch(`/api/products?${params.toString()}`);
-      
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      
-      return response.json() as Promise<ApiResponse>;
+      // Make API request using the utility
+      return fetchWithAuth<ApiResponse>(`/api/products?${params.toString()}`, {
+        skipCache: true
+      });
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
@@ -82,13 +79,9 @@ export function useProduct(id: number | string | null) {
     queryFn: async () => {
       if (!id) return null;
       
-      const response = await fetch(`/api/products/${id}`);
-      
-      if (!response.ok) {
-        throw new Error('Product not found');
-      }
-      
-      return response.json() as Promise<Product>;
+      return fetchWithAuth<Product>(`/api/products/${id}`, {
+        skipCache: true
+      });
     },
     enabled: !!id, // Only run the query if we have an ID
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -100,13 +93,9 @@ export function useFeaturedProducts(limit = 6) {
   return useQuery({
     queryKey: ['featuredProducts', limit],
     queryFn: async () => {
-      const response = await fetch(`/api/products?featured=true&limit=${limit}&sort_by=featured`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch featured products');
-      }
-      
-      const data = await response.json();
+      const data = await fetchWithAuth<ApiResponse>(`/api/products?featured=true&limit=${limit}&sort_by=featured`, {
+        skipCache: true
+      });
       return data.products || [];
     },
     staleTime: 1000 * 60 * 5, // 5 minutes

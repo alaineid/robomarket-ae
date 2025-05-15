@@ -4,7 +4,6 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CartProvider } from '@/store/cartContext';
 import { WishlistProvider } from '@/store/wishlistContext';
-import { AuthProvider } from '@/store/authContext';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -27,13 +26,11 @@ export default function ClientProviders({
   return (
     <>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
           <CartProvider>
             <WishlistProvider>
               {children}
             </WishlistProvider>
           </CartProvider>
-        </AuthProvider>
       </QueryClientProvider>
     </>
   );
