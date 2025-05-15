@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { loginAction } from '@/components/actions/authActions'; // Adjust the import based on your project structure
@@ -16,6 +16,20 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+
+  // Load saved credentials if they exist
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    const savedPassword = localStorage.getItem('rememberedPassword');
+    
+    if (savedEmail && savedPassword) {
+      setEmail(savedEmail);
+      setPassword(savedPassword);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,12 +39,26 @@ export default function LoginForm() {
       setError('Email and password are required');
       return;
     }
-
+    
+    if (!acceptTerms) {
+      setError('You must accept the Terms of Service and Privacy Policy');
+      return;
+    }
+    
     try {
       setLoading(true);
       
       // Update global auth state to show loading
       useAuthStore.setState({ isLoading: true });
+      
+      // Save credentials if remember me is checked
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email);
+        localStorage.setItem('rememberedPassword', password);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+        localStorage.removeItem('rememberedPassword');
+      }
       
       // Create FormData for server action
       const formData = new FormData();
@@ -52,7 +80,7 @@ export default function LoginForm() {
         
         try {
           // Actively synchronize the auth state to ensure the UI updates immediately
-          await synchronizeAuthState();
+          const user = await synchronizeAuthState();
           
           // Force refresh of the current route to ensure the UI updates
           router.refresh();
@@ -65,9 +93,15 @@ export default function LoginForm() {
           router.push('/shop');
         } catch (syncError) {
           console.error('Error synchronizing auth state after login:', syncError);
-          // Still try to navigate, even if synchronization fails
-          router.push('/shop');
+          setError('Successfully logged in but had trouble loading your profile. Redirecting...');
+          // Still try to navigate after a short delay, even if synchronization fails
+          setTimeout(() => {
+            router.push('/shop');
+          }, 2000);
         }
+      } else {
+        // No explicit error but also no success
+        setError('Login response was invalid. Please try again.');
       }
     } catch (err: unknown) {
       console.error('Login error:', err);
@@ -171,6 +205,38 @@ export default function LoginForm() {
               {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
             </button>
           </div>
+        </div>
+        
+        {/* Remember me checkbox */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center">
+            <input
+              id="remember-me"
+              name="remember-me"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="h-4 w-4 accent-[#4DA9FF] rounded border-gray-300 text-[#4DA9FF] focus:ring-[#4DA9FF]"
+            />
+            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+              Remember my credentials
+            </label>
+          </div>
+        </div>
+        
+        {/* Terms and Privacy Policy checkbox */}
+        <div className="flex items-start mb-4">
+          <input
+            id="accept-terms"
+            name="accept-terms"
+            type="checkbox"
+            checked={acceptTerms}
+            onChange={(e) => setAcceptTerms(e.target.checked)}
+            className="h-4 w-4 accent-[#4DA9FF] rounded border-gray-300 text-[#4DA9FF] focus:ring-[#4DA9FF] mt-1"
+          />
+          <label htmlFor="accept-terms" className="ml-2 block text-sm text-gray-700">
+            I agree to the <Link href="/terms" className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium">Terms of Service</Link> and <Link href="/privacy" className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium">Privacy Policy</Link>
+          </label>
         </div>
         
         <button

@@ -59,3 +59,26 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #c5e0ff #f1f1f1;
 }
+
+/* Global cursor styles for clickable elements */
+button, 
+a, 
+[role="button"], 
+input[type="button"], 
+input[type="submit"], 
+input[type="reset"], 
+.btn, 
+.clickable,
+[class*="cursor-pointer"] {
+  cursor: pointer !important;
+}
+
+/* Interactive elements within components should show pointer cursor */
+details summary,
+select,
+label[for],
+.card-link,
+.nav-item,
+.action-element {
+  cursor: pointer;
+}

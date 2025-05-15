@@ -38,3 +38,14 @@ export const commonLayoutStyles = {
   heroSection: "bg-gradient-to-r from-blue-50 via-white to-indigo-50 py-16",
   mainContent: "flex-grow bg-gray-50 py-12"
 };
+
+// Common cursor styles
+export const commonCursorStyles = {
+  clickable: "cursor-pointer",
+  notAllowed: "cursor-not-allowed",
+  loading: "cursor-wait",
+  text: "cursor-text",
+  move: "cursor-move",
+  grab: "cursor-grab",
+  grabbing: "cursor-grabbing"
+};
