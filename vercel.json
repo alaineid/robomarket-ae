@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm rebuild lightningcss --platform=linux --arch=x64 && next build",
+  "buildCommand": "next build",
   "outputDirectory": ".next",
   "public": true,
   "github": {
