@@ -23,6 +23,7 @@ import {
 } from '@/types/product.types';
 import { useProducts } from '@/hooks/queryHooks';
 import { useQueryClient } from '@tanstack/react-query';
+import { fetchWithAuth } from '@/utils/fetchWithAuth';
 
 interface ShopClientProps {
   initialData: ApiResponse;
@@ -134,9 +135,11 @@ export default function ShopClient({ initialData }: ShopClientProps) {
           const data = await queryClient.fetchQuery({
             queryKey: ['product', id],
             queryFn: async () => {
-              const response = await fetch(`/api/products/${id}`);
-              if (!response.ok) return null;
-              return response.json() as Promise<Product>;
+              try {
+                return await fetchWithAuth<Product>(`/api/products/${id}`);
+              } catch (error) {
+                return null;
+              }
             },
           });
           return data;

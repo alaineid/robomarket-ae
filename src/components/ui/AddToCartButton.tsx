@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { FaShoppingCart, FaCheck } from 'react-icons/fa';
 import { useCart } from '@/store/cartContext';
 import { Product } from '@/types/product.types';
+import { fetchWithAuth } from '@/utils/fetchWithAuth';
 
 interface AddToCartButtonProps {
   product?: Product;
@@ -34,11 +35,8 @@ export default function AddToCartButton({
       // Replace local getProductById with API fetch
       const fetchProduct = async () => {
         try {
-          const response = await fetch(`/api/products/${productId}`);
-          if (response.ok) {
-            const fetchedProduct = await response.json();
-            setResolvedProduct(fetchedProduct);
-          }
+          const fetchedProduct = await fetchWithAuth<Product>(`/api/products/${productId}`);
+          setResolvedProduct(fetchedProduct);
         } catch (error) {
           console.error('Error fetching product:', error);
         }

@@ -24,15 +24,32 @@ import {
   FaChevronDown,
   FaTrash
 } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/store/cartContext';
+import { useAuthStore } from '@/store/authStore';
+import { createClient } from '@/supabase/client';
 
 export default function Header() {
+  const router = useRouter();
   const { cartCount, cartItems, removeFromCart } = useCart();
+  const { user, isLoading, sessionChecked } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); 
+
+  console.log('User:', user);
   
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push('/login');
+      router.refresh();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   // Touch gesture handling
   const touchStartRef = useRef<number | null>(null);
   const touchEndRef = useRef<number | null>(null);
@@ -181,6 +198,27 @@ export default function Header() {
     return sum + ((item.product?.best_vendor?.price || 0) * item.quantity);
   }, 0);
 
+  // If auth state is still loading and session hasn't been checked yet, show a minimal header
+  if (isLoading && !sessionChecked) {
+    return (
+      <header 
+        className="sticky top-0 z-50 bg-white/95 shadow-sm"
+        style={{ padding: '0.75rem 0' }}
+      >
+        <div className="absolute top-0 left-0 w-full h-1 bg-[#4DA9FF]"></div>
+        <nav className="container mx-auto px-4 lg:px-6">
+          <div className="flex justify-between items-center">
+            <Logo 
+              href="/" 
+              variant={isMobileView ? 'compact' : 'default'}
+            />
+            <div className="animate-pulse bg-gray-200 rounded-full h-8 w-24"></div>
+          </div>
+        </nav>
+      </header>
+    );
+  }
+
   return (
     <header 
       id="header" 
@@ -242,14 +280,14 @@ export default function Header() {
                 >
                   <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none divide-y divide-gray-100 z-50 py-1">
                     {/* Menu changes based on login state */}
-                    {isLoggedIn ? (
+                    {user ? (
                       <>
                         <div className="px-4 py-3">
                           <p className="text-sm font-medium text-gray-900">
                             Welcome back!
                           </p>
                           <p className="text-xs text-gray-500 truncate">
-                            user@example.com
+                            {user.email}
                           </p>
                         </div>
                         <div className="py-1">
@@ -274,7 +312,7 @@ export default function Header() {
 
                           <MenuItem>
                             <button
-                              onClick={() => setIsLoggedIn(false)}
+                              onClick={handleLogout}
                               className="hover:bg-gray-50 hover:text-[#4DA9FF] text-gray-700 flex items-center px-4 py-2 text-sm w-full text-left"
                             >
                               <FaSignOutAlt className="mr-3 h-4 w-4" />
@@ -288,7 +326,6 @@ export default function Header() {
                           <MenuItem>
                             <Link
                               href="/login"
-                              onClick={() => setIsLoggedIn(true)}
                               className="hover:bg-gray-50 hover:text-[#4DA9FF] text-gray-700 flex items-center px-4 py-2 text-sm"
                             >
                               <FaSignInAlt className="mr-3 h-4 w-4" />
@@ -471,7 +508,7 @@ export default function Header() {
             {/* Mobile Login/Account section */}
             <div className="py-2 border-b border-gray-100">
               <div className="mb-2 font-medium text-gray-700">Account</div>
-              {isLoggedIn ? (
+              {user ? (
                 <div className="space-y-2">
                   <Link href="/account" className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1">
                     <FaUser className="mr-2 h-4 w-4" />
@@ -482,7 +519,7 @@ export default function Header() {
                     Wishlist
                   </Link>
                   <button 
-                    onClick={() => setIsLoggedIn(false)}
+                    onClick={handleLogout}
                     className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1"
                   >
                     <FaSignOutAlt className="mr-2 h-4 w-4" />
@@ -494,7 +531,6 @@ export default function Header() {
                   <Link 
                     href="/login" 
                     className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1"
-                    onClick={() => setIsLoggedIn(true)} // For demo purposes
                   >
                     <FaSignInAlt className="mr-2 h-4 w-4" />
                     Login

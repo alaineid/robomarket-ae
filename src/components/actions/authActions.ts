@@ -43,7 +43,10 @@ export async function loginAction(formData: FormData): Promise<ActionResult | vo
   // Revalidate paths to ensure UI updates with new auth state.
   // Revalidating the root layout should cover most cases.
   revalidatePath("/", "layout");
-  redirect("/shop"); // Redirect to dashboard or desired page on successful login
+  
+  // Return success instead of redirecting directly
+  // This prevents the "NEXT_REDIRECT" flash
+  return { success: { message: "Login successful" } };
 }
 
 /**

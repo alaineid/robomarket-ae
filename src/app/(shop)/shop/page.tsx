@@ -3,6 +3,8 @@ import ShopClient from './ShopClient';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { headers } from 'next/headers';
+import { fetchWithAuth } from '@/utils/fetchWithAuth';
+import { ApiResponse } from '@/types/product.types';
 
 // Tell Next.js this page should be dynamically rendered
 export const dynamic = 'force-dynamic';
@@ -25,22 +27,10 @@ async function fetchInitialProducts() {
     const baseUrl = await getBaseUrl();
     
     // Server-side fetch of initial products with proper base URL
-    // Updated to fetch 20 products instead of 4
-    const res = await fetch(`${baseUrl}/api/products?limit=20`, {
-      cache: 'no-cache',  // Don't cache this response
-      // Add credentials to ensure cookies are sent with the request
-      credentials: 'include',
-      headers: {
-        'Cache-Control': 'no-cache',
-      }
+    // Updated to fetch 20 products instead of 4 using fetchWithAuth with proper typing
+    return await fetchWithAuth<ApiResponse>(`${baseUrl}/api/products?limit=20`, {
+      skipCache: true  // Don't cache this response
     });
-    
-    if (!res.ok) {
-      const errorText = await res.text().catch(() => 'No error details available');
-      throw new Error(`Failed to fetch products: ${res.status} ${res.statusText} - ${errorText}`);
-    }
-    
-    return res.json();
   } catch (error) {
     console.error('Error fetching initial products:', error);
     // Return an empty result to avoid breaking the page

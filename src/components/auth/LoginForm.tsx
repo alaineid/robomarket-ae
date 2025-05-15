@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { loginAction } from '@/components/actions/authActions'; // Adjust the import based on your project structure
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { createClient } from '@/supabase/client'; // Import the Supabase client
 
 export default function LoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,7 +40,10 @@ export default function LoginForm() {
         throw new Error(result.error.message);
       }
       
-      // No need to manually redirect as loginAction handles redirection
+      // If login was successful, redirect to the shop page
+      if (result?.success) {
+        router.push('/shop');
+      }
     } catch (err: unknown) {
       console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'Failed to sign in. Please check your credentials.');
