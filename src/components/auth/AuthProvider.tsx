@@ -54,44 +54,20 @@ export default function AuthProvider({ serverUser, children }: AuthProviderProps
       async (event, session) => {
         console.log(`AuthProvider: Auth state event: ${event}`);
         
-        // `event` can be INITIAL_SESSION, SIGNED_IN, SIGNED_OUT, PASSWORD_RECOVERY, TOKEN_REFRESHED, USER_UPDATED
-        // `session` contains the user object if authenticated
+        // Update user state based on session
+        setUser(session?.user ?? null);
         
-        // Special handling for SIGNED_OUT events to ensure UI updates immediately
-        if (event === 'SIGNED_OUT') {
-          console.log('AuthProvider: User signed out, clearing auth state');
-          // Forcefully set user to null immediately for sign out
-          setUser(null);
-        } else {
-          // For other events, use the session data
-          setUser(session?.user ?? null);
-        }
-        
-        setLoading(false); // Auth state determined, stop loading
-        setSessionChecked(true); // Mark that client-side check has occurred
+        // Update loading and session checked state
+        setLoading(false);
+        setSessionChecked(true);
 
-        // Important: Refresh the UI when auth state changes to ensure components
-        // like Header immediately reflect the latest auth state
+        // For important auth state changes, update UI components
         if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
-          console.log(`AuthProvider: Important auth state changed: ${event}`);
-          
-          // Explicitly broadcast an auth state change event that components can listen for
+          // Notify other components about auth state change
           window.dispatchEvent(new Event('supabase-auth-state-changed'));
           
-          // Force synchronization across the app
+          // Synchronize auth state across the app
           await synchronizeAuthState();
-          
-          // Force a router refresh when auth state changes
-          // This is crucial for Next.js to re-render server components with the new auth state
-          const { pathname } = window.location;
-          if (pathname !== '/login' && pathname !== '/signup') {
-            try {
-              // Force a refresh of the current page to update server components
-              window.location.href = pathname;
-            } catch (e) {
-              console.error('Navigation error:', e);
-            }
-          }
         }
       }
     );

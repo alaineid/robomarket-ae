@@ -29,47 +29,32 @@ export async function loginAction(formData: FormData): Promise<ActionResult | vo
   if (!email || !password) {
     return { error: { message: "Email and password are required." } };
   }
-  if (typeof email !== 'string' || typeof password !== 'string') {
-    return { error: { message: "Invalid email or password format." } };
-  }
+  
+  try {
+    // Sign in the user with Supabase
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+    if (error) {
+      return { error: { message: error.message } };
+    }
 
-  if (error) {
-    console.error("Login Error:", error.message);
-    return { error: { message: error.message, type: error.name } };
+    // Revalidate paths to ensure UI updates with new auth state
+    revalidatePath("/", "layout");
+    
+    // Return success with the user data
+    return { 
+      success: { 
+        message: "Login successful",
+        user: data.user || null
+      } 
+    };
+  } catch (error) {
+    console.error("Login error:", error);
+    return { error: { message: "An unexpected error occurred. Please try again." } };
   }
-
-  // Fetch the session immediately after login to ensure it's in the response
-  const { data: sessionData } = await supabase.auth.getSession();
-  
-  if (!sessionData.session) {
-    console.warn("Login succeeded but no session was found. This is unexpected.");
-  } else {
-    console.log("Login successful, session found:", sessionData.session.user.email);
-  }
-  
-  // Revalidate paths to ensure UI updates with new auth state
-  // Revalidating with "layout" will refresh all layout components including the header
-  revalidatePath("/", "layout");
-  
-  // Also specifically revalidate all key paths a user might navigate to
-  // This ensures server components will have the latest auth state
-  revalidatePath("/shop", "page");
-  revalidatePath("/account", "page");
-  revalidatePath("/cart", "page");
-  revalidatePath("/product", "page");
-  
-  // Return success with the session data to help the client immediately access user info
-  return { 
-    success: { 
-      message: "Login successful",
-      user: sessionData.session?.user || null
-    } 
-  };
 }
 
 /**
@@ -139,25 +124,15 @@ export async function signupAction(formData: FormData): Promise<ActionResult> {
  */
 export async function logoutAction(): Promise<void> {
   const supabase = await createClient();
-  const { error } = await supabase.auth.signOut();
-
-  if (error) {
-    console.error("Logout Error:", error.message);
-    // Optionally, redirect to an error page or handle it
-    // For now, we proceed to redirect to login even if there's a minor error.
-  }
-
-  // Aggressively revalidate the entire app layout to clear auth state
+  
+  // Sign out the user
+  await supabase.auth.signOut();
+  
+  // Revalidate paths to update UI
   revalidatePath("/", "layout");
   
-  // Also revalidate specific key paths with user-related data
-  revalidatePath("/shop", "page");
-  revalidatePath("/account", "page");
-  revalidatePath("/cart", "page");
-  revalidatePath("/product", "page");
-  
-  // Clear server session data and redirect
-  redirect("/login"); // Redirect to the login page
+  // Redirect to login page
+  return redirect("/login");
 }
 
 // You would also create route handlers for OAuth callbacks and email confirmation

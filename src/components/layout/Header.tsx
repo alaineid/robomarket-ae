@@ -70,42 +70,21 @@ export default function Header() {
   
   const handleLogout = async () => {
     try {
-      // Set loading state to true to show the loading indicator
+      // Show loading indicator
       useAuthStore.setState({ isLoading: true });
-      console.log('Logging out...');
       
-      // Create Supabase client
-      const supabase = createClient();
+      // Remove remembered credentials
+      localStorage.removeItem('rememberedEmail');
+      localStorage.removeItem('rememberedPassword');
       
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      // Clear local auth state
-      useAuthStore.setState({ 
-        user: null, 
-        customer: null, 
-        isLoading: false 
-      });
-      
-      // Notify components about auth state change
-      window.dispatchEvent(new Event('supabase-auth-state-changed'));
-      
-      // Call server-side logout action
-      try {
-        await logoutAction();
-      } catch (serverError) {
-        console.log('Server logout action completed');
-      }
-      
-      // Finally navigate to login page
-      router.push('/login');
+      // Call the server logout action which handles redirection
+      await logoutAction();
     } catch (error) {
       console.error('Logout error:', error);
-      // Make sure loading state is reset even on error
+      // Reset loading state
       useAuthStore.setState({ isLoading: false });
-      // Fallback to a refresh if there's any issue
-      window.location.href = '/login';
+      // Fallback to manual navigation
+      router.push('/login');
     }
   };
 

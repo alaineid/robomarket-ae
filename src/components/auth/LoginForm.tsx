@@ -19,8 +19,9 @@ export default function LoginForm() {
   const [rememberMe, setRememberMe] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
 
-  // Load saved credentials if they exist
+  // Simple effect to load saved credentials and reset loading state
   useEffect(() => {
+    // Load saved credentials if they exist
     const savedEmail = localStorage.getItem('rememberedEmail');
     const savedPassword = localStorage.getItem('rememberedPassword');
     
@@ -29,6 +30,10 @@ export default function LoginForm() {
       setPassword(savedPassword);
       setRememberMe(true);
     }
+
+    // Reset loading state
+    setLoading(false);
+    useAuthStore.setState({ isLoading: false });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,12 +51,11 @@ export default function LoginForm() {
     }
     
     try {
+      // Start loading state
       setLoading(true);
-      
-      // Update global auth state to show loading
       useAuthStore.setState({ isLoading: true });
       
-      // Save credentials if remember me is checked
+      // Handle remember me functionality
       if (rememberMe) {
         localStorage.setItem('rememberedEmail', email);
         localStorage.setItem('rememberedPassword', password);
@@ -65,48 +69,23 @@ export default function LoginForm() {
       formData.append('email', email);
       formData.append('password', password);
 
-      // Call the login action from authActions.ts
+      // Call the login action
       const result = await loginAction(formData);
       
-      // If there's an error, display it
       if (result?.error) {
         throw new Error(result.error.message);
       }
       
-      // If login was successful, get the current session before navigating
       if (result?.success) {
-        // The server action should have created a valid session
-        console.log('Login successful, synchronizing auth state');
-        
-        try {
-          // Actively synchronize the auth state to ensure the UI updates immediately
-          const user = await synchronizeAuthState();
-          
-          // Force refresh of the current route to ensure the UI updates
-          router.refresh();
-          
-          // Manually dispatch auth change event to update UI components
-          window.dispatchEvent(new Event('supabase-auth-state-changed'));
-          
-          console.log('Auth state synchronized, redirecting to shop');
-          // Navigate to the shop page after authentication is confirmed
-          router.push('/shop');
-        } catch (syncError) {
-          console.error('Error synchronizing auth state after login:', syncError);
-          setError('Successfully logged in but had trouble loading your profile. Redirecting...');
-          // Still try to navigate after a short delay, even if synchronization fails
-          setTimeout(() => {
-            router.push('/shop');
-          }, 2000);
-        }
+        // Sync auth state and redirect
+        await synchronizeAuthState();
+        router.push('/shop');
       } else {
-        // No explicit error but also no success
-        setError('Login response was invalid. Please try again.');
+        setError('Login failed. Please try again.');
       }
     } catch (err: unknown) {
       console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'Failed to sign in. Please check your credentials.');
-      // Reset global auth loading state
       useAuthStore.setState({ isLoading: false });
     } finally {
       setLoading(false);
