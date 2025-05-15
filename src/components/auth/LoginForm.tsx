@@ -6,9 +6,11 @@ import { useRouter } from 'next/navigation';
 import { loginAction } from '@/components/actions/authActions'; // Adjust the import based on your project structure
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { createClient } from '@/supabase/client'; // Import the Supabase client
+import { useAuthStore } from '@/store/authStore'; // Import auth store
 
 export default function LoginForm() {
   const router = useRouter();
+  const { synchronizeAuthState } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,9 +42,29 @@ export default function LoginForm() {
         throw new Error(result.error.message);
       }
       
-      // If login was successful, redirect to the shop page
+      // If login was successful, get the current session before navigating
       if (result?.success) {
-        router.push('/shop');
+        // The server action should have created a valid session
+        console.log('Login successful, synchronizing auth state');
+        
+        try {
+          // Actively synchronize the auth state to ensure the UI updates immediately
+          await synchronizeAuthState();
+          
+          // Force refresh of the current route to ensure the UI updates
+          router.refresh();
+          
+          // Manually dispatch auth change event to update UI components
+          window.dispatchEvent(new Event('supabase-auth-state-changed'));
+          
+          console.log('Auth state synchronized, redirecting to shop');
+          // Navigate to the shop page after authentication is confirmed
+          router.push('/shop');
+        } catch (syncError) {
+          console.error('Error synchronizing auth state after login:', syncError);
+          // Still try to navigate, even if synchronization fails
+          router.push('/shop');
+        }
       }
     } catch (err: unknown) {
       console.error('Login error:', err);

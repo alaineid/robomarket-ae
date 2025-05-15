@@ -20,7 +20,7 @@ interface AuthProviderProps {
  */
 export default function AuthProvider({ serverUser, children }: AuthProviderProps) {
   const supabase = createClient();
-  const { setUser, setLoading, sessionChecked, setSessionChecked } = useAuthStore();
+  const { setUser, setLoading, sessionChecked, setSessionChecked, synchronizeAuthState } = useAuthStore();
   const initialised = useRef(false); // To prevent useEffect running twice in strict mode during dev
 
   // Effect to initialize the store with server-side user data
@@ -30,8 +30,10 @@ export default function AuthProvider({ serverUser, children }: AuthProviderProps
       if (!sessionChecked) { // Only set from serverUser if not already checked by onAuthStateChange
         if (serverUser) {
           setUser(serverUser);
+          console.log('AuthProvider: Initialized with server user:', serverUser.email);
         } else {
           setUser(null); // Ensure it's null if no serverUser
+          console.log('AuthProvider: Initialized with null server user');
         }
         // If serverUser is passed, we consider the session initially checked from the server's perspective.
         // setLoading(false) is handled by setUser
@@ -49,17 +51,48 @@ export default function AuthProvider({ serverUser, children }: AuthProviderProps
     }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        console.log(`AuthProvider: Auth state event: ${event}`);
+        
         // `event` can be INITIAL_SESSION, SIGNED_IN, SIGNED_OUT, PASSWORD_RECOVERY, TOKEN_REFRESHED, USER_UPDATED
         // `session` contains the user object if authenticated
-        setUser(session?.user ?? null);
+        
+        // Special handling for SIGNED_OUT events to ensure UI updates immediately
+        if (event === 'SIGNED_OUT') {
+          console.log('AuthProvider: User signed out, clearing auth state');
+          // Forcefully set user to null immediately for sign out
+          setUser(null);
+        } else {
+          // For other events, use the session data
+          setUser(session?.user ?? null);
+        }
+        
         setLoading(false); // Auth state determined, stop loading
         setSessionChecked(true); // Mark that client-side check has occurred
 
-        // Optional: You might want to call router.refresh() here if certain server components
-        // need to immediately reflect a change triggered client-side, though middleware
-        // and revalidatePath in Server Actions should handle most cases.
-        // Example: if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') { router.refresh(); }
+        // Important: Refresh the UI when auth state changes to ensure components
+        // like Header immediately reflect the latest auth state
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+          console.log(`AuthProvider: Important auth state changed: ${event}`);
+          
+          // Explicitly broadcast an auth state change event that components can listen for
+          window.dispatchEvent(new Event('supabase-auth-state-changed'));
+          
+          // Force synchronization across the app
+          await synchronizeAuthState();
+          
+          // Force a router refresh when auth state changes
+          // This is crucial for Next.js to re-render server components with the new auth state
+          const { pathname } = window.location;
+          if (pathname !== '/login' && pathname !== '/signup') {
+            try {
+              // Force a refresh of the current page to update server components
+              window.location.href = pathname;
+            } catch (e) {
+              console.error('Navigation error:', e);
+            }
+          }
+        }
       }
     );
 

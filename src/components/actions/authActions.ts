@@ -5,10 +5,13 @@ import { redirect } from "next/navigation"; // Next.js navigation for redirects
 import { revalidatePath } from "next/cache"; // Next.js cache revalidation
 import { headers } from "next/headers"; // Get origin for email confirmation
 
-// Define a type for the action's return value for better type safety
+// Define types for the action's return values with better type safety
 interface ActionResult {
   error?: { message: string; type?: string };
-  success?: { message: string };
+  success?: { 
+    message: string;
+    user?: any; // User data when available
+  };
 }
 
 /**
@@ -40,13 +43,33 @@ export async function loginAction(formData: FormData): Promise<ActionResult | vo
     return { error: { message: error.message, type: error.name } };
   }
 
-  // Revalidate paths to ensure UI updates with new auth state.
-  // Revalidating the root layout should cover most cases.
+  // Fetch the session immediately after login to ensure it's in the response
+  const { data: sessionData } = await supabase.auth.getSession();
+  
+  if (!sessionData.session) {
+    console.warn("Login succeeded but no session was found. This is unexpected.");
+  } else {
+    console.log("Login successful, session found:", sessionData.session.user.email);
+  }
+  
+  // Revalidate paths to ensure UI updates with new auth state
+  // Revalidating with "layout" will refresh all layout components including the header
   revalidatePath("/", "layout");
   
-  // Return success instead of redirecting directly
-  // This prevents the "NEXT_REDIRECT" flash
-  return { success: { message: "Login successful" } };
+  // Also specifically revalidate all key paths a user might navigate to
+  // This ensures server components will have the latest auth state
+  revalidatePath("/shop", "page");
+  revalidatePath("/account", "page");
+  revalidatePath("/cart", "page");
+  revalidatePath("/product", "page");
+  
+  // Return success with the session data to help the client immediately access user info
+  return { 
+    success: { 
+      message: "Login successful",
+      user: sessionData.session?.user || null
+    } 
+  };
 }
 
 /**
@@ -124,7 +147,16 @@ export async function logoutAction(): Promise<void> {
     // For now, we proceed to redirect to login even if there's a minor error.
   }
 
-  revalidatePath("/", "layout"); // Revalidate all paths
+  // Aggressively revalidate the entire app layout to clear auth state
+  revalidatePath("/", "layout");
+  
+  // Also revalidate specific key paths with user-related data
+  revalidatePath("/shop", "page");
+  revalidatePath("/account", "page");
+  revalidatePath("/cart", "page");
+  revalidatePath("/product", "page");
+  
+  // Clear server session data and redirect
   redirect("/login"); // Redirect to the login page
 }
 
