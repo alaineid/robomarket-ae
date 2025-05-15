@@ -29,6 +29,9 @@ export default function LoginForm() {
     try {
       setLoading(true);
       
+      // Update global auth state to show loading
+      useAuthStore.setState({ isLoading: true });
+      
       // Create FormData for server action
       const formData = new FormData();
       formData.append('email', email);
@@ -69,6 +72,8 @@ export default function LoginForm() {
     } catch (err: unknown) {
       console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'Failed to sign in. Please check your credentials.');
+      // Reset global auth loading state
+      useAuthStore.setState({ isLoading: false });
     } finally {
       setLoading(false);
     }
@@ -102,7 +107,16 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-md">
+    <div className="bg-white p-8 rounded-lg shadow-md relative">
+      {loading && (
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
+          <div className="bg-white p-4 rounded-xl shadow-lg flex flex-col items-center">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#4DA9FF] mb-3"></div>
+            <p className="text-gray-700 font-medium">Logging in...</p>
+            <p className="text-xs text-gray-500 mt-1">Please wait while we verify your credentials</p>
+          </div>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
@@ -166,7 +180,7 @@ export default function LoginForm() {
             loading ? 'opacity-70 cursor-not-allowed' : ''
           }`}
         >
-          {loading ? 'Logging in...' : 'Log In'}
+          {loading ? 'Please wait...' : 'Log In'}
         </button>
         
         <div className="text-center mt-4">

@@ -33,7 +33,7 @@ import { logoutAction } from '@/components/actions/authActions';
 export default function Header() {
   const router = useRouter();
   const { cartCount, cartItems, removeFromCart } = useCart();
-  const { user, isLoading, sessionChecked, synchronizeAuthState } = useAuthStore();
+  const { user, customer, isLoading, sessionChecked, synchronizeAuthState } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -67,39 +67,43 @@ export default function Header() {
       window.removeEventListener('auth-state-synchronized', () => {});
     };
   }, [synchronizeAuthState]);
-
-  console.log('User:', user);
   
   const handleLogout = async () => {
     try {
+      // Set loading state to true to show the loading indicator
+      useAuthStore.setState({ isLoading: true });
       console.log('Logging out...');
       
-      // First clear client-side state immediately
+      // Create Supabase client
       const supabase = createClient();
-      await supabase.auth.signOut();
       
-      // Update local auth store to ensure UI updates immediately
-      await synchronizeAuthState();
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
       
-      // Manually dispatch event to notify all components
+      // Clear local auth state
+      useAuthStore.setState({ 
+        user: null, 
+        customer: null, 
+        isLoading: false 
+      });
+      
+      // Notify components about auth state change
       window.dispatchEvent(new Event('supabase-auth-state-changed'));
       
-      // Use Next.js router to navigate to login page - this approach avoids
-      // the server-side redirect which can sometimes cause issues
-      router.push('/login');
-      
-      // Call server-side logout action in the background
-      // This will handle all server-side cleanup and revalidations
-      // We don't await this since we already want to redirect the user
+      // Call server-side logout action
       try {
-        logoutAction();
+        await logoutAction();
       } catch (serverError) {
-        // Server action errors are expected since they will try to redirect
-        // but we've already redirected the user client-side
         console.log('Server logout action completed');
       }
+      
+      // Finally navigate to login page
+      router.push('/login');
     } catch (error) {
       console.error('Logout error:', error);
+      // Make sure loading state is reset even on error
+      useAuthStore.setState({ isLoading: false });
       // Fallback to a refresh if there's any issue
       window.location.href = '/login';
     }
@@ -253,27 +257,6 @@ export default function Header() {
     return sum + ((item.product?.best_vendor?.price || 0) * item.quantity);
   }, 0);
 
-  // If auth state is still loading and session hasn't been checked yet, show a minimal header
-  if (isLoading && !sessionChecked) {
-    return (
-      <header 
-        className="sticky top-0 z-50 bg-white/95 shadow-sm"
-        style={{ padding: '0.75rem 0' }}
-      >
-        <div className="absolute top-0 left-0 w-full h-1 bg-[#4DA9FF]"></div>
-        <nav className="container mx-auto px-4 lg:px-6">
-          <div className="flex justify-between items-center">
-            <Logo 
-              href="/" 
-              variant={isMobileView ? 'compact' : 'default'}
-            />
-            <div className="animate-pulse bg-gray-200 rounded-full h-8 w-24"></div>
-          </div>
-        </nav>
-      </header>
-    );
-  }
-
   return (
     <header 
       id="header" 
@@ -334,12 +317,12 @@ export default function Header() {
                   leaveTo="transform opacity-0 scale-95"
                 >
                   <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none divide-y divide-gray-100 z-50 py-1">
-                    {/* Menu changes based on login state */}
+                    {/* Menu changes based on login state - no spinner here anymore */}
                     {user ? (
                       <>
                         <div className="px-4 py-3">
                           <p className="text-sm font-medium text-gray-900">
-                            Welcome back!
+                            {customer ? `${customer.first_name || ''} ${customer.last_name || ''}` : 'Welcome Back!'}
                           </p>
                           <p className="text-xs text-gray-500 truncate">
                             {user.email}
