@@ -6,7 +6,8 @@
     "dev": "lsof -i :3000 | grep LISTEN | awk '{print $2}' | xargs kill -9 2>/dev/null & next lint & next dev --turbopack & open http://localhost:3000",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "node -e \"try { require('lightningcss') } catch (e) { process.exit(0) }\" || npm rebuild lightningcss --platform=linux --arch=x64"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.2",

@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    // Disable the new CSS minifier to avoid the lightningcss binary issues on Vercel
+    optimizeCss: false,
+  },
 };
 
 export default nextConfig;
