@@ -76,7 +76,7 @@ export default function AuthProvider({ serverUser, children }: AuthProviderProps
     return () => {
       subscription?.unsubscribe();
     };
-  }, [supabase, setUser, setLoading, sessionChecked, setSessionChecked]); // Add router if used
+  }, [supabase, setUser, setLoading, sessionChecked, setSessionChecked, synchronizeAuthState]); // Added synchronizeAuthState to dependency array
 
   return <>{children}</>;
 }

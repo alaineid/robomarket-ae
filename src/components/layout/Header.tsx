@@ -27,13 +27,12 @@ import {
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/store/cartContext';
 import { useAuthStore } from '@/store/authStore';
-import { createClient } from '@/supabase/client';
 import { logoutAction } from '@/components/actions/authActions';
 
 export default function Header() {
   const router = useRouter();
   const { cartCount, cartItems, removeFromCart } = useCart();
-  const { user, customer, isLoading, sessionChecked, synchronizeAuthState } = useAuthStore();
+  const { user, customer, synchronizeAuthState } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);

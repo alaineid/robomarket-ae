@@ -137,7 +137,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
             queryFn: async () => {
               try {
                 return await fetchWithAuth<Product>(`/api/products/${id}`);
-              } catch (error) {
+              } catch  {
                 return null;
               }
             },

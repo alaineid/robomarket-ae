@@ -4,13 +4,14 @@ import { createClient } from "@/supabase/server"; // Supabase server client
 import { redirect } from "next/navigation"; // Next.js navigation for redirects
 import { revalidatePath } from "next/cache"; // Next.js cache revalidation
 import { headers } from "next/headers"; // Get origin for email confirmation
+import { type User } from "@supabase/supabase-js"; // Import User type from Supabase
 
 // Define types for the action's return values with better type safety
 interface ActionResult {
   error?: { message: string; type?: string };
   success?: { 
     message: string;
-    user?: any; // User data when available
+    user?: User | null; // User data when available, properly typed
   };
 }
 

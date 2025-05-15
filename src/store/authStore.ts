@@ -27,7 +27,7 @@ interface AuthState {
  * Creates a Zustand store for managing client-side authentication state.
  * This store holds the user object and loading status.
  */
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   customer: null, // Customer profile object, initially null.
   isLoading: true, // Initially true, set to false after first auth check.
