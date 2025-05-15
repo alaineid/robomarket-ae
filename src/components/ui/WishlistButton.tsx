@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { FaRegHeart, FaHeart } from 'react-icons/fa';
-import { useWishlist } from '@/utils/wishlistContext';
+import { useWishlist } from '@/store/wishlistContext';
 import { motion } from 'framer-motion';
-import { Product } from '@/utils/types/product.types';
+import { Product } from '@/types/product.types';
 
 interface WishlistButtonProps {
   productId: number;

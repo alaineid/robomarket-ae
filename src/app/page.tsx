@@ -1,9 +1,9 @@
-import Header from "@/components/Header";
-import HeroSection from "@/components/HeroSection";
-import FeaturedRobots from "@/components/FeaturedRobots";
-import ValueProposition from "@/components/ValueProposition";
-import CallToAction from "@/components/CallToAction";
-import Footer from "@/components/Footer";
+import Header from "@/components/layout/Header";
+import HeroSection from "@/components/layout/HeroSection";
+import FeaturedRobots from "@/components/products/FeaturedRobots";
+import ValueProposition from "@/components/layout/ValueProposition";
+import CallToAction from "@/components/ui/CallToAction";
+import Footer from "@/components/layout/Footer";
 
 export default function Home() {
   return (

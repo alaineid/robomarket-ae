@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/utils/supabaseClient';
+import { supabase } from '@/services/supabaseClient';
 import * as EmailValidator from 'email-validator';
 import zxcvbn from 'zxcvbn';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';

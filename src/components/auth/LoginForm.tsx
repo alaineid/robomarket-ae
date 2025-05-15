@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/utils/supabaseClient';
+import { supabase } from '@/services/supabaseClient';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function LoginForm() {

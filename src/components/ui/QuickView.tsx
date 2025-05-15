@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaStar, FaStarHalfAlt } from 'react-icons/fa';
-import { Product } from '@/utils/types/product.types';
+import { Product } from '@/types/product.types';
 import WishlistButton from '@/components/ui/WishlistButton';
 import AddToCartButton from '@/components/ui/AddToCartButton';
 import { createPortal } from 'react-dom';

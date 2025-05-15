@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { FaShoppingCart, FaCheck } from 'react-icons/fa';
-import { useCart } from '@/utils/cartContext';
-import { Product } from '@/utils/types/product.types';
+import { useCart } from '@/store/cartContext';
+import { Product } from '@/types/product.types';
 
 interface AddToCartButtonProps {
   product?: Product;

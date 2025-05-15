@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerAnonClient } from '@/utils/server/supabaseServer';
+import { createServerAnonClient } from '@/services/supabaseServer';
 
 const MATVIEW_SELECT = '*';
 
