@@ -54,7 +54,7 @@ export default function LoginModal() {
 
             <h2 className="text-2xl font-bold text-center mb-6">Sign In</h2>
             
-            <LoginForm onSuccess={handleLoginSuccess} />
+            <LoginForm onSuccess={handleLoginSuccess} onHideModal={handleHideLogin} />
           </div>
         </motion.div>
       </motion.div>

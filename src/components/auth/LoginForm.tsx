@@ -10,9 +10,10 @@ import { useAuthStore } from '@/store/authStore'; // Import auth store
 
 interface LoginFormProps {
   onSuccess?: () => void;
+  onHideModal?: () => void;
 }
 
-export default function LoginForm({ onSuccess }: LoginFormProps = {}) {
+export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {}) {
   const router = useRouter();
   const { synchronizeAuthState } = useAuthStore();
   const [email, setEmail] = useState('');
@@ -220,7 +221,22 @@ export default function LoginForm({ onSuccess }: LoginFormProps = {}) {
         
         {/* Terms and Privacy Policy links */}
         <div className="text-xs text-gray-600 mb-4 text-center">
-          By logging in you agree to our <Link href="/terms" className="text-[#4DA9FF] hover:text-[#3D89FF]">Terms of Service</Link> and <Link href="/privacy" className="text-[#4DA9FF] hover:text-[#3D89FF]">Privacy Policy</Link>
+          By logging in you agree to our{' '}
+          <Link 
+            href="/terms" 
+            className="text-[#4DA9FF] hover:text-[#3D89FF]"
+            onClick={onHideModal}
+          >
+            Terms of Service
+          </Link>
+          {' '}and{' '}
+          <Link 
+            href="/privacy" 
+            className="text-[#4DA9FF] hover:text-[#3D89FF]"
+            onClick={onHideModal}
+          >
+            Privacy Policy
+          </Link>
         </div>
         
         <button
@@ -236,7 +252,11 @@ export default function LoginForm({ onSuccess }: LoginFormProps = {}) {
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium">
+            <Link 
+              href="/signup" 
+              className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium"
+              onClick={onHideModal}
+            >
               Sign Up
             </Link>
           </p>

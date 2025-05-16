@@ -1,0 +1,5 @@
+# Ignore specific files/directories from deployment
+# examples:
+# test/
+# *.test.js
+# docs/
