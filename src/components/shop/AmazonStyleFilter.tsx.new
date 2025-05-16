@@ -1,0 +1,413 @@
+import React, { useState, useEffect } from 'react';
+import { FaStar, FaChevronDown, FaCheck } from 'react-icons/fa';
+
+interface FilterOption {
+  label: string;
+  value: string;
+}
+
+interface AmazonStyleFilterProps {
+  categories: string[];
+  brands: string[];
+  selectedCategories: string[];
+  selectedBrands: string[];
+  priceRange: [number, number];
+  sortBy: string;
+  ratingFilter: number;
+  onCategoryChange: (category: string) => void;
+  onBrandChange: (brand: string) => void;
+  onPriceChange: (min: number, max: number) => void;
+  onSortChange: (sort: string) => void;
+  onRatingChange: (rating: number) => void;
+  onClearFilters: () => void;
+}
+
+// Main Amazon-style filter component
+const AmazonStyleFilter: React.FC<AmazonStyleFilterProps> = ({
+  categories,
+  brands,
+  selectedCategories,
+  selectedBrands,
+  priceRange,
+  sortBy,
+  ratingFilter,
+  onCategoryChange,
+  onBrandChange,
+  onPriceChange,
+  onSortChange,
+  onRatingChange,
+  onClearFilters
+}) => {
+  // States for dropdown visibility
+  const [isPriceOpen, setIsPriceOpen] = useState(false);
+  const [isRatingFilterOpen, setRatingFilterOpen] = useState(false);
+  const [isCategoryFilterOpen, setCategoryFilterOpen] = useState(false);
+  const [isBrandFilterOpen, setBrandFilterOpen] = useState(false);
+  const [isSortFilterOpen, setSortFilterOpen] = useState(false);
+  
+  // States for price range inputs
+  const [localMin, setLocalMin] = useState(priceRange[0]);
+  const [localMax, setLocalMax] = useState(priceRange[1]);
+  const maxPrice = 10000;
+  
+  // Update local price range when props change
+  useEffect(() => {
+    setLocalMin(priceRange[0]);
+    setLocalMax(priceRange[1]);
+  }, [priceRange]);
+  
+  // Handle apply price filter
+  const handleApplyPrice = () => {
+    onPriceChange(localMin, localMax);
+    setIsPriceOpen(false);
+  };
+  
+  // Rating options
+  const ratingOptions = [
+    { value: 5, display: 5 },
+    { value: 4, display: 4 },
+    { value: 3, display: 3 },
+    { value: 2, display: 2 },
+    { value: 1, display: 1 }
+  ];
+  
+  // Sort options
+  const sortOptions = [
+    { label: 'Featured', value: 'newest' },
+    { label: 'Price: Low to High', value: 'price-asc' },
+    { label: 'Price: High to Low', value: 'price-desc' },
+    { label: 'Best Rated', value: 'rating' },
+    { label: 'Most Popular', value: 'popularity' }
+  ];
+  
+  // Close all dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.filter-dropdown')) {
+        setIsPriceOpen(false);
+        setRatingFilterOpen(false);
+        setCategoryFilterOpen(false);
+        setBrandFilterOpen(false);
+        setSortFilterOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <div className="z-10 bg-white px-1 py-2 mb-6 overflow-x-auto">
+      <div className="flex items-center gap-1 min-w-max">
+        {/* Price Filter */}
+        <div className="relative inline-block filter-dropdown">
+          <button
+            onClick={() => setIsPriceOpen(!isPriceOpen)}
+            className="flex items-center whitespace-nowrap px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none"
+          >
+            <span>{priceRange[0] > 0 || priceRange[1] < 10000 ? `Price: $${priceRange[0]}-$${priceRange[1]}` : 'Price ($)'}</span>
+            <FaChevronDown 
+              className={`ml-2 transition-transform ${isPriceOpen ? 'transform rotate-180' : ''}`} 
+              size={10}
+            />
+          </button>
+          
+          {isPriceOpen && (
+            <div className="absolute z-20 w-64 mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <input
+                    type="number"
+                    value={localMin}
+                    min={0}
+                    max={localMax - 1}
+                    onChange={(e) => setLocalMin(Math.max(0, Math.min(Number(e.target.value), localMax - 1)))}
+                    className="w-24 p-2 border border-gray-300 rounded text-sm"
+                    placeholder="Min"
+                  />
+                  <span className="mx-2 text-gray-400">to</span>
+                  <input
+                    type="number"
+                    value={localMax}
+                    min={localMin + 1}
+                    max={maxPrice}
+                    onChange={(e) => setLocalMax(Math.max(localMin + 1, Math.min(Number(e.target.value), maxPrice)))}
+                    className="w-24 p-2 border border-gray-300 rounded text-sm"
+                    placeholder="Max"
+                  />
+                </div>
+                <button
+                  onClick={handleApplyPrice}
+                  className="w-full py-2 text-sm font-medium text-white bg-[#4DA9FF] rounded-md hover:bg-blue-600 focus:outline-none"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Rating Filter - Stars & Up similar to Amazon */}
+        <div className="relative inline-block filter-dropdown">
+          <button
+            onClick={() => setRatingFilterOpen(!isRatingFilterOpen)}
+            className="flex items-center whitespace-nowrap px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none"
+          >
+            <span className="flex items-center">
+              {ratingFilter > 0 ? (
+                <>
+                  {[...Array(ratingFilter)].map((_, i) => (
+                    <FaStar key={i} className="text-yellow-400" size={14} />
+                  ))}
+                  <span className="ml-1">& Up</span>
+                </>
+              ) : (
+                'Customer Reviews'
+              )}
+            </span>
+            <FaChevronDown 
+              className={`ml-2 transition-transform ${isRatingFilterOpen ? 'transform rotate-180' : ''}`} 
+              size={10}
+            />
+          </button>
+          
+          {isRatingFilterOpen && (
+            <div className="absolute z-20 w-64 mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+              <div className="p-2">
+                {ratingOptions.map((option) => (
+                  <div 
+                    key={`rating-${option.value}`}
+                    onClick={() => {
+                      onRatingChange(option.value);
+                      setRatingFilterOpen(false);
+                    }}
+                    className={`flex items-center p-2 cursor-pointer hover:bg-blue-50 rounded-md ${
+                      ratingFilter === option.value ? 'bg-blue-50' : ''
+                    }`}
+                  >
+                    <div className="flex">
+                      {[...Array(option.display)].map((_, i) => (
+                        <FaStar key={i} className="text-yellow-400" size={14} />
+                      ))}
+                      {[...Array(5 - option.display)].map((_, i) => (
+                        <FaStar key={i} className="text-gray-300" size={14} />
+                      ))}
+                    </div>
+                    <span className="ml-2 text-sm text-gray-700">& Up</span>
+                    {ratingFilter === option.value && (
+                      <FaCheck size={12} className="ml-auto text-[#4DA9FF]" />
+                    )}
+                  </div>
+                ))}
+                
+                {/* Option to clear rating filter */}
+                {ratingFilter > 0 && (
+                  <div 
+                    onClick={() => {
+                      onRatingChange(0);
+                      setRatingFilterOpen(false);
+                    }}
+                    className="flex items-center p-2 cursor-pointer hover:bg-blue-50 rounded-md"
+                  >
+                    <span className="text-sm text-gray-700">Clear filter</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Category Filter */}
+        <div className="relative inline-block filter-dropdown">
+          <button
+            onClick={() => setCategoryFilterOpen(!isCategoryFilterOpen)}
+            className="flex items-center whitespace-nowrap px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none"
+          >
+            <span>{selectedCategories.length > 0 ? `Category (${selectedCategories.length})` : 'Category'}</span>
+            <FaChevronDown 
+              className={`ml-2 transition-transform ${isCategoryFilterOpen ? 'transform rotate-180' : ''}`} 
+              size={10}
+            />
+          </button>
+          
+          {isCategoryFilterOpen && (
+            <div className="absolute z-20 w-64 mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+              <div className="p-3">
+                <div className="max-h-60 overflow-y-auto">
+                  {categories.map((category, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center p-2 cursor-pointer hover:bg-blue-50 rounded-md"
+                      onClick={() => onCategoryChange(category)}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.includes(category)}
+                        onChange={() => {}}
+                        className="h-4 w-4 text-[#4DA9FF] border-gray-300 rounded focus:ring-[#4DA9FF]"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">{category}</span>
+                      {selectedCategories.includes(category) && <FaCheck size={12} className="ml-auto text-[#4DA9FF]" />}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Brand Filter */}
+        <div className="relative inline-block filter-dropdown">
+          <button
+            onClick={() => setBrandFilterOpen(!isBrandFilterOpen)}
+            className="flex items-center whitespace-nowrap px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none"
+          >
+            <span>{selectedBrands.length > 0 ? `Brand (${selectedBrands.length})` : 'Brand'}</span>
+            <FaChevronDown 
+              className={`ml-2 transition-transform ${isBrandFilterOpen ? 'transform rotate-180' : ''}`} 
+              size={10}
+            />
+          </button>
+          
+          {isBrandFilterOpen && (
+            <div className="absolute z-20 w-64 mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+              <div className="p-3">
+                <div className="max-h-60 overflow-y-auto">
+                  {brands.map((brand, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center p-2 cursor-pointer hover:bg-blue-50 rounded-md"
+                      onClick={() => onBrandChange(brand)}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedBrands.includes(brand)}
+                        onChange={() => {}}
+                        className="h-4 w-4 text-[#4DA9FF] border-gray-300 rounded focus:ring-[#4DA9FF]"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">{brand}</span>
+                      {selectedBrands.includes(brand) && <FaCheck size={12} className="ml-auto text-[#4DA9FF]" />}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Sort By - On the right side */}
+        <div className="ml-auto relative inline-block filter-dropdown">
+          <button
+            onClick={() => setSortFilterOpen(!isSortFilterOpen)}
+            className="flex items-center whitespace-nowrap px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none"
+          >
+            <span>Sort by: {sortOptions.find(opt => opt.value === sortBy)?.label || 'Featured'}</span>
+            <FaChevronDown 
+              className={`ml-2 transition-transform ${isSortFilterOpen ? 'transform rotate-180' : ''}`} 
+              size={10}
+            />
+          </button>
+          
+          {isSortFilterOpen && (
+            <div className="absolute right-0 z-20 w-64 mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+              <div className="p-2">
+                {sortOptions.map((option, idx) => (
+                  <div 
+                    key={idx}
+                    onClick={() => {
+                      onSortChange(option.value);
+                      setSortFilterOpen(false);
+                    }}
+                    className={`flex items-center p-2 cursor-pointer hover:bg-blue-50 rounded-md ${
+                      sortBy === option.value ? 'bg-blue-50' : ''
+                    }`}
+                  >
+                    <span className="text-sm text-gray-700">{option.label}</span>
+                    {sortBy === option.value && (
+                      <FaCheck size={12} className="ml-auto text-[#4DA9FF]" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* Active Filters Section */}
+      {(selectedCategories.length > 0 || selectedBrands.length > 0 || 
+        ratingFilter > 0 || priceRange[0] > 0 || priceRange[1] < 10000) && (
+        <div className="flex flex-wrap items-center gap-2 mt-2 pl-1">
+          <span className="text-xs text-gray-500">Active filters:</span>
+          
+          {/* Clear All Button */}
+          <button
+            onClick={onClearFilters}
+            className="text-xs text-[#4DA9FF] hover:underline"
+          >
+            Clear all
+          </button>
+          
+          {/* Active filters badges - Added these to show selected options */}
+          {selectedCategories.map(category => (
+            <div key={`cat-${category}`} className="inline-flex items-center px-2 py-1 text-xs bg-blue-50 rounded-full">
+              <span className="mr-1">{category}</span>
+              <button 
+                onClick={() => onCategoryChange(category)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          
+          {selectedBrands.map(brand => (
+            <div key={`brand-${brand}`} className="inline-flex items-center px-2 py-1 text-xs bg-blue-50 rounded-full">
+              <span className="mr-1">{brand}</span>
+              <button 
+                onClick={() => onBrandChange(brand)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          
+          {ratingFilter > 0 && (
+            <div className="inline-flex items-center px-2 py-1 text-xs bg-blue-50 rounded-full">
+              <span className="flex items-center mr-1">
+                {[...Array(ratingFilter)].map((_, i) => (
+                  <FaStar key={i} className="text-yellow-400" size={10} />
+                ))}
+                <span className="ml-1">& Up</span>
+              </span>
+              <button 
+                onClick={() => onRatingChange(0)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ×
+              </button>
+            </div>
+          )}
+          
+          {(priceRange[0] > 0 || priceRange[1] < 10000) && (
+            <div className="inline-flex items-center px-2 py-1 text-xs bg-blue-50 rounded-full">
+              <span className="mr-1">${priceRange[0]} - ${priceRange[1]}</span>
+              <button 
+                onClick={() => onPriceChange(0, 10000)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ×
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AmazonStyleFilter;
