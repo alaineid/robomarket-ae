@@ -256,25 +256,25 @@ export default function ShopClient({ initialData }: ShopClientProps) {
               </button>
             )}
           </div>
+          
+          {/* Amazon-Style Filter Bar - Now inside search container */}
+          <AmazonStyleFilter
+            categories={categories}
+            brands={brands}
+            selectedCategories={selectedCategories}
+            selectedBrands={selectedBrands}
+            priceRange={priceRange}
+            sortBy={sortBy}
+            ratingFilter={ratingFilter}
+            onCategoryChange={toggleCategory}
+            onBrandChange={toggleBrand}
+            onPriceChange={handlePriceRangeChange}
+            onSortChange={handleSortChange}
+            onRatingChange={handleRatingChange}
+            onClearFilters={clearFilters}
+          />
         </div>
         
-        {/* Amazon-Style Filter Bar - Now below search */}
-        <AmazonStyleFilter
-          categories={categories}
-          brands={brands}
-          selectedCategories={selectedCategories}
-          selectedBrands={selectedBrands}
-          priceRange={priceRange}
-          sortBy={sortBy}
-          ratingFilter={ratingFilter}
-          onCategoryChange={toggleCategory}
-          onBrandChange={toggleBrand}
-          onPriceChange={handlePriceRangeChange}
-          onSortChange={handleSortChange}
-          onRatingChange={handleRatingChange}
-          onClearFilters={clearFilters}
-        />
-            
         {/* Recently Viewed Section removed */}
         
         {/* Products Grid */}

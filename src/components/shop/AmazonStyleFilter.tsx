@@ -123,7 +123,7 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-30 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-72 md:w-80">
+        <div className="absolute z-[100] mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-72 md:w-80">
           {/* Caret pointing up to the button */}
           <div className="absolute -top-2 left-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200"></div>
           
@@ -239,7 +239,7 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-30 mt-1 p-4 bg-white border border-gray-200 rounded-lg shadow-xl w-72 md:w-80">
+        <div className="absolute z-[100] mt-1 p-4 bg-white border border-gray-200 rounded-lg shadow-xl w-72 md:w-80">
           {/* Caret pointing up to the button */}
           <div className="absolute -top-2 left-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200"></div>
           
@@ -346,7 +346,7 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-30 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-72 md:w-80">
+        <div className="absolute z-[100] mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-72 md:w-80">
           {/* Caret pointing up to the button */}
           <div className="absolute -top-2 left-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200"></div>
            
@@ -453,7 +453,7 @@ const SortFilter: React.FC<SortFilterProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-30 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-72 md:w-80">
+        <div className="absolute right-0 z-[100] mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-72 md:w-80">
           {/* Caret pointing up to the button - positioned on the right */}
           <div className="absolute -top-2 right-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200"></div>
           
@@ -551,11 +551,9 @@ const AmazonStyleFilter: React.FC<AmazonStyleFilterProps> = ({
   ];
 
   return (
-    <div className="sticky top-0 z-20 bg-white border-b border-gray-200 pt-2 pb-3 px-4 mb-4">
+    <div className="pt-2 pb-3 px-4 mt-4"> {/* Removed sticky, z-index, bg, and border; Added mt-4 for spacing */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* Filters Label */}
-        <div className="mr-2 text-sm font-medium text-gray-700">Filters:</div>
-
+        
         {/* Department/Category Filter */}
         <DropdownFilter
           buttonLabel={selectedCategories.length > 0 ? `Category (${selectedCategories.length})` : 'Category'}
