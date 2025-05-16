@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaStar, FaChevronDown, FaCheck } from 'react-icons/fa';
+import { FaStar, FaChevronDown, FaCheck, FaTimes } from 'react-icons/fa';
 
 interface FilterOption {
   label: string;
@@ -7,7 +7,8 @@ interface FilterOption {
 }
 
 interface DropdownFilterProps {
-  label: string;
+  buttonLabel: string; // Renamed from label
+  dropdownTitle: string; // New
   options: FilterOption[];
   selected: string[];
   onChange: (value: string) => void;
@@ -22,6 +23,7 @@ interface PriceFilterProps {
   maxPrice?: number;
   isOpen: boolean;
   onToggle: () => void;
+  dropdownTitle: string; // New
 }
 
 interface RatingFilterProps {
@@ -29,6 +31,7 @@ interface RatingFilterProps {
   onChange: (rating: number) => void;
   isOpen: boolean;
   onToggle: () => void;
+  dropdownTitle: string; // New
 }
 
 interface SortFilterProps {
@@ -37,6 +40,7 @@ interface SortFilterProps {
   options: FilterOption[];
   isOpen: boolean;
   onToggle: () => void;
+  dropdownTitle: string; // New
 }
 
 interface AmazonStyleFilterProps {
@@ -56,52 +60,100 @@ interface AmazonStyleFilterProps {
 }
 
 // Individual filter dropdown component
-const DropdownFilter: React.FC<DropdownFilterProps> = ({ 
-  label, 
-  options, 
-  selected, 
-  onChange, 
+const DropdownFilter: React.FC<DropdownFilterProps> = ({
+  buttonLabel,
+  dropdownTitle,
+  options,
+  selected,
+  onChange,
   multi = true,
   isOpen,
   onToggle
 }) => {
+  const [showAll, setShowAll] = useState(false);
+  const INITIAL_DISPLAY_COUNT = 6;
+
+  const displayedOptions = showAll ? options : options.slice(0, INITIAL_DISPLAY_COUNT);
+
+  const handleClearCurrentFilter = () => {
+    const currentFilterSelectedOptions = selected.filter(sVal => options.some(opt => opt.value === sVal));
+    currentFilterSelectedOptions.forEach(val => onChange(val));
+  };
+
   return (
     <div className="relative inline-block">
       <button
         onClick={onToggle}
         className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none"
       >
-        <span>{label}</span>
-        <FaChevronDown 
-          className={`ml-2 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} 
+        <span>{buttonLabel}</span>
+        <FaChevronDown
+          className={`ml-2 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
           size={10}
         />
       </button>
-      
+
       {isOpen && (
-        <div className="absolute z-30 w-64 mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
-          <div className="p-3">
-            <div className="max-h-60 overflow-y-auto">
-              {options.map((option, index) => (
-                <div 
-                  key={index} 
-                  className="flex items-center p-2 cursor-pointer hover:bg-blue-50 rounded-md"
+        <div className="absolute z-30 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-72 md:w-80">
+          {/* Caret pointing up to the button */}
+          <div className="absolute -top-2 left-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200"></div>
+          
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">{dropdownTitle}</h3>
+            <button
+              onClick={onToggle}
+              className="text-gray-400 hover:text-gray-600 p-1 -mr-1 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              aria-label="Close filter"
+            >
+              <FaTimes size={20} />
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-4">
+            {displayedOptions.map((option) => {
+              const isSelected = selected.includes(option.value);
+              return (
+                <button
+                  key={option.value}
                   onClick={() => {
                     onChange(option.value);
                     if (!multi) onToggle();
                   }}
+                  className={`px-3 py-1.5 border rounded-full text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1
+                    ${isSelected
+                      ? 'bg-[#4DA9FF] text-white border-[#4DA9FF] hover:bg-blue-600 focus:ring-blue-500'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50 focus:ring-blue-400'
+                    }`}
                 >
-                  <input
-                    type={multi ? "checkbox" : "radio"}
-                    checked={selected.includes(option.value)}
-                    onChange={() => {}}
-                    className={`${multi ? 'form-checkbox' : 'form-radio'} h-4 w-4 text-[#4DA9FF] border-gray-300 rounded focus:ring-[#4DA9FF]`}
-                  />
-                  <span className="ml-2 text-sm text-gray-700">{option.label}</span>
-                  {selected.includes(option.value) && <FaCheck size={12} className="ml-auto text-[#4DA9FF]" />}
-                </div>
-              ))}
-            </div>
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {options.length > INITIAL_DISPLAY_COUNT && (
+            <button
+              onClick={() => setShowAll(!showAll)}
+              className="text-sm text-[#4DA9FF] hover:text-blue-700 hover:underline mb-4 focus:outline-none flex items-center"
+            >
+              <FaChevronDown className={`inline-block mr-1 transition-transform ${showAll ? 'transform rotate-180' : ''}`} size={12} />
+              {showAll ? 'See less' : `See more (${options.length - INITIAL_DISPLAY_COUNT} more)`}
+            </button>
+          )}
+
+          <div className="mt-auto pt-4 border-t border-gray-200 space-y-2">
+            <button
+              onClick={onToggle}
+              className="w-full py-2 px-4 bg-[#4DA9FF] text-white rounded-md hover:bg-blue-600 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+            >
+              Show results
+            </button>
+            <button
+              onClick={handleClearCurrentFilter}
+              className="w-full text-sm text-center text-[#4DA9FF] hover:text-blue-700 hover:underline py-1 focus:outline-none"
+            >
+              Clear filters
+            </button>
           </div>
         </div>
       )}
@@ -110,12 +162,13 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
 };
 
 // Price range filter component
-const PriceFilter: React.FC<PriceFilterProps> = ({ 
-  priceRange, 
+const PriceFilter: React.FC<PriceFilterProps> = ({
+  priceRange,
   onPriceChange,
   maxPrice = 10000,
   isOpen,
-  onToggle
+  onToggle,
+  dropdownTitle
 }) => {
   const [localMin, setLocalMin] = useState(priceRange[0]);
   const [localMax, setLocalMax] = useState(priceRange[1]);
@@ -133,7 +186,7 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
     onToggle();
   };
 
-  const displayValue = 
+  const displayValue =
     priceRange[0] > 0 || priceRange[1] < maxPrice
       ? `$${priceRange[0]} - $${priceRange[1]}`
       : 'Price';
@@ -145,14 +198,27 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
         className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none"
       >
         <span>{displayValue}</span>
-        <FaChevronDown 
-          className={`ml-2 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} 
+        <FaChevronDown
+          className={`ml-2 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
           size={10}
         />
       </button>
-      
+
       {isOpen && (
-        <div className="absolute z-30 w-64 mt-1 p-4 bg-white border border-gray-200 rounded-md shadow-lg">
+        <div className="absolute z-30 mt-1 p-4 bg-white border border-gray-200 rounded-lg shadow-xl w-72 md:w-80">
+          {/* Caret pointing up to the button */}
+          <div className="absolute -top-2 left-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200"></div>
+          
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">{dropdownTitle}</h3>
+            <button
+              onClick={onToggle}
+              className="text-gray-400 hover:text-gray-600 p-1 -mr-1 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              aria-label="Close filter"
+            >
+              <FaTimes size={20} />
+            </button>
+          </div>
           <div className="flex items-center justify-between mb-4">
             <input
               type="number"
@@ -174,13 +240,15 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
               placeholder="Max"
             />
           </div>
-          
-          <button
-            onClick={handleApply}
-            className="w-full py-2 text-sm font-medium text-white bg-[#4DA9FF] rounded-md hover:bg-blue-600 focus:outline-none"
-          >
-            Apply
-          </button>
+
+          <div className="mt-auto pt-4 border-t border-gray-200">
+            <button
+              onClick={handleApply}
+              className="w-full py-2 px-4 bg-[#4DA9FF] text-white rounded-md hover:bg-blue-600 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+            >
+              Apply
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -188,11 +256,12 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
 };
 
 // Rating filter component
-const RatingFilter: React.FC<RatingFilterProps> = ({ 
-  selectedRating, 
+const RatingFilter: React.FC<RatingFilterProps> = ({
+  selectedRating,
   onChange,
   isOpen,
-  onToggle 
+  onToggle,
+  dropdownTitle
 }) => {
   const ratingOptions = [
     { value: 4, label: '4 & Up' },
@@ -201,8 +270,8 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
     { value: 1, label: '1 & Up' },
   ];
 
-  const displayValue = selectedRating > 0 
-    ? `${selectedRating}★ & Up` 
+  const displayValue = selectedRating > 0
+    ? `${selectedRating}★ & Up`
     : 'Customer Reviews';
 
   return (
@@ -212,51 +281,67 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
         className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none"
       >
         <span>{displayValue}</span>
-        <FaChevronDown 
-          className={`ml-2 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} 
+        <FaChevronDown
+          className={`ml-2 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
           size={10}
         />
       </button>
-      
+
       {isOpen && (
-        <div className="absolute z-30 w-64 mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
-          <div className="p-2">
-            {ratingOptions.map((option, idx) => (
-              <div 
-                key={idx}
-                onClick={() => {
-                  onChange(option.value);
-                  onToggle();
-                }}
-                className={`flex items-center p-2 cursor-pointer hover:bg-blue-50 rounded-md ${
-                  selectedRating === option.value ? 'bg-blue-50' : ''
-                }`}
-              >
-                <div className="flex">
-                  {[...Array(option.value)].map((_, i) => (
-                    <FaStar key={i} className="text-yellow-400" size={14} />
-                  ))}
-                  {[...Array(5 - option.value)].map((_, i) => (
-                    <FaStar key={i} className="text-gray-300" size={14} />
-                  ))}
-                </div>
-                <span className="ml-2 text-sm text-gray-700">& Up</span>
-                {selectedRating === option.value && (
-                  <FaCheck size={12} className="ml-auto text-[#4DA9FF]" />
-                )}
-              </div>
-            ))}
-            
-            {/* Option to clear rating filter */}
-            <div 
-              onClick={() => {
-                onChange(0);
-                onToggle();
-              }}
-              className="flex items-center p-2 cursor-pointer hover:bg-blue-50 rounded-md"
+        <div className="absolute z-30 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-72 md:w-80">
+          {/* Caret pointing up to the button */}
+          <div className="absolute -top-2 left-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200"></div>
+           
+           <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">{dropdownTitle}</h3>
+            <button
+              onClick={onToggle}
+              className="text-gray-400 hover:text-gray-600 p-1 -mr-1 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              aria-label="Close filter"
             >
-              <span className="text-sm text-gray-700">Clear filter</span>
-            </div>
+              <FaTimes size={20} />
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {ratingOptions.map((option) => {
+              const isSelected = selectedRating === option.value;
+              return (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    onChange(option.value);
+                    onToggle();
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1
+                    ${isSelected
+                      ? 'bg-[#EBF5FF] text-[#007AFF] border-[#4DA9FF] hover:bg-blue-100 focus:ring-blue-500' // Lighter blue for selected single-option
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50 focus:ring-blue-400'
+                    }`}
+                >
+                  <span className="flex">
+                    {[...Array(option.value)].map((_, i) => (
+                      <FaStar key={`star-filled-${i}`} className="text-yellow-400" size={14} />
+                    ))}
+                    {[...Array(5 - option.value)].map((_, i) => (
+                      <FaStar key={`star-empty-${i}`} className="text-gray-300" size={14} />
+                    ))}
+                    <span className="ml-2 text-gray-700">& Up</span>
+                  </span>
+                  {isSelected && <FaCheck size={14} className="text-[#007AFF]" />}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-auto pt-3 border-t border-gray-200">
+            <button
+              onClick={() => {
+                onChange(0); // Clear rating
+                onToggle();   // Close dropdown
+              }}
+              className="w-full text-sm text-center text-[#4DA9FF] hover:text-blue-700 hover:underline py-1 focus:outline-none"
+            >
+              Clear filter
+            </button>
           </div>
         </div>
       )}
@@ -265,12 +350,13 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
 };
 
 // Sort filter component
-const SortFilter: React.FC<SortFilterProps> = ({ 
-  selectedSort, 
-  onChange, 
+const SortFilter: React.FC<SortFilterProps> = ({
+  selectedSort,
+  onChange,
   options,
   isOpen,
-  onToggle
+  onToggle,
+  dropdownTitle
 }) => {
   // Find the selected option label
   const selectedOption = options.find(opt => opt.value === selectedSort);
@@ -282,32 +368,48 @@ const SortFilter: React.FC<SortFilterProps> = ({
         className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none"
       >
         <span>Sort by: {selectedOption?.label || 'Featured'}</span>
-        <FaChevronDown 
-          className={`ml-2 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} 
+        <FaChevronDown
+          className={`ml-2 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
           size={10}
         />
       </button>
-      
+
       {isOpen && (
-        <div className="absolute right-0 z-30 w-64 mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
-          <div className="p-2">
-            {options.map((option, idx) => (
-              <div 
-                key={idx}
-                onClick={() => {
-                  onChange(option.value);
-                  onToggle();
-                }}
-                className={`flex items-center p-2 cursor-pointer hover:bg-blue-50 rounded-md ${
-                  selectedSort === option.value ? 'bg-blue-50' : ''
-                }`}
-              >
-                <span className="text-sm text-gray-700">{option.label}</span>
-                {selectedSort === option.value && (
-                  <FaCheck size={12} className="ml-auto text-[#4DA9FF]" />
-                )}
-              </div>
-            ))}
+        <div className="absolute right-0 z-30 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-72 md:w-80">
+          {/* Caret pointing up to the button - positioned on the right */}
+          <div className="absolute -top-2 right-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200"></div>
+          
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">{dropdownTitle}</h3>
+            <button
+              onClick={onToggle}
+              className="text-gray-400 hover:text-gray-600 p-1 -mr-1 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              aria-label="Close filter"
+            >
+              <FaTimes size={20} />
+            </button>
+          </div>
+          <div className="space-y-1">
+            {options.map((option) => {
+               const isSelected = selectedSort === option.value;
+              return (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    onChange(option.value);
+                    onToggle();
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1
+                  ${isSelected
+                    ? 'bg-[#EBF5FF] text-[#007AFF] border-[#4DA9FF] hover:bg-blue-100 focus:ring-blue-500'
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50 focus:ring-blue-400'
+                  }`}
+                >
+                  <span>{option.label}</span>
+                  {isSelected && <FaCheck size={14} className="text-[#007AFF]" />}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -342,13 +444,13 @@ const AmazonStyleFilter: React.FC<AmazonStyleFilterProps> = ({
     label: cat,
     value: cat
   }));
-  
+
   // Convert brands to options format
   const brandOptions = brands.map(brand => ({
     label: brand,
     value: brand
   }));
-  
+
   // Sort options
   const sortOptions = [
     { label: 'Featured', value: 'newest' },
@@ -363,43 +465,49 @@ const AmazonStyleFilter: React.FC<AmazonStyleFilterProps> = ({
       <div className="flex flex-wrap items-center gap-2">
         {/* Filters Label */}
         <div className="mr-2 text-sm font-medium text-gray-700">Filters:</div>
-        
+
         {/* Department/Category Filter */}
         <DropdownFilter
-          label={selectedCategories.length > 0 ? `Category (${selectedCategories.length})` : 'Category'}
+          buttonLabel={selectedCategories.length > 0 ? `Category (${selectedCategories.length})` : 'Category'}
+          dropdownTitle="Category"
           options={categoryOptions}
           selected={selectedCategories}
           onChange={onCategoryChange}
           isOpen={openFilter === 'category'}
           onToggle={() => handleToggleFilter('category')}
+          multi // Explicitly true, though default
         />
-        
+
         {/* Brand Filter */}
         <DropdownFilter
-          label={selectedBrands.length > 0 ? `Brand (${selectedBrands.length})` : 'Brand'}
+          buttonLabel={selectedBrands.length > 0 ? `Brand (${selectedBrands.length})` : 'Brand'}
+          dropdownTitle="Brand"
           options={brandOptions}
           selected={selectedBrands}
           onChange={onBrandChange}
           isOpen={openFilter === 'brand'}
           onToggle={() => handleToggleFilter('brand')}
+          multi // Explicitly true
         />
-        
+
         {/* Price Range Filter */}
         <PriceFilter
           priceRange={priceRange}
           onPriceChange={onPriceChange}
           isOpen={openFilter === 'price'}
           onToggle={() => handleToggleFilter('price')}
+          dropdownTitle="Price Range"
         />
-        
+
         {/* Rating Filter */}
         <RatingFilter
           selectedRating={ratingFilter}
           onChange={onRatingChange}
           isOpen={openFilter === 'rating'}
           onToggle={() => handleToggleFilter('rating')}
+          dropdownTitle="Customer Reviews"
         />
-        
+
         {/* Sort By */}
         <div className="ml-auto">
           <SortFilter
@@ -408,10 +516,11 @@ const AmazonStyleFilter: React.FC<AmazonStyleFilterProps> = ({
             options={sortOptions}
             isOpen={openFilter === 'sort'}
             onToggle={() => handleToggleFilter('sort')}
+            dropdownTitle="Sort By"
           />
         </div>
       </div>
-      
+
       {/* Active Filters Section */}
       {(selectedCategories.length > 0 || selectedBrands.length > 0 || 
         ratingFilter > 0 || priceRange[0] > 0 || priceRange[1] < 10000) && (
