@@ -70,6 +70,8 @@ export async function signupAction(formData: FormData): Promise<ActionResult> {
 
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const firstName = formData.get("firstName") as string;
+  const lastName = formData.get("lastName") as string;
   // You might add more fields like 'confirmPassword' and validate them here
 
   // Basic validation
@@ -85,10 +87,15 @@ export async function signupAction(formData: FormData): Promise<ActionResult> {
     email,
     password,
     options: {
+      // Include user metadata with firstName and lastName
+      data: {
+        first_name: firstName,
+        last_name: lastName
+      },
       // Email confirmation link will be sent to the user.
       // Ensure your Supabase project has email confirmation enabled
       // and the redirect URL is set correctly.
-      emailRedirectTo: `${origin}/auth/confirm`, // This matches our auth/confirm/route.ts
+      emailRedirectTo: `${origin}`, // This matches our auth/confirm/route.ts
     },
   });
 
@@ -171,7 +178,7 @@ export async function resendVerificationEmail(email: string): Promise<ActionResu
       type: 'signup',
       email,
       options: {
-        emailRedirectTo: `${origin}/auth/confirm`,
+        emailRedirectTo: `${origin}`,
       },
     });
 
@@ -186,6 +193,3 @@ export async function resendVerificationEmail(email: string): Promise<ActionResu
     return { error: { message: "An unexpected error occurred. Please try again." } };
   }
 }
-
-// You would also create route handlers for OAuth callbacks and email confirmation
-// e.g., in src/app/auth/confirm/route.ts
