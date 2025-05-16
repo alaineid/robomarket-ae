@@ -40,6 +40,9 @@ export default function LoginModal() {
       console.log('LoginModal: Hiding login modal');
       hideLogin();
       
+      // Add a slight delay to ensure the modal is properly closed before any subsequent operations
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       console.log('LoginModal: Login successful, modal closed');
     } catch (error) {
       console.error('Error handling login success:', error);

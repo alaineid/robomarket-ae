@@ -76,10 +76,16 @@ export default function AuthProvider({ serverUser, children }: AuthProviderProps
         // For important auth state changes, update UI components
         if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
           // Notify other components about auth state change
-          window.dispatchEvent(new Event('supabase-auth-state-changed'));
-          
-          // Synchronize auth state across the app
-          await synchronizeAuthState();
+          try {
+            window.dispatchEvent(new Event('supabase-auth-state-changed'));
+            
+            // Synchronize auth state across the app
+            await synchronizeAuthState();
+          } catch (error) {
+            console.error('Error handling auth state change event:', error);
+            // Make sure we don't leave loading state if there's an error
+            setLoading(false);
+          }
         }
       }
     );

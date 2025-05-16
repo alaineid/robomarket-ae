@@ -126,17 +126,29 @@ export async function signupAction(formData: FormData): Promise<ActionResult> {
  * @param options.redirectHome - If true, redirect to home page after logout
  */
 export async function logoutAction(options?: { redirectHome?: boolean }): Promise<void> {
-  const supabase = await createClient();
-  
-  // Sign out the user
-  await supabase.auth.signOut();
-  
-  // Revalidate paths to update UI
-  revalidatePath("/", "layout");
-  
-  // Redirect to home page if redirectHome is true
-  if (options?.redirectHome) {
-    return redirect("/");
+  try {
+    const supabase = await createClient();
+    
+    // Sign out the user
+    await supabase.auth.signOut();
+    
+    // Revalidate paths to update UI
+    revalidatePath("/", "layout");
+    
+    // Redirect to home page if redirectHome is true
+    if (options?.redirectHome) {
+      return redirect("/");
+    }
+  } catch (error) {
+    console.error("Logout error:", error);
+    
+    // If an error occurred but we still want to redirect, do so
+    if (options?.redirectHome) {
+      return redirect("/");
+    }
+    
+    // Re-throw other errors to be handled by the caller
+    throw error;
   }
 }
 

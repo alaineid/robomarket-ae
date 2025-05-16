@@ -56,16 +56,19 @@ export default function Header() {
       synchronizeAuthState();
     };
     
+    // Handler for synchronized event - store reference to avoid memory leak
+    const handleStateSynchronized = () => {
+      console.log('Header: Received auth-state-synchronized event');
+    };
+    
     // Listen for auth state changes from the AuthProvider
     window.addEventListener('supabase-auth-state-changed', handleAuthChange);
-    window.addEventListener('auth-state-synchronized', () => {
-      console.log('Header: Received auth-state-synchronized event');
-    });
+    window.addEventListener('auth-state-synchronized', handleStateSynchronized);
     
     // Clean up listeners on unmount
     return () => {
       window.removeEventListener('supabase-auth-state-changed', handleAuthChange);
-      window.removeEventListener('auth-state-synchronized', () => {});
+      window.removeEventListener('auth-state-synchronized', handleStateSynchronized);
     };
   }, [synchronizeAuthState]);
   
@@ -85,7 +88,14 @@ export default function Header() {
       });
       
       // Call the server logout action with redirectHome option
-      await logoutAction({ redirectHome: true });
+      // Wrap in a try/catch to prevent uncaught promise rejections
+      try {
+        await logoutAction({ redirectHome: true });
+      } catch (logoutError) {
+        console.error('Server logout action error:', logoutError);
+        // Fallback to client-side navigation if server action fails
+        router.push('/');
+      }
     } catch (error) {
       console.error('Logout error:', error);
       // Redirect to home page instead of showing login modal

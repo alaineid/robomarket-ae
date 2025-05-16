@@ -110,7 +110,8 @@ export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {
       }
       
       if (result?.success) {
-        console.log('LoginForm: Login successful');          try {
+        console.log('LoginForm: Login successful');
+        try {
             // Reset loading states immediately
             setLoading(false);
             useAuthStore.setState({ isLoading: false });
@@ -129,7 +130,7 @@ export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {
               console.log('LoginForm: Calling onSuccess callback');
               onSuccess();
             }
-          }catch (syncError) {
+        } catch (syncError) {
           console.error('Error during auth synchronization:', syncError);
           // Reset loading states in case of error
           setLoading(false);

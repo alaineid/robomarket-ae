@@ -105,8 +105,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       console.log('AuthStore: State updated with user and customer data');
       
       // Dispatch a custom event for other components to react to
-      console.log('AuthStore: Dispatching auth-state-synchronized event');
-      window.dispatchEvent(new Event('auth-state-synchronized'));
+      try {
+        console.log('AuthStore: Dispatching auth-state-synchronized event');
+        window.dispatchEvent(new Event('auth-state-synchronized'));
+      } catch (eventError) {
+        console.error('Error dispatching auth-state-synchronized event:', eventError);
+        // Continue execution even if event dispatch fails
+      }
       
       return user;
     } catch (error) {
