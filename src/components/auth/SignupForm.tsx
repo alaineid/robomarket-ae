@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition, FormEvent } from 'react';
 import * as EmailValidator from 'email-validator';
 import zxcvbn from 'zxcvbn';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { signupAction } from '@/components/actions/authActions'; // Import the signupAction
+import { signupAction, resendVerificationEmail } from '@/components/actions/authActions'; // Import the signupAction and resendVerificationEmail
 import { useModalStore } from '@/store/modalStore';
 
 export default function SignupForm() {
@@ -19,6 +19,9 @@ export default function SignupForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isPending, startTransition] = useTransition(); // Use transition for improved loading state management
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
+  const [resendEmailStatus, setResendEmailStatus] = useState<{success?: string; error?: string} | null>(null);
   
   // Password strength state
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -126,6 +129,7 @@ export default function SignupForm() {
 
         if (result?.success) {
           setSuccessMessage(result.success.message);
+          setRegisteredEmail(email);
           
           // Reset form fields
           setFirstName('');
@@ -133,17 +137,35 @@ export default function SignupForm() {
           setEmail('');
           setPassword('');
           setConfirmPassword('');
-          
-          // Show login modal after a delay instead of redirecting
-          setTimeout(() => {
-            showLogin();
-          }, 3000);
         }
       } catch (err: unknown) {
         console.error('Error during signup:', err);
         setError(err instanceof Error ? err.message : 'An error occurred during signup. Please try again.');
       }
     });
+  };
+
+  const handleResendVerificationEmail = async () => {
+    if (!registeredEmail) return;
+    
+    setIsResendingEmail(true);
+    setResendEmailStatus(null);
+    
+    try {
+      const result = await resendVerificationEmail(registeredEmail);
+      
+      if (result.error) {
+        setResendEmailStatus({ error: result.error.message });
+      } else if (result.success) {
+        setResendEmailStatus({ success: result.success.message });
+      }
+    } catch (err) {
+      setResendEmailStatus({ 
+        error: err instanceof Error ? err.message : 'An error occurred. Please try again.' 
+      });
+    } finally {
+      setIsResendingEmail(false);
+    }
   };
 
   // Helper function to get password strength color
@@ -175,9 +197,60 @@ export default function SignupForm() {
       {successMessage ? (
         <div className="text-center">
           <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
+            <p className="font-medium text-lg mb-1">Account Created Successfully!</p>
             <p>{successMessage}</p>
           </div>
-          <p className="mb-4">You will be redirected to the login page...</p>
+          
+          <div className="mb-6">
+            <p className="mb-4">Please check your email inbox to verify your account.</p>
+            
+            {resendEmailStatus?.success && (
+              <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4" role="alert">
+                <p>{resendEmailStatus.success}</p>
+              </div>
+            )}
+            
+            {resendEmailStatus?.error && (
+              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+                <p>{resendEmailStatus.error}</p>
+              </div>
+            )}
+            
+            <p className="text-sm text-gray-600 mb-2">
+              Didn't receive an email?
+            </p>
+            <button
+              onClick={handleResendVerificationEmail}
+              disabled={isResendingEmail}
+              className={`px-4 py-2 bg-[#4DA9FF] text-white rounded-md hover:bg-[#3D89FF] transition-colors ${
+                isResendingEmail ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
+            >
+              {isResendingEmail ? (
+                <>
+                  <svg className="animate-spin inline -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Sending...
+                </>
+              ) : (
+                'Resend Verification Email'
+              )}
+            </button>
+          </div>
+          
+          <div className="border-t border-gray-200 pt-6">
+            <p className="text-sm text-gray-600 mb-2">
+              Ready to login?
+            </p>
+            <button 
+              onClick={() => showLogin()} 
+              className="px-4 py-2 border border-[#4DA9FF] text-[#4DA9FF] rounded-md hover:bg-[#4DA9FF] hover:text-white transition-colors"
+            >
+              Go to Login
+            </button>
+          </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -376,6 +449,43 @@ export default function SignupForm() {
               'Sign Up'
             )}
           </button>
+          
+          {registeredEmail && !successMessage && (
+            <div className="mt-4">
+              <p className="text-sm text-gray-600 mb-2">
+                A verification email has been sent to <strong>{registeredEmail}</strong>. Please check your inbox and verify your email to complete the registration.
+              </p>
+              <button
+                onClick={handleResendVerificationEmail}
+                disabled={isResendingEmail}
+                className={`w-full bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center ${
+                  isResendingEmail ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
+              >
+                {isResendingEmail ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Resending...
+                  </>
+                ) : (
+                  'Resend Verification Email'
+                )}
+              </button>
+              {resendEmailStatus?.error && (
+                <p className="text-xs text-red-600 mt-2">
+                  {resendEmailStatus.error}
+                </p>
+              )}
+              {resendEmailStatus?.success && (
+                <p className="text-xs text-green-600 mt-2">
+                  {resendEmailStatus.success}
+                </p>
+              )}
+            </div>
+          )}
           
           <div className="text-center mt-4">
             <p className="text-sm text-gray-600">

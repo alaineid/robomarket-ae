@@ -101,7 +101,7 @@ export async function signupAction(formData: FormData): Promise<ActionResult> {
     // This case can happen if "Secure email change" is enabled in Supabase
     // The email is already in use but not confirmed.
     // Supabase might return a user object but indicate that confirmation is needed for an existing unconfirmed user.
-    return { error: { message: "This email address is already in use. If it's yours, please check your inbox for a confirmation email or try resetting your password.", type: "EmailExistsUnconfirmed" }};
+    return { error: { message: "This email address is already in use.", type: "EmailExistsUnconfirmed" }};
   }
 
   if (data.session) {
@@ -115,7 +115,7 @@ export async function signupAction(formData: FormData): Promise<ActionResult> {
   // A redirect to a specific "check your email" page is good practice.
   // For now, returning a success message.
   revalidatePath("/", "layout"); // Revalidate to clear any cached public pages
-  return { success: { message: "Signup successful! Please check your email to confirm your account." } };
+  return { success: { message: "Please check your email to confirm your account." } };
   // Consider redirecting to a page: redirect('/auth/check-email');
 }
 
@@ -149,6 +149,41 @@ export async function logoutAction(options?: { redirectHome?: boolean }): Promis
     
     // Re-throw other errors to be handled by the caller
     throw error;
+  }
+}
+
+/**
+ * Server Action to resend verification email.
+ * @param email - The email address to send verification to
+ * @returns An object with an error or success message.
+ */
+export async function resendVerificationEmail(email: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const headersList = await headers();
+  const origin = headersList.get('origin'); // Get the origin for the confirmation email link
+
+  if (!email) {
+    return { error: { message: "Email is required." } };
+  }
+
+  try {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: `${origin}/auth/confirm`,
+      },
+    });
+
+    if (error) {
+      console.error("Resend verification email error:", error.message);
+      return { error: { message: error.message, type: error.name } };
+    }
+
+    return { success: { message: "Verification email has been resent. Please check your inbox." } };
+  } catch (error) {
+    console.error("Resend verification error:", error);
+    return { error: { message: "An unexpected error occurred. Please try again." } };
   }
 }
 
