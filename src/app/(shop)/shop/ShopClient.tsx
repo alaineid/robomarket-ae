@@ -290,7 +290,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">No Robots Found</h3>
               <p className="text-gray-500 mb-6">
-                We couldn&apos;t find any robots matching your filters. Try adjusting your search or filters to see more products.
+                {"We couldn't find any robots matching your filters. Try adjusting your search or filters to see more products."}
               </p>
               <motion.button 
                 whileHover={{ scale: 1.02 }}

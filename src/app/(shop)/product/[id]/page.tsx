@@ -202,7 +202,7 @@ export default function ProductDetail() {
               <span className="text-gray-500 text-3xl">?</span>
             </div>
             <h1 className="text-2xl font-bold text-gray-800 mb-4">Product Not Found</h1>
-            <p className="text-gray-600 mb-8">We couldn&apos;t find the robot you&apos;re looking for. It may have been moved or doesn&apos;t exist.</p>
+            <p className="text-gray-600 mb-8">{"We couldn't find the robot you're looking for. It may have been moved or doesn't exist."}</p>
             <Link href="/shop" className={commonButtonStyles.primary}>
               Browse All Robots
             </Link>

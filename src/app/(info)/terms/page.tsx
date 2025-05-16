@@ -41,7 +41,7 @@ export default function TermsPage() {
                       To the fullest extent permitted by applicable law, ROBOMARKET shall not be liable for any direct, indirect, incidental, special, consequential, or punitive damages, including but not limited to, damages for loss of profits, goodwill, use, data, or other intangible losses, arising out of or relating to your access to or use of, or inability to access or use, the Platform or any Products purchased through the Platform. This includes, but is not limited to, any damages resulting from Product use, misuse, defects, or failure.
                     </p>
                     <p>
-                      All technical specifications, performance claims, safety assurances, and warranty obligations related to Products are the sole responsibility of the respective Manufacturer. ROBOMARKET disclaims all warranties, express or implied, regarding the Platform itself, except where explicitly stated otherwise in writing. Any warranties related to Products are provided directly by the Manufacturer according to their own terms, which may be available on the Product listing page or the Manufacturer&apos;s official website.
+                      {"All technical specifications, performance claims, safety assurances, and warranty obligations related to Products are the sole responsibility of the respective Manufacturer. ROBOMARKET disclaims all warranties, express or implied, regarding the Platform itself, except where explicitly stated otherwise in writing. Any warranties related to Products are provided directly by the Manufacturer according to their own terms, which may be available on the Product listing page or the Manufacturer's official website."}
                     </p>
 
                     <h2 className="text-2xl font-bold mt-8 mb-4">2. User Account and Conduct</h2>
@@ -49,10 +49,10 @@ export default function TermsPage() {
                       You are responsible for maintaining the confidentiality of your account information, including your password, and for all activities that occur under your account. You agree to notify ROBOMARKET immediately of any unauthorized use of your account or any other breach of security.
                     </p>
                     <p>
-                      ROBOMARKET shall not be liable for any loss or damage arising from unauthorized access to your account resulting from your failure to protect your credentials or from external factors, unless such access is determined to be a direct result of ROBOMARKET&apos;s gross negligence or failure to implement and maintain reasonable security measures as required by applicable law and outlined in our Privacy Policy.
+                      {"ROBOMARKET shall not be liable for any loss or damage arising from unauthorized access to your account resulting from your failure to protect your credentials or from external factors, unless such access is determined to be a direct result of ROBOMARKET's gross negligence or failure to implement and maintain reasonable security measures as required by applicable law and outlined in our Privacy Policy."}
                     </p>
                     <p>
-                      You agree not to use the Platform for any unlawful purpose or in any way that could harm ROBOMARKET, its service providers, Manufacturers, or any other person. Prohibited activities include, but are not limited to: uploading malicious code, interfering with the Platform&apos;s operation, posting fraudulent or misleading information (including reviews), infringing intellectual property rights, or attempting to circumvent security measures.
+                      {"You agree not to use the Platform for any unlawful purpose or in any way that could harm ROBOMARKET, its service providers, Manufacturers, or any other person. Prohibited activities include, but are not limited to: uploading malicious code, interfering with the Platform's operation, posting fraudulent or misleading information (including reviews), infringing intellectual property rights, or attempting to circumvent security measures."}
                     </p>
 
                     <h2 className="text-2xl font-bold mt-8 mb-4">3. Orders, Payments, and Fulfillment</h2>
@@ -62,7 +62,7 @@ export default function TermsPage() {
 
                     <h2 className="text-2xl font-bold mt-8 mb-4">4. Intellectual Property</h2>
                     <p>
-                      All content included on the Platform, such as text, graphics, logos, button icons, images, audio clips, digital downloads, data compilations, and software, is the property of ROBOMARKET or its content suppliers (including Manufacturers) and protected by international copyright and trademark laws. The compilation of all content on this site is the exclusive property of ROBOMARKET. You may not systematically extract or re-utilize parts of the contents of the Platform without ROBOMARKET&apos;s express written consent. Specifically, you may not utilize any data mining, robots, or similar data gathering and extraction tools to extract (whether once or many times) for re-utilization any substantial parts of this Platform.
+                      {"All content included on the Platform, such as text, graphics, logos, button icons, images, audio clips, digital downloads, data compilations, and software, is the property of ROBOMARKET or its content suppliers (including Manufacturers) and protected by international copyright and trademark laws. The compilation of all content on this site is the exclusive property of ROBOMARKET. You may not systematically extract or re-utilize parts of the contents of the Platform without ROBOMARKET's express written consent. Specifically, you may not utilize any data mining, robots, or similar data gathering and extraction tools to extract (whether once or many times) for re-utilization any substantial parts of this Platform."}
                     </p>
 
                     <h2 className="text-2xl font-bold mt-8 mb-4">5. Termination or Suspension</h2>
@@ -72,7 +72,7 @@ export default function TermsPage() {
 
                     <h2 className="text-2xl font-bold mt-8 mb-4">6. User Indemnification</h2>
                     <p>
-                      To the extent permitted by applicable law, you agree to indemnify, defend, and hold harmless ROBOMARKET, its affiliates, officers, directors, employees, agents, and licensors from and against any and all claims, liabilities, damages, losses, costs, expenses, or fees (including reasonable attorneys&apos; fees) that such parties may incur as a result of or arising from your (or anyone using your account&apos;s) violation of these Terms, your violation of any law or the rights of a third party, or your use of the Platform or Products purchased through it.
+                      {"To the extent permitted by applicable law, you agree to indemnify, defend, and hold harmless ROBOMARKET, its affiliates, officers, directors, employees, agents, and licensors from and against any and all claims, liabilities, damages, losses, costs, expenses, or fees (including reasonable attorneys' fees) that such parties may incur as a result of or arising from your (or anyone using your account's) violation of these Terms, your violation of any law or the rights of a third party, or your use of the Platform or Products purchased through it."}
                     </p>
 
                     <h2 className="text-2xl font-bold mt-8 mb-4">7. Force Majeure</h2>
@@ -103,7 +103,7 @@ export default function TermsPage() {
 
                     <h3 className="text-2xl font-bold mt-8 mb-4">1. Return Eligibility</h3>
                     <p>
-                      Returns are generally accepted under the following conditions, subject to the specific Manufacturer&apos;s policy:
+                      {"Returns are generally accepted under the following conditions, subject to the specific Manufacturer's policy:"}
                     </p>
                     <ul className="list-disc pl-6 mb-4">
                       <li><strong>Defective on Arrival (DOA):</strong> The product does not function correctly right out of the box.</li>
@@ -111,15 +111,15 @@ export default function TermsPage() {
                       <li><strong>Significantly Not as Described:</strong> The product received is fundamentally different from the item ordered or described on the Platform (e.g., wrong model, missing core advertised features, substantially incorrect specifications). Minor variations in color or appearance may not qualify.</li>
                     </ul>
                     <p>
-                      Return requests must typically be initiated within 14 calendar days of the confirmed delivery date. Please check the specific Manufacturer&apos;s return policy, often available on the product page or their website, as their timeframe may apply. Latent defects discovered after this initial period may be covered under the Manufacturer&apos;s warranty, and claims should be directed to the Manufacturer accordingly.
+                      Return requests must typically be initiated within 14 calendar days of the confirmed delivery date. Please check the specific {"Manufacturer's"} return policy, often available on the product page or their website, as their timeframe may apply. Latent defects discovered after this initial period may be covered under the {"Manufacturer's"} warranty, and claims should be directed to the Manufacturer accordingly.
                     </p>
 
-                    <h3 className="text-2xl font-bold mt-8 mb-4">2. Manufacturer Authority and ROBOMARKET&apos;s Facilitation Role</h3>
+                    <h3 className="text-2xl font-bold mt-8 mb-4">{"2. Manufacturer Authority and ROBOMARKET's Facilitation Role"}</h3>
                     <p>
                       All returns, warranty claims, and final decisions regarding eligibility, repair, replacement, or refund rest with the original Manufacturer and are subject to their individual warranty and return policies. ROBOMARKET requires Manufacturers listing on the Platform to maintain reasonable return and warranty policies, but we do not process returns or issue refunds directly unless explicitly stated otherwise.
                     </p>
                     <p>
-                      ROBOMARKET is not typically involved in the return communication or dispute resolution process between the customer and the Manufacturer. However, if you have initiated a return request with the Manufacturer following the correct procedure and have not received a substantive response (acknowledgment or resolution steps) within 5 business days, please contact ROBOMARKET support at <a href="mailto:support@robomarket.ae" className="text-blue-500 hover:text-blue-700">support@robomarket.ae</a> with your order details and evidence of your communication attempt. In such cases, ROBOMARKET may, at its discretion, attempt to facilitate communication between you and the Manufacturer to encourage a response. This facilitation role does not imply ROBOMARKET assumes liability for the return outcome, which remains subject to the Manufacturer&apos;s policy and assessment.
+                      ROBOMARKET is not typically involved in the return communication or dispute resolution process between the customer and the Manufacturer. However, if you have initiated a return request with the Manufacturer following the correct procedure and have not received a substantive response (acknowledgment or resolution steps) within 5 business days, please contact ROBOMARKET support at <a href="mailto:support@robomarket.ae" className="text-blue-500 hover:text-blue-700">support@robomarket.ae</a> with your order details and evidence of your communication attempt. In such cases, ROBOMARKET may, at its discretion, attempt to facilitate communication between you and the Manufacturer to encourage a response. This facilitation role does not imply ROBOMARKET assumes liability for the return outcome, which remains subject to the {"Manufacturer's"} policy and assessment.
                     </p>
 
                     <h2 className="text-3xl font-bold mt-12 mb-6">Shipping & Delivery Policy</h2>
@@ -140,7 +140,7 @@ export default function TermsPage() {
 
                     <h3 className="text-2xl font-bold mt-8 mb-4">3. Delivery Timeline</h3>
                     <p>
-                      Estimated delivery times vary depending on the Product type, Manufacturer&apos;s location (origin country), shipping method chosen, destination address, and customs processing times. A general estimate is often between 7–21 calendar days, but this can be longer, particularly for complex items, international shipments, or during peak periods. More specific estimates may be provided on the product page or during checkout where available from the Manufacturer.
+                      {"Estimated delivery times vary depending on the Product type, Manufacturer's location (origin country), shipping method chosen, destination address, and customs processing times. A general estimate is often between 7–21 calendar days, but this can be longer, particularly for complex items, international shipments, or during peak periods. More specific estimates may be provided on the product page or during checkout where available from the Manufacturer."}
                     </p>
 
                     <div className="mt-12 border-t border-gray-200 pt-8">

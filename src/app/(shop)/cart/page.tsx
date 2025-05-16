@@ -85,7 +85,7 @@ export default function CartPage() {
                 <FaShoppingCart size={36} className="text-gray-300" />
               </div>
               <h1 className="text-2xl font-bold text-gray-800 mb-4">Your Cart is Empty</h1>
-              <p className="text-gray-600 mb-8">Looks like you haven&apos;t added any robots to your cart yet.</p>
+              <p className="text-gray-600 mb-8">{"Looks like you haven't added any robots to your cart yet."}</p>
               <Link href="/shop" className={commonButtonStyles.primary}>
                 Start Shopping
               </Link>

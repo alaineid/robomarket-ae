@@ -176,7 +176,7 @@ export default function QuickView({ product, isOpen, onClose }: QuickViewProps) 
                       {(!product.attributes || !product.attributes[0]) && (
                         <div className="p-3 bg-gray-50 rounded-lg">
                           <span className="text-gray-500 text-sm block mb-1">Height</span>
-                          <span className="font-medium">4&apos;11&quot; (150 cm)</span>
+                          <span className="font-medium">{"4'11\" (150 cm)"}</span>
                         </div>
                       )}
                       {(!product.attributes || !product.attributes[1]) && (

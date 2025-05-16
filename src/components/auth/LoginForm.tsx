@@ -295,7 +295,7 @@ export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {
         
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
-            Don&apos;t have an account?{' '}
+            {"Don't have an account?"}{' '}
             <Link 
               href="/signup" 
               className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium"

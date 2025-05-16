@@ -217,7 +217,7 @@ export default function SignupForm() {
             )}
             
             <p className="text-sm text-gray-600 mb-2">
-              Didn't receive an email?
+              {"Didn't receive an email?"}
             </p>
             <button
               onClick={handleResendVerificationEmail}
