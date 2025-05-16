@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaStar, FaChevronDown, FaCheck, FaTimes } from 'react-icons/fa';
 
 interface FilterOption {
@@ -66,60 +66,46 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
   options,
   selected,
   onChange,
-  multi = true,
+  multi = false,
   isOpen,
-  onToggle
+  onToggle,
 }) => {
-  const [showAll, setShowAll] = useState(false);
   const [localSelected, setLocalSelected] = useState<string[]>(selected);
-  const INITIAL_DISPLAY_COUNT = 6;
+  const [showAll, setShowAll] = useState(false);
+  const displayOptions = showAll ? options : options.slice(0, 7);
 
-  // Reset local state whenever the dropdown opens or if external selected values change
-  React.useEffect(() => {
+  useEffect(() => {
+    // Sync localSelected with selected prop when dropdown opens or selected changes
     setLocalSelected(selected);
   }, [selected, isOpen]);
 
-  const displayedOptions = showAll ? options : options.slice(0, INITIAL_DISPLAY_COUNT);
-
-  const handleOptionToggle = (value: string) => {
+  const handleOptionToggle = (optionValue: string) => {
     if (multi) {
-      setLocalSelected(prev => 
-        prev.includes(value)
-          ? prev.filter(v => v !== value)
-          : [...prev, value]
+      setLocalSelected(prev =>
+        prev.includes(optionValue)
+          ? prev.filter(item => item !== optionValue)
+          : [...prev, optionValue]
       );
     } else {
-      setLocalSelected([value]);
-      // For non-multi select, we don't close the dropdown automatically
+      setLocalSelected(prev => (prev.includes(optionValue) ? [] : [optionValue]));
     }
-  };
-
-  const handleClearCurrentFilter = () => {
-    setLocalSelected([]);
   };
 
   const handleShowResults = () => {
-    if (multi) {
-      const hasChanges =
-        localSelected.length !== selected.length ||
-        localSelected.some(item => !selected.includes(item)) ||
-        selected.some(item => !localSelected.includes(item));
+    const hasChanges =
+      localSelected.length !== selected.length ||
+      localSelected.some(item => !selected.includes(item)) ||
+      selected.some(item => !localSelected.includes(item));
 
-      if (hasChanges) {
-        onChange(localSelected); // Pass the entire localSelected array
-      }
-    } else { // Single-select logic
-      const currentSingleSelected = selected.length > 0 ? selected[0] : undefined;
-      const newSingleSelected = localSelected.length > 0 ? localSelected[0] : undefined;
-
-      if (newSingleSelected !== currentSingleSelected) {
-        if (newSingleSelected !== undefined) {
-          onChange([newSingleSelected]);
-        } else {
-          onChange([]); // Clearing the selection
-        }
-      }
+    if (hasChanges) {
+      onChange(localSelected);
     }
+    onToggle(); // Close the dropdown
+  };
+
+  const handleClearFilter = () => {
+    setLocalSelected([]);
+    onChange([]); // Apply empty selection immediately
     onToggle(); // Close the dropdown
   };
 
@@ -153,7 +139,7 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
           </div>
 
           <div className="flex flex-wrap gap-2 mb-4">
-            {displayedOptions.map((option) => {
+            {displayOptions.map((option) => {
               const isSelected = localSelected.includes(option.value);
               return (
                 <button
@@ -171,13 +157,13 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
             })}
           </div>
 
-          {options.length > INITIAL_DISPLAY_COUNT && (
+          {options.length > 7 && (
             <button
               onClick={() => setShowAll(!showAll)}
               className="text-sm text-[#4DA9FF] hover:text-blue-700 hover:underline mb-4 focus:outline-none flex items-center"
             >
               <FaChevronDown className={`inline-block mr-1 transition-transform ${showAll ? 'transform rotate-180' : ''}`} size={12} />
-              {showAll ? 'See less' : `See more (${options.length - INITIAL_DISPLAY_COUNT} more)`}
+              {showAll ? 'See less' : `See more (${options.length - 7} more)`}
             </button>
           )}
 
@@ -189,10 +175,10 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
               Show results
             </button>
             <button
-              onClick={handleClearCurrentFilter}
+              onClick={handleClearFilter}
               className="w-full text-sm text-center text-[#4DA9FF] hover:text-blue-700 hover:underline py-1 focus:outline-none"
             >
-              Clear filters
+              Clear filter
             </button>
           </div>
         </div>
@@ -212,17 +198,25 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
 }) => {
   const [localMin, setLocalMin] = useState(priceRange[0]);
   const [localMax, setLocalMax] = useState(priceRange[1]);
+  const minPrice = 0;
+  // const maxPrice = 10000; // Assuming a max price for the slider
 
-  // Sync local state if external priceRange changes while dropdown is closed or when it opens
-  React.useEffect(() => {
-    if (!isOpen || isOpen) {
-      setLocalMin(priceRange[0]);
-      setLocalMax(priceRange[1]);
-    }
+  useEffect(() => {
+    setLocalMin(priceRange[0]);
+    setLocalMax(priceRange[1]);
   }, [priceRange, isOpen]);
 
   const handleApply = () => {
-    onPriceChange(localMin, localMax);
+    if (localMin !== priceRange[0] || localMax !== priceRange[1]) {
+      onPriceChange(localMin, localMax);
+    }
+    onToggle();
+  };
+
+  const handleClearFilter = () => {
+    setLocalMin(minPrice); // Reset to default min
+    setLocalMax(maxPrice); // Reset to default max
+    onPriceChange(minPrice, maxPrice); // Apply default/cleared price range immediately
     onToggle();
   };
 
@@ -288,6 +282,12 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
             >
               Show results
             </button>
+            <button
+              onClick={handleClearFilter}
+              className="w-full text-sm text-center text-[#4DA9FF] hover:text-blue-700 hover:underline py-1 focus:outline-none"
+            >
+              Clear filter
+            </button>
           </div>
         </div>
       )}
@@ -328,6 +328,8 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
 
   const handleClearFilter = () => {
     setLocalRating(0);
+    onChange(0); // Apply cleared rating (0) immediately
+    onToggle();
   };
 
   return (
@@ -430,6 +432,13 @@ const SortFilter: React.FC<SortFilterProps> = ({
     onToggle();
   };
 
+  const handleClearFilter = () => {
+    const defaultSort = 'newest'; // Assuming 'newest' is the default
+    setLocalSort(defaultSort);
+    onChange(defaultSort); // Apply default sort immediately
+    onToggle();
+  };
+
   return (
     <div className="relative inline-block">
       <button
@@ -484,6 +493,12 @@ const SortFilter: React.FC<SortFilterProps> = ({
               className="w-full py-2 px-4 bg-[#4DA9FF] text-white rounded-md hover:bg-blue-600 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
             >
               Show results
+            </button>
+            <button
+              onClick={handleClearFilter}
+              className="w-full text-sm text-center text-[#4DA9FF] hover:text-blue-700 hover:underline py-1 focus:outline-none"
+            >
+              Clear filter
             </button>
           </div>
         </div>
