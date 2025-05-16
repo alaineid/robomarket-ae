@@ -55,6 +55,7 @@ export default function AboutPage() {
                   src="/images/robot1.png"
                   alt="RoboMarket Showroom" 
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
                   priority
                 />
@@ -210,6 +211,7 @@ export default function AboutPage() {
                     src="/images/robot2.png" 
                     alt="Ahmed Al-Marzooqi" 
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="object-cover"
                   />
                 </div>
@@ -232,6 +234,7 @@ export default function AboutPage() {
                     src="/images/robot3.png" 
                     alt="Sara Kumar" 
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="object-cover"
                   />
                 </div>
@@ -254,6 +257,7 @@ export default function AboutPage() {
                     src="/images/robot4.png" 
                     alt="Mohammed Al-Hashimi" 
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="object-cover"
                   />
                 </div>
@@ -276,6 +280,7 @@ export default function AboutPage() {
                     src="/images/robot5.png" 
                     alt="Layla Chen" 
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="object-cover"
                   />
                 </div>
