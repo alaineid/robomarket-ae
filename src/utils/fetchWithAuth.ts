@@ -5,10 +5,11 @@
 
 interface FetchWithAuthOptions extends RequestInit {
   skipCache?: boolean;
+  timeoutMs?: number; // Add timeout option
 }
 
 export async function fetchWithAuth<T>(url: string, options: FetchWithAuthOptions = {}): Promise<T> {
-  const { skipCache = false, ...fetchOptions } = options;
+  const { skipCache = false, timeoutMs = 30000, ...fetchOptions } = options;
   
   // Default options for all requests
   const defaultOptions: RequestInit = {
@@ -31,7 +32,17 @@ export async function fetchWithAuth<T>(url: string, options: FetchWithAuthOption
   };
   
   try {
-    const response = await fetch(url, mergedOptions);
+    // Create an AbortController to handle timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    
+    const response = await fetch(url, {
+      ...mergedOptions,
+      signal: controller.signal,
+    });
+    
+    // Clear timeout to prevent memory leaks
+    clearTimeout(timeoutId);
     
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'No error details available');
@@ -46,6 +57,12 @@ export async function fetchWithAuth<T>(url: string, options: FetchWithAuthOption
     return response.json();
   } catch (error) {
     console.error(`Error fetching ${url}:`, error);
+    
+    // Provide more helpful error message for timeout errors
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error(`Request timeout: The request to ${url} took too long to complete (exceeded ${timeoutMs}ms)`);
+    }
+    
     throw error;
   }
 }
