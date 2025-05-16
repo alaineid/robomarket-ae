@@ -6,29 +6,24 @@ import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
+import PageHero from '@/components/layout/PageHero';
+import { commonLayoutStyles } from '@/styles/commonStyles';
 
 export default function TermsPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-grow py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-800 mb-3">Terms & Conditions</h1>
-            <Breadcrumbs className="mb-8" />
-            
-            {/* Hero Section */}
-            <section className="bg-gradient-to-r from-gray-50 to-blue-50 py-16">
-              <div className="container mx-auto px-4">
-                <div className="max-w-4xl mx-auto text-center">
-                  <h1 className="text-4xl font-bold text-gray-800 mb-4">Terms and Conditions</h1>
-                  <p className="text-gray-600 mb-0">
-                    Last updated: May 5, 2025
-                  </p>
-                </div>
-              </div>
-            </section>
+      <main className={commonLayoutStyles.mainContent}>
+        {/* Hero Section */}
+        <PageHero
+          title="Terms and Conditions"
+          description="Last updated: May 5, 2025"
+          breadcrumbItems={[
+            { label: 'Home', href: '/' },
+            { label: 'Terms', href: '/terms', active: true }
+          ]}
+        />
             
             {/* Terms Content */}
             <section className="py-12">
@@ -175,8 +170,6 @@ export default function TermsPage() {
                 </div>
               </div>
             </section>
-          </div>
-        </div>
       </main>
       
       <Footer />

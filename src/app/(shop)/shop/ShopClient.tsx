@@ -13,6 +13,7 @@ import { debounce } from 'lodash-es';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
+import PageHero from '@/components/layout/PageHero';
 import ProductCard from '@/components/products/ProductCard';
 import { commonButtonStyles, commonLayoutStyles } from '@/styles/commonStyles';
 import {
@@ -321,40 +322,26 @@ export default function ShopClient({ initialData }: ShopClientProps) {
   return (
     <div className={commonLayoutStyles.mainContent}>
       {/* Shop Hero Section */}
-      <div className="bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-6 mb-6 border-b border-gray-100">
-        <div className={commonLayoutStyles.section}>
-          {/* Breadcrumbs Navigation */}
-          <Breadcrumbs 
-            items={[
-              { label: 'Home', href: '/' },
-              { label: 'Shop', href: '/shop', active: true }
-            ]}
-          />
-          
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-6 mb-8">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2 font-heading tracking-tight">
-                Discover Amazing Robots
-              </h1>
-              <p className="text-gray-600 max-w-xl">
-                Find the perfect robotic companion or utility assistant for your home or business.
-              </p>
-            </div>
-            
-            {/* Mobile filter toggle button */}
-            {isMobileView && (
-              <button
-                onClick={toggleFilters}
-                className="mt-4 md:mt-0 flex items-center justify-center bg-white text-gray-700 p-3 rounded-lg shadow-sm hover:bg-gray-50 border border-gray-200 transition-colors"
-                aria-label={showFilters ? 'Hide Filters' : 'Show Filters'}
-              >
-                <FaFilter size={14} className="mr-2" />
-                <span>Filters</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+      <PageHero
+        title="Discover Amazing Robots"
+        description="Find the perfect robotic companion or utility assistant for your home or business."
+        breadcrumbItems={[
+          { label: 'Home', href: '/' },
+          { label: 'Shop', href: '/shop', active: true }
+        ]}
+      >
+        {/* Mobile filter toggle button */}
+        {isMobileView && (
+          <button
+            onClick={toggleFilters}
+            className="mt-4 md:mt-0 flex items-center justify-center bg-white text-gray-700 p-3 rounded-lg shadow-sm hover:bg-gray-50 border border-gray-200 transition-colors"
+            aria-label={showFilters ? 'Hide Filters' : 'Show Filters'}
+          >
+            <FaFilter size={14} className="mr-2" />
+            <span>Filters</span>
+          </button>
+        )}
+      </PageHero>
         
       <div className={commonLayoutStyles.section}>
         <div className="flex flex-col lg:flex-row gap-6 relative">

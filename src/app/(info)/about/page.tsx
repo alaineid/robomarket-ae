@@ -16,25 +16,24 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import CallToAction from '@/components/ui/CallToAction';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
+import PageHero from '@/components/layout/PageHero';
+import { commonLayoutStyles } from '@/styles/commonStyles';
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-grow">
+      <main className={commonLayoutStyles.mainContent}>
         {/* Hero Section */}
-        <section className="bg-gradient-to-r from-gray-50 to-blue-50 py-20">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-5xl font-bold text-gray-800 mb-6">About <span className="text-[#4DA9FF]">RoboMarket</span></h1>
-              <Breadcrumbs className="justify-center" />
-              <p className="text-xl text-gray-600 mb-8">
-                Your trusted destination for next-generation robotics technology in the UAE and beyond.
-              </p>
-            </div>
-          </div>
-        </section>
+        <PageHero
+          title={<>About <span className="text-[#4DA9FF]">RoboMarket</span></>}
+          description="Your trusted destination for next-generation robotics technology in the UAE and beyond."
+          breadcrumbItems={[
+            { label: 'Home', href: '/' },
+            { label: 'About', href: '/about', active: true }
+          ]}
+        />
         
         {/* Our Story Section */}
         <section className="py-20">

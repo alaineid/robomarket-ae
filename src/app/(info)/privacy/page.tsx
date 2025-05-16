@@ -6,17 +6,24 @@ import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
+import PageHero from '@/components/layout/PageHero';
+import { commonLayoutStyles } from '@/styles/commonStyles';
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-grow py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-800 mb-3">Privacy Policy</h1>
-            <Breadcrumbs className="mb-8" />
+      <main className={commonLayoutStyles.mainContent}>
+        {/* Hero Section */}
+        <PageHero
+          title="Privacy Policy"
+          description="We are committed to protecting your privacy. Learn how we collect, use, and safeguard your information."
+          breadcrumbItems={[
+            { label: 'Home', href: '/' },
+            { label: 'Privacy', href: '/privacy', active: true }
+          ]}
+        />
             
             {/* Privacy Policy Content */}
             <section className="py-12">
@@ -191,8 +198,6 @@ export default function PrivacyPage() {
                 </div>
               </div>
             </section>
-          </div>
-        </div>
       </main>
       
       <Footer />

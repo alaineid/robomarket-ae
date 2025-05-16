@@ -36,7 +36,7 @@ export const commonFormStyles = {
 export const commonLayoutStyles = {
   section: "container mx-auto px-4",
   heroSection: "bg-gradient-to-r from-blue-50 via-white to-indigo-50 py-16",
-  mainContent: "flex-grow bg-gray-50 py-12"
+  mainContent: "flex-grow bg-gray-50"
 };
 
 // Common cursor styles
