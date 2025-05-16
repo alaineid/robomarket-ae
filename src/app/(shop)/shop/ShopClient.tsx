@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  FaStar, FaSearch, FaTimes, FaHeart, FaBoxOpen, FaShieldAlt, FaBrain,
-  FaHeartbeat, FaIndustry, FaSpinner, FaRobot
+  FaSearch, FaTimes, 
+  FaSpinner, FaRobot
 } from 'react-icons/fa';
 import { debounce } from 'lodash-es';
 import PageHero from '@/components/layout/PageHero';
@@ -15,12 +13,10 @@ import { commonButtonStyles, commonLayoutStyles } from '@/styles/commonStyles';
 import {
   categories,
   brands,
-  Product,
   ApiResponse
 } from '@/types/product.types';
 import { useProducts } from '@/hooks/queryHooks';
 import { useQueryClient } from '@tanstack/react-query';
-import { fetchWithAuth } from '@/utils/fetchWithAuth';
 import AmazonStyleFilter from '@/components/shop/AmazonStyleFilter';
 
 interface ShopClientProps {
@@ -39,10 +35,10 @@ export default function ShopClient({ initialData }: ShopClientProps) {
   const [ratingFilter, setRatingFilter] = useState(0);
   
   // Pagination state
-  const [offset, setOffset] = useState(initialData.products?.length || 0);
+  const [, setOffset] = useState(initialData.products?.length || 0);
   
   // State for UI
-  const [isFilterDirty, setIsFilterDirty] = useState(false);
+  const [, setIsFilterDirty] = useState(false);
   const [isInfiniteScrollEnabled] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
   
@@ -76,16 +72,6 @@ export default function ShopClient({ initialData }: ShopClientProps) {
     data?.products || initialData.products || [];
     
   const hasMore = data?.hasMore ?? initialData.hasMore ?? false;
-
-  // Category icons mapping
-  const CATEGORY_ICONS = {
-    'Companion': <FaHeart />,
-    'Utility': <FaBoxOpen />,
-    'Security': <FaShieldAlt />,
-    'Education': <FaBrain />,
-    'Healthcare': <FaHeartbeat />,
-    'Industrial': <FaIndustry />
-  };
 
   // Load more products
   const fetchMoreProducts = useCallback(async () => {
@@ -217,9 +203,6 @@ export default function ShopClient({ initialData }: ShopClientProps) {
   };
 
   // Function to render a category icon
-  const renderCategoryIcon = (category: string) => {
-    return CATEGORY_ICONS[category as keyof typeof CATEGORY_ICONS] || <FaBoxOpen />;
-  };
 
   return (
     <div className={commonLayoutStyles.mainContent}>
@@ -307,7 +290,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">No Robots Found</h3>
               <p className="text-gray-500 mb-6">
-                We couldn't find any robots matching your filters. Try adjusting your search or filters to see more products.
+                We couldn&apos;t find any robots matching your filters. Try adjusting your search or filters to see more products.
               </p>
               <motion.button 
                 whileHover={{ scale: 1.02 }}

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { loginAction } from '@/components/actions/authActions'; // Adjust the import based on your project structure
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { createClient } from '@/supabase/client'; // Import the Supabase client
@@ -14,7 +13,6 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {}) {
-  const router = useRouter();
   const { synchronizeAuthState } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

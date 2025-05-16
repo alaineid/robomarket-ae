@@ -443,7 +443,6 @@ const SortFilter: React.FC<SortFilterProps> = ({
   
   // Find the selected option label
   const selectedOption = options.find(opt => opt.value === selectedSort);
-  const localSelectedOption = options.find(opt => opt.value === localSort);
   const defaultSort = 'newest'; // Assuming 'newest' is the default
   const isSortApplied = selectedSort !== defaultSort;
   

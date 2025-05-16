@@ -5,7 +5,6 @@ import Link from 'next/link';
 
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import PageHero from '@/components/layout/PageHero';
 import { commonLayoutStyles } from '@/styles/commonStyles';
 

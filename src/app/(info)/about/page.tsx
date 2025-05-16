@@ -15,7 +15,6 @@ import {
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import CallToAction from '@/components/ui/CallToAction';
-import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import PageHero from '@/components/layout/PageHero';
 import { commonLayoutStyles } from '@/styles/commonStyles';
 

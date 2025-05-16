@@ -9,7 +9,7 @@ import { useAuthStore } from '@/store/authStore';
 
 export default function LoginModal() {
   const { isLoginOpen, hideLogin } = useModalStore();
-  const { synchronizeAuthState } = useAuthStore();
+  useAuthStore();
   
   // Handler for when modal closes
   const handleHideLogin = () => {

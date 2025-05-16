@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect, useTransition, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import * as EmailValidator from 'email-validator';
 import zxcvbn from 'zxcvbn';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
@@ -10,7 +8,6 @@ import { signupAction } from '@/components/actions/authActions'; // Import the s
 import { useModalStore } from '@/store/modalStore';
 
 export default function SignupForm() {
-  const router = useRouter();
   const { showLogin } = useModalStore();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
