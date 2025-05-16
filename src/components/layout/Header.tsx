@@ -70,19 +70,7 @@ export default function Header() {
   }, [synchronizeAuthState]);
   
   const handleLogout = async () => {
-    // Get current loading state
-    const { isLoading } = useAuthStore.getState();
-    
-    // Don't proceed if already loading (prevents conflicts with login process)
-    if (isLoading) {
-      console.log('Already processing authentication action. Please wait.');
-      return;
-    }
-    
     try {
-      // Show loading indicator
-      useAuthStore.setState({ isLoading: true });
-      
       // Remove remembered credentials
       localStorage.removeItem('rememberedEmail');
       localStorage.removeItem('rememberedPassword');
@@ -91,8 +79,6 @@ export default function Header() {
       await logoutAction({ redirectHome: true });
     } catch (error) {
       console.error('Logout error:', error);
-      // Reset loading state
-      useAuthStore.setState({ isLoading: false });
       // Redirect to home page instead of showing login modal
       router.push('/');
     }

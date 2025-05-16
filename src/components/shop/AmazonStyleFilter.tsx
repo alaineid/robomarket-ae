@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaStar, FaChevronDown, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaStar, FaChevronDown, FaCheck, FaTimes, FaFilter } from 'react-icons/fa';
 
 interface FilterOption {
   label: string;
@@ -109,23 +109,29 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
     onToggle(); // Close the dropdown
   };
 
+  const isApplied = selected.length > 0;
+
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block w-full sm:w-auto">
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none"
+        className={`flex items-center justify-between w-full px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium 
+          ${isApplied 
+            ? 'text-[#007AFF] bg-[#EBF5FF] border-[#4DA9FF]' 
+            : 'text-gray-700 bg-white border-gray-300'} 
+          rounded-md shadow-sm hover:bg-gray-50 focus:outline-none`}
       >
-        <span>{buttonLabel}</span>
+        <span className="truncate">{buttonLabel}</span>
         <FaChevronDown
-          className={`ml-2 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
+          className={`ml-1 sm:ml-2 transition-transform flex-shrink-0 ${isOpen ? 'transform rotate-180' : ''}`}
           size={10}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute z-[100] mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-72 md:w-80">
+        <div className="absolute z-[100] mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-3 sm:p-4 w-full sm:w-72 md:w-80 left-0 sm:left-auto">
           {/* Caret pointing up to the button */}
-          <div className="absolute -top-2 left-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200"></div>
+          <div className="absolute -top-2 left-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200 hidden sm:block"></div>
           
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-900">{dropdownTitle}</h3>
@@ -224,24 +230,30 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
     priceRange[0] > 0 || priceRange[1] < maxPrice
       ? `$${priceRange[0]} - $${priceRange[1]}`
       : 'Price';
-
+  
+  const isPriceApplied = priceRange[0] > 0 || priceRange[1] < maxPrice;
+  
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block w-full sm:w-auto">
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none"
+        className={`flex items-center justify-between w-full px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium 
+          ${isPriceApplied 
+            ? 'text-[#007AFF] bg-[#EBF5FF] border-[#4DA9FF]' 
+            : 'text-gray-700 bg-white border-gray-300'} 
+          rounded-md shadow-sm hover:bg-gray-50 focus:outline-none`}
       >
-        <span>{displayValue}</span>
+        <span className="truncate">{displayValue}</span>
         <FaChevronDown
-          className={`ml-2 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
+          className={`ml-1 sm:ml-2 transition-transform flex-shrink-0 ${isOpen ? 'transform rotate-180' : ''}`}
           size={10}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute z-[100] mt-1 p-4 bg-white border border-gray-200 rounded-lg shadow-xl w-72 md:w-80">
+        <div className="absolute z-[100] mt-1 p-3 sm:p-4 bg-white border border-gray-200 rounded-lg shadow-xl w-full sm:w-72 md:w-80 left-0 sm:left-auto">
           {/* Caret pointing up to the button */}
-          <div className="absolute -top-2 left-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200"></div>
+          <div className="absolute -top-2 left-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200 hidden sm:block"></div>
           
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-900">{dropdownTitle}</h3>
@@ -260,17 +272,17 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
               min={0}
               max={localMax - 1}
               onChange={(e) => setLocalMin(Math.max(0, Math.min(Number(e.target.value), localMax - 1)))}
-              className="w-24 p-2 border border-gray-300 rounded text-sm"
+              className="w-[40%] p-1 sm:p-2 border border-gray-300 rounded text-xs sm:text-sm"
               placeholder="Min"
             />
-            <span className="mx-2 text-gray-400">to</span>
+            <span className="mx-1 sm:mx-2 text-gray-400 text-xs sm:text-sm">to</span>
             <input
               type="number"
               value={localMax}
               min={localMin + 1}
               max={maxPrice}
               onChange={(e) => setLocalMax(Math.max(localMin + 1, Math.min(Number(e.target.value), maxPrice)))}
-              className="w-24 p-2 border border-gray-300 rounded text-sm"
+              className="w-[40%] p-1 sm:p-2 border border-gray-300 rounded text-xs sm:text-sm"
               placeholder="Max"
             />
           </div>
@@ -320,6 +332,8 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
   const displayValue = selectedRating > 0
     ? `${selectedRating}★ & Up`
     : 'Customer Reviews';
+    
+  const isRatingApplied = selectedRating > 0;
 
   const handleShowResults = () => {
     onChange(localRating);
@@ -333,22 +347,26 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
   };
 
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block w-full sm:w-auto">
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none"
+        className={`flex items-center justify-between w-full px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium 
+          ${isRatingApplied 
+            ? 'text-[#007AFF] bg-[#EBF5FF] border-[#4DA9FF]' 
+            : 'text-gray-700 bg-white border-gray-300'} 
+          rounded-md shadow-sm hover:bg-gray-50 focus:outline-none`}
       >
-        <span>{displayValue}</span>
+        <span className="truncate">{displayValue}</span>
         <FaChevronDown
-          className={`ml-2 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
+          className={`ml-1 sm:ml-2 transition-transform flex-shrink-0 ${isOpen ? 'transform rotate-180' : ''}`}
           size={10}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute z-[100] mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-72 md:w-80">
+        <div className="absolute z-[100] mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-3 sm:p-4 w-full sm:w-72 md:w-80 left-0 sm:left-auto">
           {/* Caret pointing up to the button */}
-          <div className="absolute -top-2 left-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200"></div>
+          <div className="absolute -top-2 left-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200 hidden sm:block"></div>
            
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-900">{dropdownTitle}</h3>
@@ -426,6 +444,8 @@ const SortFilter: React.FC<SortFilterProps> = ({
   // Find the selected option label
   const selectedOption = options.find(opt => opt.value === selectedSort);
   const localSelectedOption = options.find(opt => opt.value === localSort);
+  const defaultSort = 'newest'; // Assuming 'newest' is the default
+  const isSortApplied = selectedSort !== defaultSort;
   
   const handleShowResults = () => {
     onChange(localSort);
@@ -433,29 +453,32 @@ const SortFilter: React.FC<SortFilterProps> = ({
   };
 
   const handleClearFilter = () => {
-    const defaultSort = 'newest'; // Assuming 'newest' is the default
     setLocalSort(defaultSort);
     onChange(defaultSort); // Apply default sort immediately
     onToggle();
   };
 
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block w-full sm:w-auto">
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none"
+        className={`flex items-center justify-between w-full px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium 
+          ${isSortApplied 
+            ? 'text-[#007AFF] bg-[#EBF5FF] border-[#4DA9FF]' 
+            : 'text-gray-700 bg-white border-gray-300'} 
+          rounded-md shadow-sm hover:bg-gray-50 focus:outline-none`}
       >
-        <span>Sort by: {selectedOption?.label || 'Featured'}</span>
+        <span className="truncate">Sort by: {selectedOption?.label || 'Featured'}</span>
         <FaChevronDown
-          className={`ml-2 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
+          className={`ml-1 sm:ml-2 transition-transform flex-shrink-0 ${isOpen ? 'transform rotate-180' : ''}`}
           size={10}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-[100] mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-72 md:w-80">
+        <div className="absolute right-0 z-[100] mt-1 bg-white border border-gray-200 rounded-lg shadow-xl p-3 sm:p-4 w-full sm:w-72 md:w-80">
           {/* Caret pointing up to the button - positioned on the right */}
-          <div className="absolute -top-2 right-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200"></div>
+          <div className="absolute -top-2 right-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200 hidden sm:block"></div>
           
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-900">{dropdownTitle}</h3>
@@ -524,9 +547,14 @@ const AmazonStyleFilter: React.FC<AmazonStyleFilterProps> = ({
   onClearFilters
 }) => {
   const [openFilter, setOpenFilter] = useState<string | null>(null);
+  const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
 
   const handleToggleFilter = (filterName: string) => {
     setOpenFilter(prevOpenFilter => (prevOpenFilter === filterName ? null : filterName));
+  };
+  
+  const toggleMobileFilters = () => {
+    setShowMobileFilters(prev => !prev);
   };
 
   // Convert categories to options format
@@ -551,53 +579,31 @@ const AmazonStyleFilter: React.FC<AmazonStyleFilterProps> = ({
   ];
 
   return (
-    <div className="pt-2 pb-3 px-4 mt-4"> {/* Removed sticky, z-index, bg, and border; Added mt-4 for spacing */}
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="pt-2 pb-3 px-2 sm:px-4 mt-4"> {/* Adjusted padding for mobile */}
+      {/* Mobile Filter Toggle Button */}
+      <div className="flex justify-between items-center mb-3 sm:hidden">
+        {(() => {
+          const hasActiveFilters = selectedCategories.length > 0 || selectedBrands.length > 0 || 
+            ratingFilter > 0 || priceRange[0] > 0 || priceRange[1] < 10000;
+          return (
+            <button 
+              onClick={toggleMobileFilters}
+              className={`flex items-center gap-2 px-3 py-2 text-xs font-medium 
+                ${hasActiveFilters 
+                  ? 'text-[#007AFF] bg-[#EBF5FF] border-[#4DA9FF]' 
+                  : 'text-gray-700 bg-white border-gray-300'} 
+                rounded-md shadow-sm hover:bg-gray-50 focus:outline-none
+                ${showMobileFilters ? 'ring-2 ring-blue-300' : ''}`}
+              aria-label="Toggle filters"
+            >
+              <FaFilter size={12} className={hasActiveFilters ? "text-[#007AFF]" : "text-gray-600"} />
+              <span>Filters {hasActiveFilters ? '(Active)' : ''}</span>
+            </button>
+          );
+        })()}
         
-        {/* Department/Category Filter */}
-        <DropdownFilter
-          buttonLabel={selectedCategories.length > 0 ? `Category (${selectedCategories.length})` : 'Category'}
-          dropdownTitle="Category"
-          options={categoryOptions}
-          selected={selectedCategories}
-          onChange={onCategoryChange}
-          isOpen={openFilter === 'category'}
-          onToggle={() => handleToggleFilter('category')}
-          multi // Explicitly true, though default
-        />
-
-        {/* Brand Filter */}
-        <DropdownFilter
-          buttonLabel={selectedBrands.length > 0 ? `Brand (${selectedBrands.length})` : 'Brand'}
-          dropdownTitle="Brand"
-          options={brandOptions}
-          selected={selectedBrands}
-          onChange={onBrandChange}
-          isOpen={openFilter === 'brand'}
-          onToggle={() => handleToggleFilter('brand')}
-          multi // Explicitly true
-        />
-
-        {/* Price Range Filter */}
-        <PriceFilter
-          priceRange={priceRange}
-          onPriceChange={onPriceChange}
-          isOpen={openFilter === 'price'}
-          onToggle={() => handleToggleFilter('price')}
-          dropdownTitle="Price Range"
-        />
-
-        {/* Rating Filter */}
-        <RatingFilter
-          selectedRating={ratingFilter}
-          onChange={onRatingChange}
-          isOpen={openFilter === 'rating'}
-          onToggle={() => handleToggleFilter('rating')}
-          dropdownTitle="Customer Reviews"
-        />
-
-        {/* Sort By */}
-        <div className="ml-auto">
+        {/* Sort By for Mobile - Always visible */}
+        <div>
           <SortFilter
             selectedSort={sortBy}
             onChange={onSortChange}
@@ -609,27 +615,84 @@ const AmazonStyleFilter: React.FC<AmazonStyleFilterProps> = ({
         </div>
       </div>
 
-      {/* Active Filters Section */}
-      {(selectedCategories.length > 0 || selectedBrands.length > 0 || 
-        ratingFilter > 0 || priceRange[0] > 0 || priceRange[1] < 10000) && (
-        <div className="flex flex-wrap items-center gap-2 mt-3">
-          <span className="text-xs text-gray-500">Active filters:</span>
+      {/* Filter Container - Hidden on mobile by default, always visible on desktop */}
+      <div className={`${showMobileFilters ? 'block' : 'hidden'} sm:block`}>
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
           
-          {/* Clear All Button */}
-          <button
-            onClick={() => {
-              onClearFilters();
-              setOpenFilter(null); // Close any open filter
-            }}
-            className="text-xs text-[#4DA9FF] hover:underline"
-          >
-            Clear all
-          </button>
-          
-          {/* Active filters badges would go here */}
-          {/* This part could be expanded with filter chips/badges */}
+          {/* Department/Category Filter */}
+          <DropdownFilter
+            buttonLabel={selectedCategories.length > 0 ? `Category (${selectedCategories.length})` : 'Category'}
+            dropdownTitle="Category"
+            options={categoryOptions}
+            selected={selectedCategories}
+            onChange={onCategoryChange}
+            isOpen={openFilter === 'category'}
+            onToggle={() => handleToggleFilter('category')}
+            multi // Explicitly true, though default
+          />
+
+          {/* Brand Filter */}
+          <DropdownFilter
+            buttonLabel={selectedBrands.length > 0 ? `Brand (${selectedBrands.length})` : 'Brand'}
+            dropdownTitle="Brand"
+            options={brandOptions}
+            selected={selectedBrands}
+            onChange={onBrandChange}
+            isOpen={openFilter === 'brand'}
+            onToggle={() => handleToggleFilter('brand')}
+            multi // Explicitly true
+          />
+
+          {/* Price Range Filter */}
+          <PriceFilter
+            priceRange={priceRange}
+            onPriceChange={onPriceChange}
+            isOpen={openFilter === 'price'}
+            onToggle={() => handleToggleFilter('price')}
+            dropdownTitle="Price Range"
+          />
+
+          {/* Rating Filter */}
+          <RatingFilter
+            selectedRating={ratingFilter}
+            onChange={onRatingChange}
+            isOpen={openFilter === 'rating'}
+            onToggle={() => handleToggleFilter('rating')}
+            dropdownTitle="Customer Reviews"
+          />
+
+          {/* Sort By - Only visible on desktop */}
+          <div className="hidden sm:block sm:ml-auto">
+            <SortFilter
+              selectedSort={sortBy}
+              onChange={onSortChange}
+              options={sortOptions}
+              isOpen={openFilter === 'sort'}
+              onToggle={() => handleToggleFilter('sort')}
+              dropdownTitle="Sort By"
+            />
+          </div>
         </div>
-      )}
+
+        {/* Active Filters Section - only shown when filters are visible */}
+        {(selectedCategories.length > 0 || selectedBrands.length > 0 || 
+          ratingFilter > 0 || priceRange[0] > 0 || priceRange[1] < 10000) && (
+          <div className="flex flex-wrap items-center gap-2 mt-3 px-1">
+            <span className="text-xs text-gray-500">Active filters:</span>
+            
+            {/* Clear All Button */}
+            <button
+              onClick={() => {
+                onClearFilters();
+                setOpenFilter(null); // Close any open filter
+              }}
+              className="text-xs text-[#4DA9FF] hover:underline"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

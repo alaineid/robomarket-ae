@@ -54,11 +54,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   synchronizeAuthState: async () => {
     try {
       set({ isLoading: true });
+      
+      console.log('AuthStore: synchronizeAuthState called');
+      
       // Dynamic import to avoid circular dependencies
       const { createClient } = await import('@/supabase/client');
       const supabase = createClient();
       const { data } = await supabase.auth.getSession();
       const user = data.session?.user || null;
+      
+      console.log('AuthStore: getSession result - user:', user ? 'logged in' : 'not logged in');
 
       let customer = null;
       if (user) {
@@ -87,7 +92,10 @@ export const useAuthStore = create<AuthState>((set) => ({
         sessionChecked: true
       });
       
+      console.log('AuthStore: State updated with user and customer data');
+      
       // Dispatch a custom event for other components to react to
+      console.log('AuthStore: Dispatching auth-state-synchronized event');
       window.dispatchEvent(new Event('auth-state-synchronized'));
       
       return user;
