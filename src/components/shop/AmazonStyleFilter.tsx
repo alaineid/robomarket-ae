@@ -11,7 +11,7 @@ interface DropdownFilterProps {
   dropdownTitle: string; // New
   options: FilterOption[];
   selected: string[];
-  onChange: (value: string) => void;
+  onChange: (values: string[]) => void; // Changed from (value: string) => void
   multi?: boolean;
   isOpen: boolean;
   onToggle: () => void;
@@ -51,8 +51,8 @@ interface AmazonStyleFilterProps {
   priceRange: [number, number];
   sortBy: string;
   ratingFilter: number;
-  onCategoryChange: (category: string) => void;
-  onBrandChange: (brand: string) => void;
+  onCategoryChange: (values: string[]) => void; // Changed from (category: string) => void
+  onBrandChange: (values: string[]) => void; // Changed from (brand: string) => void
   onPriceChange: (min: number, max: number) => void;
   onSortChange: (sort: string) => void;
   onRatingChange: (rating: number) => void;
@@ -71,13 +71,56 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
   onToggle
 }) => {
   const [showAll, setShowAll] = useState(false);
+  const [localSelected, setLocalSelected] = useState<string[]>(selected);
   const INITIAL_DISPLAY_COUNT = 6;
+
+  // Reset local state whenever the dropdown opens or if external selected values change
+  React.useEffect(() => {
+    setLocalSelected(selected);
+  }, [selected, isOpen]);
 
   const displayedOptions = showAll ? options : options.slice(0, INITIAL_DISPLAY_COUNT);
 
+  const handleOptionToggle = (value: string) => {
+    if (multi) {
+      setLocalSelected(prev => 
+        prev.includes(value)
+          ? prev.filter(v => v !== value)
+          : [...prev, value]
+      );
+    } else {
+      setLocalSelected([value]);
+      // For non-multi select, we don't close the dropdown automatically
+    }
+  };
+
   const handleClearCurrentFilter = () => {
-    const currentFilterSelectedOptions = selected.filter(sVal => options.some(opt => opt.value === sVal));
-    currentFilterSelectedOptions.forEach(val => onChange(val));
+    setLocalSelected([]);
+  };
+
+  const handleShowResults = () => {
+    if (multi) {
+      const hasChanges =
+        localSelected.length !== selected.length ||
+        localSelected.some(item => !selected.includes(item)) ||
+        selected.some(item => !localSelected.includes(item));
+
+      if (hasChanges) {
+        onChange(localSelected); // Pass the entire localSelected array
+      }
+    } else { // Single-select logic
+      const currentSingleSelected = selected.length > 0 ? selected[0] : undefined;
+      const newSingleSelected = localSelected.length > 0 ? localSelected[0] : undefined;
+
+      if (newSingleSelected !== currentSingleSelected) {
+        if (newSingleSelected !== undefined) {
+          onChange([newSingleSelected]);
+        } else {
+          onChange([]); // Clearing the selection
+        }
+      }
+    }
+    onToggle(); // Close the dropdown
   };
 
   return (
@@ -111,14 +154,11 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
 
           <div className="flex flex-wrap gap-2 mb-4">
             {displayedOptions.map((option) => {
-              const isSelected = selected.includes(option.value);
+              const isSelected = localSelected.includes(option.value);
               return (
                 <button
                   key={option.value}
-                  onClick={() => {
-                    onChange(option.value);
-                    if (!multi) onToggle();
-                  }}
+                  onClick={() => handleOptionToggle(option.value)}
                   className={`px-3 py-1.5 border rounded-full text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1
                     ${isSelected
                       ? 'bg-[#4DA9FF] text-white border-[#4DA9FF] hover:bg-blue-600 focus:ring-blue-500'
@@ -143,7 +183,7 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
 
           <div className="mt-auto pt-4 border-t border-gray-200 space-y-2">
             <button
-              onClick={onToggle}
+              onClick={handleShowResults}
               className="w-full py-2 px-4 bg-[#4DA9FF] text-white rounded-md hover:bg-blue-600 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
             >
               Show results
@@ -173,9 +213,9 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
   const [localMin, setLocalMin] = useState(priceRange[0]);
   const [localMax, setLocalMax] = useState(priceRange[1]);
 
-  // Sync local state if external priceRange changes while dropdown is closed
+  // Sync local state if external priceRange changes while dropdown is closed or when it opens
   React.useEffect(() => {
-    if (!isOpen) {
+    if (!isOpen || isOpen) {
       setLocalMin(priceRange[0]);
       setLocalMax(priceRange[1]);
     }
@@ -246,7 +286,7 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
               onClick={handleApply}
               className="w-full py-2 px-4 bg-[#4DA9FF] text-white rounded-md hover:bg-blue-600 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
             >
-              Apply
+              Show results
             </button>
           </div>
         </div>
@@ -263,6 +303,13 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
   onToggle,
   dropdownTitle
 }) => {
+  const [localRating, setLocalRating] = useState<number>(selectedRating);
+  
+  // Reset local state whenever the dropdown opens or if external selected rating changes
+  React.useEffect(() => {
+    setLocalRating(selectedRating);
+  }, [selectedRating, isOpen]);
+  
   const ratingOptions = [
     { value: 4, label: '4 & Up' },
     { value: 3, label: '3 & Up' },
@@ -273,6 +320,15 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
   const displayValue = selectedRating > 0
     ? `${selectedRating}★ & Up`
     : 'Customer Reviews';
+
+  const handleShowResults = () => {
+    onChange(localRating);
+    onToggle();
+  };
+
+  const handleClearFilter = () => {
+    setLocalRating(0);
+  };
 
   return (
     <div className="relative inline-block">
@@ -292,7 +348,7 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
           {/* Caret pointing up to the button */}
           <div className="absolute -top-2 left-4 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-200"></div>
            
-           <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-900">{dropdownTitle}</h3>
             <button
               onClick={onToggle}
@@ -304,14 +360,11 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
           </div>
           <div className="flex flex-wrap gap-2 mb-3">
             {ratingOptions.map((option) => {
-              const isSelected = selectedRating === option.value;
+              const isSelected = localRating === option.value;
               return (
                 <button
                   key={option.value}
-                  onClick={() => {
-                    onChange(option.value);
-                    onToggle();
-                  }}
+                  onClick={() => setLocalRating(option.value)}
                   className={`w-full flex items-center justify-between px-3 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1
                     ${isSelected
                       ? 'bg-[#EBF5FF] text-[#007AFF] border-[#4DA9FF] hover:bg-blue-100 focus:ring-blue-500' // Lighter blue for selected single-option
@@ -332,12 +385,15 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
               );
             })}
           </div>
-          <div className="mt-auto pt-3 border-t border-gray-200">
+          <div className="mt-auto pt-3 border-t border-gray-200 space-y-2">
             <button
-              onClick={() => {
-                onChange(0); // Clear rating
-                onToggle();   // Close dropdown
-              }}
+              onClick={handleShowResults}
+              className="w-full py-2 px-4 bg-[#4DA9FF] text-white rounded-md hover:bg-blue-600 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+            >
+              Show results
+            </button>
+            <button
+              onClick={handleClearFilter}
               className="w-full text-sm text-center text-[#4DA9FF] hover:text-blue-700 hover:underline py-1 focus:outline-none"
             >
               Clear filter
@@ -358,9 +414,22 @@ const SortFilter: React.FC<SortFilterProps> = ({
   onToggle,
   dropdownTitle
 }) => {
+  const [localSort, setLocalSort] = useState<string>(selectedSort);
+  
+  // Reset local state whenever the dropdown opens or if external selected sort changes
+  React.useEffect(() => {
+    setLocalSort(selectedSort);
+  }, [selectedSort, isOpen]);
+  
   // Find the selected option label
   const selectedOption = options.find(opt => opt.value === selectedSort);
+  const localSelectedOption = options.find(opt => opt.value === localSort);
   
+  const handleShowResults = () => {
+    onChange(localSort);
+    onToggle();
+  };
+
   return (
     <div className="relative inline-block">
       <button
@@ -391,14 +460,11 @@ const SortFilter: React.FC<SortFilterProps> = ({
           </div>
           <div className="space-y-1">
             {options.map((option) => {
-               const isSelected = selectedSort === option.value;
+               const isSelected = localSort === option.value;
               return (
                 <button
                   key={option.value}
-                  onClick={() => {
-                    onChange(option.value);
-                    onToggle();
-                  }}
+                  onClick={() => setLocalSort(option.value)}
                   className={`w-full flex items-center justify-between px-3 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1
                   ${isSelected
                     ? 'bg-[#EBF5FF] text-[#007AFF] border-[#4DA9FF] hover:bg-blue-100 focus:ring-blue-500'
@@ -410,6 +476,15 @@ const SortFilter: React.FC<SortFilterProps> = ({
                 </button>
               );
             })}
+          </div>
+          
+          <div className="mt-4 pt-3 border-t border-gray-200">
+            <button
+              onClick={handleShowResults}
+              className="w-full py-2 px-4 bg-[#4DA9FF] text-white rounded-md hover:bg-blue-600 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+            >
+              Show results
+            </button>
           </div>
         </div>
       )}

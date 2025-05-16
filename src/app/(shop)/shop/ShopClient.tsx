@@ -136,11 +136,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
   }, [selectedCategories, selectedBrands, searchTerm, ratingFilter, priceRange, sortBy, refetch]);
   
   // Toggle a category selection
-  const toggleCategory = (category: string) => {
-    const newCategories = selectedCategories.includes(category)
-      ? selectedCategories.filter(c => c !== category)
-      : [...selectedCategories, category];
-    
+  const toggleCategory = (newCategories: string[]) => {
     setSelectedCategories(newCategories);
     setIsFilterDirty(true);
     setOffset(0); // Reset pagination when filters change
@@ -150,11 +146,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
   };
 
   // Toggle a brand selection
-  const toggleBrand = (brand: string) => {
-    const newBrands = selectedBrands.includes(brand)
-      ? selectedBrands.filter(b => b !== brand)
-      : [...selectedBrands, brand];
-
+  const toggleBrand = (newBrands: string[]) => {
     setSelectedBrands(newBrands);
     setIsFilterDirty(true);
     setOffset(0); // Reset pagination when filters change
