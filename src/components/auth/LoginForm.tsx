@@ -8,7 +8,11 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { createClient } from '@/supabase/client'; // Import the Supabase client
 import { useAuthStore } from '@/store/authStore'; // Import auth store
 
-export default function LoginForm() {
+interface LoginFormProps {
+  onSuccess?: () => void;
+}
+
+export default function LoginForm({ onSuccess }: LoginFormProps = {}) {
   const router = useRouter();
   const { synchronizeAuthState } = useAuthStore();
   const [email, setEmail] = useState('');
@@ -73,15 +77,32 @@ export default function LoginForm() {
       const result = await loginAction(formData);
       
       if (result?.error) {
-        throw new Error(result.error.message);
+        // Handle error without throwing (to prevent redirection)
+        setError(result.error.message);
+        // Reset loading states
+        setLoading(false);
+        useAuthStore.setState({ isLoading: false });
+        return;
       }
       
       if (result?.success) {
-        // Sync auth state and redirect
+        // Sync auth state
         await synchronizeAuthState();
-        router.push('/shop');
+        
+        // Show success message (optional)
+        // You could use a toast notification library here
+        // or set a success message state
+        
+        // Call onSuccess callback if provided (to close modal)
+        if (onSuccess) {
+          onSuccess();
+        }
+        // Never redirect - users stay on the current page
       } else {
         setError('Login failed. Please try again.');
+        // Reset loading states
+        setLoading(false);
+        useAuthStore.setState({ isLoading: false });
       }
     } catch (err: unknown) {
       console.error('Login error:', err);

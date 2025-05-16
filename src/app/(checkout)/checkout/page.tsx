@@ -11,7 +11,8 @@ import {
   FaApplePay, 
   FaCheckCircle,
   FaExclamationTriangle,
-  FaShoppingCart
+  FaShoppingCart,
+  FaInfoCircle
 } from 'react-icons/fa';
 import { Country, State, City } from 'country-state-city';
 import Header from '@/components/layout/Header';
@@ -19,6 +20,8 @@ import Footer from '@/components/layout/Footer';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import { commonButtonStyles } from '@/styles/commonStyles';
 import { useCart } from '@/store/cartContext';
+import { useAuthStore } from '@/store/authStore';
+import { useModalStore } from '@/store/modalStore';
 
 // Initialize i18n-iso-countries with English locale
 
@@ -47,12 +50,14 @@ interface PaymentInfo {
 
 export default function CheckoutPage() {
   const { cartItems, cartTotal, clearCart } = useCart();
+  const { user } = useAuthStore();
+  const { showLogin } = useModalStore();
   
   // Track the current checkout step
   const [currentStep, setCurrentStep] = useState<number>(1);
   
   // Form state
-  const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
+  const [shippingInfo, setShippingInfo] = useState<ShippingInfo & { saveAddress?: boolean }>({
     firstName: '',
     lastName: '',
     email: '',
@@ -61,7 +66,8 @@ export default function CheckoutPage() {
     city: '',
     state: '',
     zipCode: '',
-    country: 'United Arab Emirates'
+    country: 'United Arab Emirates',
+    saveAddress: false
   });
   
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({
@@ -81,6 +87,22 @@ export default function CheckoutPage() {
   
   // Form validation
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  
+  // Auto-fill form with user data if logged in
+  useEffect(() => {
+    if (user && user.email) {
+      // Pre-fill email from auth user
+      setShippingInfo(prev => ({
+        ...prev,
+        email: user.email || prev.email,
+        // If we have customer data from authStore, use it
+        ...(useAuthStore.getState().customer ? {
+          firstName: useAuthStore.getState().customer?.first_name || prev.firstName,
+          lastName: useAuthStore.getState().customer?.last_name || prev.lastName,
+        } : {})
+      }));
+    }
+  }, [user]);
   
   const validateShippingForm = () => {
     const errors: Record<string, string> = {};
@@ -112,8 +134,11 @@ export default function CheckoutPage() {
   
   // Handle form changes
   const handleShippingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setShippingInfo(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target as HTMLInputElement;
+    setShippingInfo(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
   
   const handlePaymentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -397,6 +422,31 @@ export default function CheckoutPage() {
                         <h2 className="font-bold text-2xl text-gray-800">Shipping Information</h2>
                       </div>
                       
+                      {/* Login prompt for guest users */}
+                      {!user && (
+                        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                          <div className="flex items-start">
+                            <div className="flex-shrink-0 mt-0.5">
+                              <FaInfoCircle className="h-5 w-5 text-blue-500" />
+                            </div>
+                            <div className="ml-3">
+                              <p className="text-sm text-blue-700">
+                                Have an account? <button 
+                                  onClick={() => showLogin()} 
+                                  className="font-medium underline hover:text-blue-800"
+                                  type="button"
+                                >
+                                  Sign in
+                                </button> to save your shipping details for future purchases.
+                              </p>
+                              <p className="text-xs text-blue-600 mt-1">
+                                You can continue as a guest. Your information will be saved for this order only.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
                       <div>
                           <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1.5">First Name *</label>
@@ -651,6 +701,25 @@ export default function CheckoutPage() {
 
                         
                       </div>
+                      
+                      {/* Save Information Checkbox for Logged-In Users */}
+                      {user && (
+                        <div className="mt-6 mb-6">
+                          <div className="flex items-center">
+                            <input
+                              id="save-address"
+                              name="saveAddress"
+                              type="checkbox"
+                              className="h-4 w-4 accent-[#4DA9FF] rounded border-gray-300 text-[#4DA9FF] focus:ring-[#4DA9FF]"
+                              checked={!!shippingInfo.saveAddress}
+                              onChange={handleShippingChange}
+                            />
+                            <label htmlFor="save-address" className="ml-2 block text-sm text-gray-700">
+                              Save this address for future orders
+                            </label>
+                          </div>
+                        </div>
+                      )}
                       
                       {/* Shipping Note */}
                       <div className="bg-blue-50 rounded-lg p-4 mb-6 border border-blue-100 flex items-start">

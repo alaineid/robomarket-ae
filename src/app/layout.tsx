@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import AuthProvider from '@/components/auth/AuthProvider'
 import ClientProviders from '@/components/providers/ClientProviders'
+import LoginModal from '@/components/auth/LoginModal'
 import { createClient } from "@/supabase/server"; // Supabase client for root layout
 
 const inter = Inter({ subsets: ['latin'] })
@@ -29,6 +30,7 @@ export default async function RootLayout({
         <AuthProvider serverUser={user}>
           <ClientProviders>
             {children}
+            <LoginModal />
           </ClientProviders>
         </AuthProvider>
       </body>

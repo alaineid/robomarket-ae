@@ -121,9 +121,11 @@ export async function signupAction(formData: FormData): Promise<ActionResult> {
 
 /**
  * Server Action for user logout.
- * Redirects to the login page after signing out.
+ * Redirects to the home page after signing out if redirectHome is true.
+ * @param options - Optional parameters
+ * @param options.redirectHome - If true, redirect to home page after logout
  */
-export async function logoutAction(): Promise<void> {
+export async function logoutAction(options?: { redirectHome?: boolean }): Promise<void> {
   const supabase = await createClient();
   
   // Sign out the user
@@ -132,8 +134,10 @@ export async function logoutAction(): Promise<void> {
   // Revalidate paths to update UI
   revalidatePath("/", "layout");
   
-  // Redirect to login page
-  return redirect("/login");
+  // Redirect to home page if redirectHome is true
+  if (options?.redirectHome) {
+    return redirect("/");
+  }
 }
 
 // You would also create route handlers for OAuth callbacks and email confirmation

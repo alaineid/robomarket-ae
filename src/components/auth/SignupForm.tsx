@@ -7,9 +7,11 @@ import * as EmailValidator from 'email-validator';
 import zxcvbn from 'zxcvbn';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { signupAction } from '@/components/actions/authActions'; // Import the signupAction
+import { useModalStore } from '@/store/modalStore';
 
 export default function SignupForm() {
   const router = useRouter();
+  const { showLogin } = useModalStore();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -135,9 +137,9 @@ export default function SignupForm() {
           setPassword('');
           setConfirmPassword('');
           
-          // Redirect to login after a delay
+          // Show login modal after a delay instead of redirecting
           setTimeout(() => {
-            router.push('/login');
+            showLogin();
           }, 3000);
         }
       } catch (err: unknown) {
@@ -381,9 +383,9 @@ export default function SignupForm() {
           <div className="text-center mt-4">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
-              <Link href="/login" className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium">
+              <button onClick={() => showLogin()} className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium">
                 Log In
-              </Link>
+              </button>
             </p>
           </div>
         </form>

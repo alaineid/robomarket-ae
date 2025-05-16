@@ -27,12 +27,14 @@ import {
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/store/cartContext';
 import { useAuthStore } from '@/store/authStore';
+import { useModalStore } from '@/store/modalStore';
 import { logoutAction } from '@/components/actions/authActions';
 
 export default function Header() {
   const router = useRouter();
   const { cartCount, cartItems, removeFromCart } = useCart();
   const { user, customer, synchronizeAuthState } = useAuthStore();
+  const { showLogin } = useModalStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -68,6 +70,15 @@ export default function Header() {
   }, [synchronizeAuthState]);
   
   const handleLogout = async () => {
+    // Get current loading state
+    const { isLoading } = useAuthStore.getState();
+    
+    // Don't proceed if already loading (prevents conflicts with login process)
+    if (isLoading) {
+      console.log('Already processing authentication action. Please wait.');
+      return;
+    }
+    
     try {
       // Show loading indicator
       useAuthStore.setState({ isLoading: true });
@@ -76,14 +87,14 @@ export default function Header() {
       localStorage.removeItem('rememberedEmail');
       localStorage.removeItem('rememberedPassword');
       
-      // Call the server logout action which handles redirection
-      await logoutAction();
+      // Call the server logout action with redirectHome option
+      await logoutAction({ redirectHome: true });
     } catch (error) {
       console.error('Logout error:', error);
       // Reset loading state
       useAuthStore.setState({ isLoading: false });
-      // Fallback to manual navigation
-      router.push('/login');
+      // Redirect to home page instead of showing login modal
+      router.push('/');
     }
   };
 
@@ -340,13 +351,13 @@ export default function Header() {
                     ) : (
                       <div className="py-1">
                           <MenuItem>
-                            <Link
-                              href="/login"
-                              className="hover:bg-gray-50 hover:text-[#4DA9FF] text-gray-700 flex items-center px-4 py-2 text-sm"
+                            <button
+                              onClick={() => showLogin()}
+                              className="hover:bg-gray-50 hover:text-[#4DA9FF] text-gray-700 flex items-center px-4 py-2 text-sm w-full text-left"
                             >
                               <FaSignInAlt className="mr-3 h-4 w-4" />
                               Login
-                            </Link>
+                            </button>
                           </MenuItem>
                           <MenuItem>
                             <Link
