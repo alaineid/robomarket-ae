@@ -555,13 +555,13 @@ export default function Header() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Link 
-                    href="/login" 
-                    className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1"
+                  <button 
+                    onClick={() => showLogin()}
+                    className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1 w-full text-left"
                   >
                     <FaSignInAlt className="mr-2 h-4 w-4" />
                     Login
-                  </Link>
+                  </button>
                   <Link href="/signup" className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1">
                     <FaUserPlus className="mr-2 h-4 w-4" />
                     Sign up

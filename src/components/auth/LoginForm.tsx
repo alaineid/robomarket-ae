@@ -21,7 +21,6 @@ export default function LoginForm({ onSuccess }: LoginFormProps = {}) {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
 
   // Simple effect to load saved credentials and reset loading state
   useEffect(() => {
@@ -46,11 +45,6 @@ export default function LoginForm({ onSuccess }: LoginFormProps = {}) {
 
     if (!email || !password) {
       setError('Email and password are required');
-      return;
-    }
-    
-    if (!acceptTerms) {
-      setError('You must accept the Terms of Service and Privacy Policy');
       return;
     }
     
@@ -224,19 +218,9 @@ export default function LoginForm({ onSuccess }: LoginFormProps = {}) {
           </div>
         </div>
         
-        {/* Terms and Privacy Policy checkbox */}
-        <div className="flex items-start mb-4">
-          <input
-            id="accept-terms"
-            name="accept-terms"
-            type="checkbox"
-            checked={acceptTerms}
-            onChange={(e) => setAcceptTerms(e.target.checked)}
-            className="h-4 w-4 accent-[#4DA9FF] rounded border-gray-300 text-[#4DA9FF] focus:ring-[#4DA9FF] mt-1"
-          />
-          <label htmlFor="accept-terms" className="ml-2 block text-sm text-gray-700">
-            I agree to the <Link href="/terms" className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium">Terms of Service</Link> and <Link href="/privacy" className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium">Privacy Policy</Link>
-          </label>
+        {/* Terms and Privacy Policy links */}
+        <div className="text-xs text-gray-600 mb-4 text-center">
+          By logging in you agree to our <Link href="/terms" className="text-[#4DA9FF] hover:text-[#3D89FF]">Terms of Service</Link> and <Link href="/privacy" className="text-[#4DA9FF] hover:text-[#3D89FF]">Privacy Policy</Link>
         </div>
         
         <button
