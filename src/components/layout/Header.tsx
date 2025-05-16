@@ -75,6 +75,15 @@ export default function Header() {
       localStorage.removeItem('rememberedEmail');
       localStorage.removeItem('rememberedPassword');
       
+      // Immediately clear user and customer profile data from local store
+      // This ensures UI updates immediately without requiring a refresh
+      useAuthStore.setState({ 
+        user: null, 
+        customer: null, 
+        isLoading: false, 
+        sessionChecked: true 
+      });
+      
       // Call the server logout action with redirectHome option
       await logoutAction({ redirectHome: true });
     } catch (error) {

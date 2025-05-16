@@ -54,8 +54,20 @@ export default function AuthProvider({ serverUser, children }: AuthProviderProps
       async (event, session) => {
         console.log(`AuthProvider: Auth state event: ${event}`);
         
-        // Update user state based on session
-        setUser(session?.user ?? null);
+        // For SIGNED_OUT event, immediately clear the customer data as well
+        if (event === 'SIGNED_OUT') {
+          console.log('AuthProvider: User signed out, clearing all user data');
+          // Clear the entire user state including customer data
+          useAuthStore.setState({
+            user: null,
+            customer: null,
+            isLoading: false,
+            sessionChecked: true
+          });
+        } else {
+          // For other events, just update the user
+          setUser(session?.user ?? null);
+        }
         
         // Update loading and session checked state
         setLoading(false);

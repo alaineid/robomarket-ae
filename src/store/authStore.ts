@@ -36,7 +36,13 @@ export const useAuthStore = create<AuthState>((set) => ({
    * Updates the authenticated user in the store.
    * @param user - The Supabase user object or null.
    */
-  setUser: (user) => set({ user, isLoading: false, sessionChecked: true }),
+  setUser: (user) => set({ 
+    user, 
+    // If user is null (logged out), also clear customer data
+    customer: user ? undefined : null,
+    isLoading: false, 
+    sessionChecked: true 
+  }),
   /**
    * Updates the loading state.
    * @param loading - Boolean indicating if auth state is being loaded.
@@ -83,6 +89,10 @@ export const useAuthStore = create<AuthState>((set) => ({
         } catch (profileError) {
           console.error('Error in customer profile fetch:', profileError);
         }
+      } else {
+        // If no user (logged out), explicitly set customer to null
+        customer = null;
+        console.log('AuthStore: No user logged in, clearing customer profile');
       }
       
       set({ 
