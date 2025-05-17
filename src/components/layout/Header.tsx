@@ -25,12 +25,20 @@ import {
   FaTrash,
 } from "react-icons/fa";
 import { useCart } from "@/stores/cartContext";
+import { useAuthStore } from "@/stores/authStore";
+import { createClient } from "@/supabase/client";
 
 export default function Header() {
   const { cartCount, cartItems, removeFromCart } = useCart();
+  const { user } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+  };
 
   // Touch gesture handling
   const touchStartRef = useRef<number | null>(null);
@@ -258,13 +266,13 @@ export default function Header() {
                   leaveFrom="transform opacity-100 scale-100"
                   leaveTo="transform opacity-0 scale-95"
                 >
-                  {/* <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none divide-y divide-gray-100 z-50 py-1">
-                    Menu changes based on login state - no spinner here anymore
+                  <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none divide-y divide-gray-100 z-50 py-1">
+                    {/* Menu changes based on login state */}
                     {user ? (
                       <>
                         <div className="px-4 py-3">
                           <p className="text-sm font-medium text-gray-900">
-                            {customer ? `${customer.first_name || ''} ${customer.last_name || ''}` : 'Welcome Back!'}
+                            Welcome Back!
                           </p>
                           <p className="text-xs text-gray-500 truncate">
                             {user.email}
@@ -292,6 +300,7 @@ export default function Header() {
 
                           <MenuItem>
                             <button
+                              onClick={handleLogout}
                               className="hover:bg-gray-50 hover:text-[#4DA9FF] text-gray-700 flex items-center px-4 py-2 text-sm w-full text-left"
                             >
                               <FaSignOutAlt className="mr-3 h-4 w-4" />
@@ -303,12 +312,13 @@ export default function Header() {
                     ) : (
                       <div className="py-1">
                           <MenuItem>
-                            <button
+                            <Link
+                              href="/login"
                               className="hover:bg-gray-50 hover:text-[#4DA9FF] text-gray-700 flex items-center px-4 py-2 text-sm w-full text-left"
                             >
                               <FaSignInAlt className="mr-3 h-4 w-4" />
                               Login
-                            </button>
+                            </Link>
                           </MenuItem>
                           <MenuItem>
                             <Link
@@ -321,7 +331,7 @@ export default function Header() {
                           </MenuItem>
                       </div>
                     )}
-                  </MenuItems> */}
+                  </MenuItems>
                 </Transition>
               </Menu>
 
@@ -514,7 +524,7 @@ export default function Header() {
             {/* Mobile Login/Account section */}
             <div className="py-2 border-b border-gray-100">
               <div className="mb-2 font-medium text-gray-700">Account</div>
-              {/* {user ? (
+              {user ? (
                 <div className="space-y-2">
                   <Link href="/account" className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1">
                     <FaUser className="mr-2 h-4 w-4" />
@@ -534,19 +544,19 @@ export default function Header() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <button 
-                    onClick={() => showLogin()}
+                  <Link 
+                    href="/login"
                     className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1 w-full text-left"
                   >
                     <FaSignInAlt className="mr-2 h-4 w-4" />
                     Login
-                  </button>
+                  </Link>
                   <Link href="/signup" className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1">
                     <FaUserPlus className="mr-2 h-4 w-4" />
                     Sign up
                   </Link>
                 </div>
-              )} */}
+              )}
             </div>
 
             <div className="pt-2">

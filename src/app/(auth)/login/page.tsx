@@ -2,14 +2,7 @@ import LoginForm from "@/components/auth/LoginForm";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import PageHero from "@/components/layout/PageHero";
-import { Metadata } from "next";
 import Image from "next/image";
-
-export const metadata: Metadata = {
-  title: "Login | RoboMarket",
-  description:
-    "Sign in to your RoboMarket account to manage your orders and continue shopping.",
-};
 
 export default function LoginPage() {
   return (

@@ -4,8 +4,13 @@ import { useState, useEffect, FormEvent } from "react";
 import * as EmailValidator from "email-validator";
 import zxcvbn from "zxcvbn";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { createClient } from "@/supabase/client";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function SignupForm() {
+  const router = useRouter();
+  const supabase = createClient();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -100,14 +105,42 @@ export default function SignupForm() {
       return;
     }
 
-    // Create FormData object to use with signupAction
-    const formData = new FormData();
-    formData.append("email", email);
-    formData.append("password", password);
-    formData.append("firstName", firstName);
-    formData.append("lastName", lastName);
+    // Show loading toast while signing up
+    const loadingToast = toast.loading("Creating your account...");
+    
+    try {
+      // Sign up the user with Supabase
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+          },
+          emailRedirectTo: `${window.location.origin}/auth/confirm`
+        },
+      });
 
-    console.log("FormData:", formData);
+      // Handle any errors from Supabase
+      if (error) {
+        toast.dismiss(loadingToast);
+        console.error("Signup error:", error);
+        setError(error.message);
+        return;
+      }
+
+      // Success! Show confirmation message and redirect
+      toast.dismiss(loadingToast);
+      toast.success("Account created successfully! Please check your email for verification.");
+      
+      // Redirect to confirmation page
+      router.push("/auth/confirmation?email=" + encodeURIComponent(email));
+    } catch (err) {
+      toast.dismiss(loadingToast);
+      console.error("Unexpected error during signup:", err);
+      setError("An unexpected error occurred. Please try again.");
+    }
   };
 
   // Helper function to get password strength color
@@ -367,7 +400,10 @@ export default function SignupForm() {
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
             Already have an account?{" "}
-            <button className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium">
+            <button 
+              type="button"
+              onClick={() => router.push("/login")}
+              className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium">
               Log In
             </button>
           </p>

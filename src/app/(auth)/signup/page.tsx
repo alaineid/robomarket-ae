@@ -2,14 +2,7 @@ import SignupForm from "@/components/auth/SignupForm";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import PageHero from "@/components/layout/PageHero";
-import { Metadata } from "next";
 import Image from "next/image";
-
-export const metadata: Metadata = {
-  title: "Sign Up | RoboMarket",
-  description:
-    "Create an account to start shopping for the best robots on RoboMarket.",
-};
 
 export default function SignupPage() {
   return (
