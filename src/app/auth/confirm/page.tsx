@@ -18,37 +18,36 @@ export default function EmailConfirmPage() {
   const [verificationSuccess, setVerificationSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Get token parameters from URL
-  const token = searchParams.get("token");
-  const type = searchParams.get("type");
+  // Get redirect parameters from URL
   const next = searchParams.get("next") || "/login";
+  
+  // Check for error parameters in the URL
+  const urlError = searchParams.get("error");
+  const urlErrorCode = searchParams.get("error_code");
+  const urlErrorDescription = searchParams.get("error_description");
 
   useEffect(() => {
     const handleEmailConfirmation = async () => {
       try {
-        if (!token || !type) {
-          setError("Missing confirmation parameters");
+        // If URL contains error parameters, show the error
+        if (urlError || urlErrorCode) {
+          const errorMessage = urlErrorDescription 
+            ? decodeURIComponent(urlErrorDescription.replace(/\+/g, ' ')) 
+            : "Verification failed";
+          
+          setError(errorMessage);
+          toast.error("Email verification failed: " + errorMessage);
           setIsVerifying(false);
           return;
         }
 
-        if (type !== "signup") {
-            setError("Invalid confirmation type");
-            setIsVerifying(false);
-            return;
-        }
-
-        // Verify the user's email
+        // After Supabase redirect, check if we have an active session
         const supabase = createClient();
-        const { error } = await supabase.auth.verifyOtp({
-          type: "signup",
-          token_hash: token
-        });
-
-        if (error) {
-          setError(error.message);
-          toast.error("Email verification failed: " + error.message);
-        } else {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Session data:", session);
+        
+        if (session) {
+          // User is authenticated, confirmation was successful
           setVerificationSuccess(true);
           toast.success("Email verified successfully!");
           
@@ -56,6 +55,10 @@ export default function EmailConfirmPage() {
           setTimeout(() => {
             router.push(next);
           }, 5000);
+        } else {
+          // No session found, which means the confirmation might have failed
+          setError("No active session found. The verification link may be invalid or expired.");
+          toast.error("Email verification failed. Please try again or request a new link.");
         }
       } catch (err) {
         console.error("Verification error:", err);
@@ -66,7 +69,7 @@ export default function EmailConfirmPage() {
     };
 
     handleEmailConfirmation();
-  }, [token, type, next, router]);
+  }, [next, router, urlError, urlErrorCode, urlErrorDescription]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -154,7 +157,7 @@ export default function EmailConfirmPage() {
                   </p>
                   {error && (
                     <p className="text-red-600 mb-6 text-sm">
-                      Error: {error}
+                      {urlErrorCode ? `Error (${urlErrorCode}): ${error}` : `Error: ${error}`}
                     </p>
                   )}
                   <p className="text-gray-600 mb-8">
