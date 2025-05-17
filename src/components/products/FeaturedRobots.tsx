@@ -69,7 +69,7 @@ export default function FeaturedRobots() {
   if (isLoading) {
     return (
       <section id="featured-robots" className="py-16 bg-gray-50 px-4 lg:px-8">
-        <div className="container mx-auto">
+        <div className="container mx-auto max-w-[2400px]">
           <div className="text-center">
             <h2 className="text-3xl md:text-5xl font-bold mb-6 text-gray-800">
               Featured <span className="text-[#4DA9FF]">Robots</span>
@@ -93,7 +93,7 @@ export default function FeaturedRobots() {
   
   return (
     <section id="featured-robots" className="py-16 bg-gray-50 px-4 lg:px-8">
-      <div className="container mx-auto">
+      <div className="container mx-auto max-w-[2400px]">
         <div className="text-center mb-8">
           <h2 className="text-3xl md:text-5xl font-bold mb-3 text-gray-800">
             Featured <span className="text-[#4DA9FF]">Robots</span>
@@ -104,7 +104,7 @@ export default function FeaturedRobots() {
         </div>
         
         {/* Multi-product carousel */}
-        <div ref={containerRef} className="relative max-w-6xl mx-auto">
+        <div ref={containerRef} className="relative max-w-[2200px] mx-auto">
           {featuredRobots.length > itemsPerPage && (
             <>
               <button 

@@ -36,7 +36,7 @@ export default function AboutPage() {
         
         {/* Our Story Section */}
         <section className="py-20">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 max-w-[2400px]">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div>
                 <h2 className="text-3xl font-bold text-gray-800 mb-6">Our Story</h2>
@@ -66,7 +66,7 @@ export default function AboutPage() {
 
         {/* Mission & Vision */}
         <section className="py-20 bg-gray-50">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 max-w-[2400px]">
             <div className="text-center mb-16">
               <h2 className="text-3xl font-bold text-gray-800 mb-4">Mission & Vision</h2>
               <p className="text-gray-600 max-w-3xl mx-auto">
@@ -136,7 +136,7 @@ export default function AboutPage() {
         
         {/* Our Values */}
         <section className="py-20">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 max-w-[2400px]">
             <div className="text-center mb-16">
               <h2 className="text-3xl font-bold text-gray-800 mb-4">Our Core Values</h2>
               <p className="text-gray-600 max-w-3xl mx-auto">
@@ -192,7 +192,7 @@ export default function AboutPage() {
         
         {/* Our Team */}
         <section className="py-20 bg-gray-50">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 max-w-[2400px]">
             <div className="text-center mb-16">
               <h2 className="text-3xl font-bold text-gray-800 mb-4">Our Team</h2>
               <p className="text-gray-600 max-w-3xl mx-auto">

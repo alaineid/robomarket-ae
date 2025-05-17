@@ -20,8 +20,6 @@ import Footer from '@/components/layout/Footer';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import { commonButtonStyles } from '@/styles/commonStyles';
 import { useCart } from '@/store/cartContext';
-import { useAuthStore } from '@/store/authStore';
-import { useModalStore } from '@/store/modalStore';
 
 // Initialize i18n-iso-countries with English locale
 
@@ -50,8 +48,6 @@ interface PaymentInfo {
 
 export default function CheckoutPage() {
   const { cartItems, cartTotal, clearCart } = useCart();
-  const { user } = useAuthStore();
-  const { showLogin } = useModalStore();
   
   // Track the current checkout step
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -87,23 +83,7 @@ export default function CheckoutPage() {
   
   // Form validation
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  
-  // Auto-fill form with user data if logged in
-  useEffect(() => {
-    if (user && user.email) {
-      // Pre-fill email from auth user
-      setShippingInfo(prev => ({
-        ...prev,
-        email: user.email || prev.email,
-        // If we have customer data from authStore, use it
-        ...(useAuthStore.getState().customer ? {
-          firstName: useAuthStore.getState().customer?.first_name || prev.firstName,
-          lastName: useAuthStore.getState().customer?.last_name || prev.lastName,
-        } : {})
-      }));
-    }
-  }, [user]);
-  
+
   const validateShippingForm = () => {
     const errors: Record<string, string> = {};
     
@@ -225,7 +205,7 @@ export default function CheckoutPage() {
       <div className="min-h-screen flex flex-col">
         <Header />
         <div className="flex-grow bg-gray-50 py-12">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 max-w-[2400px]">
             <div className="max-w-md mx-auto text-center bg-white p-8 rounded-xl shadow-md">
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <FaShoppingCart size={36} className="text-gray-300" />
@@ -248,7 +228,7 @@ export default function CheckoutPage() {
       <Header />
       
       <main className="flex-grow bg-gradient-to-b from-gray-50 to-white py-12 md:py-16">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-[2400px]">
           {/* Page Title & Breadcrumb - Enhanced styling */}
           <div className="mb-10">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3 tracking-tight">

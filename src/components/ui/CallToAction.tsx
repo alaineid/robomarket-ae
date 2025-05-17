@@ -15,7 +15,7 @@ export default function CallToAction({
 }: CallToActionProps) {
   return (
     <section className="py-20 bg-gradient-to-r from-gray-800 to-gray-900 text-white">
-      <div className="container mx-auto px-4 text-center">
+      <div className="container mx-auto px-4 text-center max-w-[2400px]">
         <h2 className="text-3xl md:text-4xl font-bold mb-6">{headline}</h2>
         <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
           {description}

@@ -24,85 +24,15 @@ import {
   FaChevronDown,
   FaTrash
 } from 'react-icons/fa';
-import { useRouter } from 'next/navigation';
 import { useCart } from '@/store/cartContext';
-import { useAuthStore } from '@/store/authStore';
-import { useModalStore } from '@/store/modalStore';
-import { logoutAction } from '@/components/actions/authActions';
 
 export default function Header() {
-  const router = useRouter();
   const { cartCount, cartItems, removeFromCart } = useCart();
-  const { user, customer, synchronizeAuthState } = useAuthStore();
-  const { showLogin } = useModalStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   
-  // Always actively check auth state when the Header component mounts or updates
-  useEffect(() => {
-    // Synchronize auth state when the component mounts
-    const initialSync = async () => {
-      console.log('Header: Initial auth state synchronization');
-      await synchronizeAuthState();
-    };
-    
-    // Call it immediately on mount
-    initialSync();
-    
-    // Also check when auth state changes (login, logout, etc.)
-    const handleAuthChange = () => {
-      console.log('Header: Auth state change detected, synchronizing');
-      synchronizeAuthState();
-    };
-    
-    // Handler for synchronized event - store reference to avoid memory leak
-    const handleStateSynchronized = () => {
-      console.log('Header: Received auth-state-synchronized event');
-    };
-    
-    // Listen for auth state changes from the AuthProvider
-    window.addEventListener('supabase-auth-state-changed', handleAuthChange);
-    window.addEventListener('auth-state-synchronized', handleStateSynchronized);
-    
-    // Clean up listeners on unmount
-    return () => {
-      window.removeEventListener('supabase-auth-state-changed', handleAuthChange);
-      window.removeEventListener('auth-state-synchronized', handleStateSynchronized);
-    };
-  }, [synchronizeAuthState]);
   
-  const handleLogout = async () => {
-    try {
-      // Remove remembered credentials
-      localStorage.removeItem('rememberedEmail');
-      localStorage.removeItem('rememberedPassword');
-      
-      // Immediately clear user and customer profile data from local store
-      // This ensures UI updates immediately without requiring a refresh
-      useAuthStore.setState({ 
-        user: null, 
-        customer: null, 
-        isLoading: false, 
-        sessionChecked: true 
-      });
-      
-      // Call the server logout action with redirectHome option
-      // Wrap in a try/catch to prevent uncaught promise rejections
-      try {
-        await logoutAction({ redirectHome: true });
-      } catch (logoutError) {
-        console.error('Server logout action error:', logoutError);
-        // Fallback to client-side navigation if server action fails
-        router.push('/');
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Redirect to home page instead of showing login modal
-      router.push('/');
-    }
-  };
-
   // Touch gesture handling
   const touchStartRef = useRef<number | null>(null);
   const touchEndRef = useRef<number | null>(null);
@@ -263,7 +193,7 @@ export default function Header() {
       }}
     >
       <div className="absolute top-0 left-0 w-full h-1 bg-[#4DA9FF]"></div>
-      <nav className="container mx-auto px-4 lg:px-6">
+      <nav className="container mx-auto px-4 lg:px-6 max-w-[2400px]">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Logo 
@@ -310,8 +240,8 @@ export default function Header() {
                   leaveFrom="transform opacity-100 scale-100"
                   leaveTo="transform opacity-0 scale-95"
                 >
-                  <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none divide-y divide-gray-100 z-50 py-1">
-                    {/* Menu changes based on login state - no spinner here anymore */}
+                  {/* <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none divide-y divide-gray-100 z-50 py-1">
+                    Menu changes based on login state - no spinner here anymore
                     {user ? (
                       <>
                         <div className="px-4 py-3">
@@ -344,7 +274,6 @@ export default function Header() {
 
                           <MenuItem>
                             <button
-                              onClick={handleLogout}
                               className="hover:bg-gray-50 hover:text-[#4DA9FF] text-gray-700 flex items-center px-4 py-2 text-sm w-full text-left"
                             >
                               <FaSignOutAlt className="mr-3 h-4 w-4" />
@@ -357,7 +286,6 @@ export default function Header() {
                       <div className="py-1">
                           <MenuItem>
                             <button
-                              onClick={() => showLogin()}
                               className="hover:bg-gray-50 hover:text-[#4DA9FF] text-gray-700 flex items-center px-4 py-2 text-sm w-full text-left"
                             >
                               <FaSignInAlt className="mr-3 h-4 w-4" />
@@ -375,7 +303,7 @@ export default function Header() {
                           </MenuItem>
                       </div>
                     )}
-                  </MenuItems>
+                  </MenuItems> */}
                 </Transition>
               </Menu>
               
@@ -540,7 +468,7 @@ export default function Header() {
             {/* Mobile Login/Account section */}
             <div className="py-2 border-b border-gray-100">
               <div className="mb-2 font-medium text-gray-700">Account</div>
-              {user ? (
+              {/* {user ? (
                 <div className="space-y-2">
                   <Link href="/account" className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors py-1">
                     <FaUser className="mr-2 h-4 w-4" />
@@ -572,7 +500,7 @@ export default function Header() {
                     Sign up
                   </Link>
                 </div>
-              )}
+              )} */}
             </div>
             
             <div className="pt-2">

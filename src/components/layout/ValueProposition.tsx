@@ -3,7 +3,7 @@ import { FaShieldAlt, FaBolt, FaHeadset } from "react-icons/fa";
 export default function ValueProposition() {
   return (
     <section id="value-prop" className="py-20 px-4 lg:px-8 bg-gradient-to-b from-white to-blue-50">
-      <div className="container mx-auto">
+      <div className="container mx-auto max-w-[2400px]">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-6 text-gray-800">
             Why Choose <span className="text-[#4DA9FF]">RoboMarket</span>?

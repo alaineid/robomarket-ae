@@ -5,14 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaMapMarkerAlt, FaPhone, FaEnvelope } from "react-icons/fa";
 import Logo from '@/components/ui/Logo';
-import { useModalStore } from '@/store/modalStore';
 
 export default function Footer() {
-  const { showLogin } = useModalStore();
   return (
     <footer className="bg-gray-900 text-white">
       {/* Footer content with React Icons instead of Font Awesome */}
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-12 max-w-[2400px]">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
@@ -42,7 +40,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li><Link href="/shop" className="text-gray-400 hover:text-white">Shop</Link></li>
               <li><Link href="/signup" className="text-gray-400 hover:text-white">Sign Up</Link></li>
-              <li><button onClick={() => showLogin()} className="text-gray-400 hover:text-white">Account Login</button></li>
+              <li><button className="text-gray-400 hover:text-white">Account Login</button></li>
             </ul>
           </div>
           

@@ -34,7 +34,7 @@ export const commonFormStyles = {
 
 // Common layout styles
 export const commonLayoutStyles = {
-  section: "container mx-auto px-4",
+  section: "container mx-auto px-4 max-w-[2400px]",
   heroSection: "bg-gradient-to-r from-blue-50 via-white to-indigo-50 py-16",
   mainContent: "flex-grow bg-gray-50"
 };

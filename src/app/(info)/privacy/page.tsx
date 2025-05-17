@@ -26,7 +26,7 @@ export default function PrivacyPage() {
             
             {/* Privacy Policy Content */}
             <section className="py-12">
-              <div className="container mx-auto px-4">
+              <div className="container mx-auto px-4 max-w-[2400px]">
                 <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-8">
                   <div className="prose max-w-none">
                     <p className="lead">

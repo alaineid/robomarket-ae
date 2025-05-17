@@ -18,7 +18,7 @@ export default function HeroSection() {
         aria-hidden="true"
       />
       
-      <div className="relative z-20 container mx-auto px-4 lg:px-6 py-8 md:py-12 lg:py-16">
+      <div className="relative z-20 container mx-auto px-4 lg:px-6 py-8 md:py-12 lg:py-16 max-w-[2400px]">
         <div className="max-w-4xl">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 sm:mb-6 leading-tight tracking-tight">
             Meet <span className="text-[#4A8FE7]">Your</span> Companion

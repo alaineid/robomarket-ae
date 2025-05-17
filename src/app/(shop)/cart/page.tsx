@@ -79,7 +79,7 @@ export default function CartPage() {
       <div className="min-h-screen flex flex-col">
         <Header />
         <div className="flex-grow bg-gray-50 py-12">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 max-w-[2400px]">
             <div className="max-w-md mx-auto text-center bg-white p-8 rounded-xl shadow-md">
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <FaShoppingCart size={36} className="text-gray-300" />
@@ -102,7 +102,7 @@ export default function CartPage() {
       <Header />
       
       <main className="flex-grow bg-gray-50 py-12 md:py-16">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-[2400px]">
           {/* Page Title & Breadcrumb with improved styling */}
           <div className="mb-10">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">Your Shopping Cart</h1>

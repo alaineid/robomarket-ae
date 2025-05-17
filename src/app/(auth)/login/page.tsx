@@ -1,4 +1,4 @@
-import SignupForm from '@/components/auth/SignupForm';
+import LoginForm from '@/components/auth/LoginForm';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import PageHero from '@/components/layout/PageHero';
@@ -6,22 +6,22 @@ import { Metadata } from 'next';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-  title: 'Sign Up | RoboMarket',
-  description: 'Create an account to start shopping for the best robots on RoboMarket.',
+  title: 'Login | RoboMarket',
+  description: 'Sign in to your RoboMarket account to manage your orders and continue shopping.',
 };
 
-export default function SignupPage() {
+export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
       <main className="flex-grow">
         <PageHero
-          title="Create Your Account"
-          description="Join RoboMarket today and discover the future of robotics at your fingertips."
+          title="Welcome Back"
+          description="Sign in to your account to access your orders, wishlist, and personalized recommendations."
           breadcrumbItems={[
             { label: 'Home', href: '/' },
-            { label: 'Sign Up', href: '/signup' },
+            { label: 'Login', href: '/login' },
           ]}
         />
         
@@ -32,45 +32,45 @@ export default function SignupPage() {
               <div className="lg:w-1/2 bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] p-8 sm:p-12 text-white flex flex-col justify-center">
                 <div className="mb-8 flex justify-center">
                   <Image 
-                    src="/images/robot3.png" 
+                    src="/images/robot1.png" 
                     alt="Robot Assistant" 
                     width={240} 
                     height={240} 
                     className="object-contain drop-shadow-lg" 
                   />
                 </div>
-                <h2 className="text-2xl font-bold mb-6 text-center">Why Join RoboMarket?</h2>
+                <h2 className="text-2xl font-bold mb-6 text-center">Welcome Back!</h2>
                 <ul className="space-y-4">
                   <li className="flex items-center">
                     <svg className="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Access to exclusive robot deals</span>
+                    <span>Access your saved robots</span>
                   </li>
                   <li className="flex items-center">
                     <svg className="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Save your favorite robots</span>
+                    <span>Track your orders</span>
                   </li>
                   <li className="flex items-center">
                     <svg className="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Fast checkout experience</span>
+                    <span>Get personalized recommendations</span>
                   </li>
                   <li className="flex items-center">
                     <svg className="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Order tracking and history</span>
+                    <span>Checkout faster with saved info</span>
                   </li>
                 </ul>
               </div>
               
               {/* Right side: Form */}
               <div className="lg:w-1/2 p-6 sm:p-10">
-                <SignupForm />
+                <LoginForm />
               </div>
             </div>
           </div>
@@ -80,4 +80,3 @@ export default function SignupPage() {
       <Footer />
     </div>
   );
-}
