@@ -27,6 +27,7 @@ import {
 import { useCart } from "@/stores/cartContext";
 import { useAuthStore } from "@/stores/authStore";
 import { createClient } from "@/supabase/client";
+import { useSwipeable } from "react-swipeable";
 
 export default function Header() {
   const { cartCount, cartItems, removeFromCart } = useCart();
@@ -40,9 +41,7 @@ export default function Header() {
     await supabase.auth.signOut();
   };
 
-  // Touch gesture handling
-  const touchStartRef = useRef<number | null>(null);
-  const touchEndRef = useRef<number | null>(null);
+  // Mobile menu references and scroll handling
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
@@ -109,78 +108,24 @@ export default function Header() {
   useEffect(() => {
     if (!isMobileMenuOpen || !mobileMenuRef.current) return;
 
-    let initialY = 0;
-    let isSwiping = false;
-
-    // Using window-level event listeners instead of React's passive events
-    const handleTouchStart = (e: TouchEvent) => {
-      if (!mobileMenuRef.current?.contains(e.target as Node)) return;
-
-      initialY = e.touches[0].clientY;
-      touchStartRef.current = initialY;
-      isSwiping = false;
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      // Only track touches that started inside our menu
-      if (
-        !touchStartRef.current ||
-        !mobileMenuRef.current?.contains(e.target as Node)
-      )
-        return;
-
-      const currentY = e.touches[0].clientY;
-      const touchDiff = touchStartRef.current - currentY;
-
-      // Start detecting swipe at the beginning of the gesture
-      if (Math.abs(touchDiff) > 10 && !isSwiping) {
-        isSwiping = true;
-      }
-
-      // Only try to prevent default if we've detected a clear upward swipe gesture
-      // and if the event is still cancelable (not already scrolling)
-      if (touchDiff > 10 && isSwiping && e.cancelable) {
-        e.preventDefault();
-      }
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      if (
-        !touchStartRef.current ||
-        !mobileMenuRef.current?.contains(e.target as Node)
-      )
-        return;
-
-      touchEndRef.current = e.changedTouches[0].clientY;
-
-      // Calculate the distance of the swipe
-      const touchDiff = touchStartRef.current - touchEndRef.current;
-
-      // If swipe distance is significant and direction is upward, close the menu
-      if (touchDiff > 30) {
-        setIsMobileMenuOpen(false);
-      }
-
-      // Reset touch coordinates
-      touchStartRef.current = null;
-      touchEndRef.current = null;
-      isSwiping = false;
-    };
-
-    // Add event listeners with the non-passive option for touchmove
-    document.addEventListener("touchstart", handleTouchStart, {
-      passive: true,
-    });
-    document.addEventListener("touchmove", handleTouchMove, { passive: false });
-    document.addEventListener("touchend", handleTouchEnd, { passive: true });
-
-    // Clean up
+    // Clean up only
     return () => {
-      document.removeEventListener("touchstart", handleTouchStart);
-      document.removeEventListener("touchmove", handleTouchMove);
-      document.removeEventListener("touchend", handleTouchEnd);
+      // Nothing to clean up with react-swipeable
     };
   }, [isMobileMenuOpen]);
+
+  // Configure swipe handlers using react-swipeable
+  const swipeHandlers = useSwipeable({
+    onSwipedUp: () => {
+      if (isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    },
+    preventScrollOnSwipe: true,
+    trackMouse: false,
+    delta: 10, // minimum swipe distance required
+    swipeDuration: 500, // maximum time in ms to detect a swipe
+  });
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -492,6 +437,7 @@ export default function Header() {
           className={`lg:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-sm shadow-lg border-t border-gray-200 overflow-hidden transition-all duration-300 ${
             isMobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
           }`}
+          {...swipeHandlers}
         >
           {/* Swipe indicator when menu is open */}
           {isMobileMenuOpen && (
