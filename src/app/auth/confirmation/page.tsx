@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { AiOutlineCheck } from "react-icons/ai";
@@ -8,18 +9,14 @@ import Footer from "@/components/layout/Footer";
 import PageHero from "@/components/layout/PageHero";
 import ResendVerification from "@/components/auth/ResendVerification";
 
-// Metadata is handled by layout.tsx in client components
-export default function ConfirmationPage({
-  searchParams,
-}: {
-  searchParams: { email: string };
-}) {
-  const email = searchParams.email || "";
+export default function ConfirmationPage() {
+  const params = useSearchParams();
+  const email = params.get("email") || "";
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
+
       <main className="flex-grow">
         <PageHero
           title="Email Verification"
@@ -30,7 +27,7 @@ export default function ConfirmationPage({
             { label: "Confirmation", href: "/auth/confirmation" },
           ]}
         />
-        
+
         <div className="container mx-auto px-4 py-12 mb-16">
           <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
             <div className="flex flex-col items-center">
@@ -68,8 +65,7 @@ export default function ConfirmationPage({
 
               <div className="mt-8 text-center text-sm">
                 <p className="text-gray-600">
-                  Didn't receive an email?{" "}
-                  <ResendVerification email={email} />
+                  {"Didn't receive an email? "}<ResendVerification email={email} />
                 </p>
               </div>
 

@@ -1,12 +1,12 @@
 import { Metadata } from "next";
 import { headers } from "next/headers";
 import { fetchWithAuth } from "@/utils/fetchWithAuth";
-import type { ApiResponse } from "@/types/product.types";
+import type { Product } from "@/types/product.types";
 
 // Helper function to get base URL from headers
 async function getBaseUrl() {
   const headersList = headers();
-  const host = headersList.get("host") || "localhost:3000";
+  const host = (await headersList).get("host") || "localhost:3000";
   const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
   return `${protocol}://${host}`;
 }
@@ -18,8 +18,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   
   try {
     // Fetch product details from the API
-    const response = await fetchWithAuth<ApiResponse>(`${baseUrl}/api/products/${id}`);
-    const product = response.data;
+    const response = await fetchWithAuth<Product>(`${baseUrl}/api/products/${id}`);
+    const product = response;
     
     if (!product) {
       return {
@@ -33,10 +33,12 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
       description: product.description?.substring(0, 160) || 
         "Explore this premium robot on RoboMarket, your source for advanced humanoid robots.",
       openGraph: {
-        images: product.imageUrl ? [{ url: product.imageUrl }] : undefined,
+        images: product.images && product.images.length > 0 
+          ? [{ url: product.images[0].url }] 
+          : undefined,
       },
     };
-  } catch (error) {
+  } catch {
     // Fallback metadata if fetch fails
     return {
       title: "Robot Details | RoboMarket",

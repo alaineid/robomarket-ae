@@ -4,6 +4,7 @@ import { createClient } from "@/supabase/server";
 /**
  * Refreshes the Supabase session and sets updated cookies.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function updateSession(_request?: NextRequest) {
   try {
     // reads cookies via `cookies()` in supabaseServer,

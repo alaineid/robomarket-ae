@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect, FormEvent, useCallback } from "react";
 import * as EmailValidator from "email-validator";
 import zxcvbn from "zxcvbn";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -11,6 +11,30 @@ import toast from "react-hot-toast";
 export default function SignupForm() {
   const router = useRouter();
   const supabase = createClient();
+  
+  // Define the checkEmailExists function at the very beginning to avoid reference issues
+  const checkEmailExists = useCallback(async (emailToCheck: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/check-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: emailToCheck }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to check email');
+      }
+      
+      const { exists } = await response.json();
+      return exists;
+    } catch (err) {
+      console.error('Error checking email:', err);
+      return false; // Default to not existing in case of error
+    }
+  }, []);
+  
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -19,6 +43,7 @@ export default function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Password strength state
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -32,15 +57,41 @@ export default function SignupForm() {
 
   // Validate email as user types
   const [emailValid, setEmailValid] = useState(true);
+  const [emailExists, setEmailExists] = useState(false);
+  const [checkingEmail, setCheckingEmail] = useState(false);
 
-  // Check email validity on change
+  // Check email validity and existence on change
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
     if (email) {
       setEmailValid(EmailValidator.validate(email));
+      
+      // Only check with API if email format is valid
+      if (EmailValidator.validate(email)) {
+        // Debounce the API call - only check after 500ms of no typing
+        setCheckingEmail(true);
+        timeoutId = setTimeout(async () => {
+          try {
+            const exists = await checkEmailExists(email);
+            setEmailExists(exists);
+          } catch (error) {
+            console.error("Error checking email:", error);
+          } finally {
+            setCheckingEmail(false);
+          }
+        }, 500);
+      }
     } else {
       setEmailValid(true); // Don't show error when field is empty
+      setEmailExists(false);
     }
-  }, [email]);
+    
+    // Cleanup function to clear the timeout
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [email, checkEmailExists]);
 
   // Check password strength and requirements on change
   useEffect(() => {
@@ -77,38 +128,52 @@ export default function SignupForm() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    setIsLoading(true);
 
-    // Form validation
-    if (!firstName || !lastName || !email || !password) {
-      setError("All fields are required");
-      return;
-    }
-
-    if (!EmailValidator.validate(email)) {
-      setError("Please enter a valid email address");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    // Check password requirements
-    if (!hasMinLength || !hasSpecialChar || !hasCapital || !hasNumber) {
-      setError("Your password must meet all the requirements listed below");
-      return;
-    }
-
-    if (passwordStrength < 2) {
-      setError("Password is too weak. Please choose a stronger password.");
-      return;
-    }
-
-    // Show loading toast while signing up
-    const loadingToast = toast.loading("Creating your account...");
-    
     try {
+      // Form validation
+      if (!firstName || !lastName || !email || !password) {
+        setError("All fields are required");
+        setIsLoading(false);
+        return;
+      }
+
+      if (!EmailValidator.validate(email)) {
+        setError("Please enter a valid email address");
+        setIsLoading(false);
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setError("Passwords do not match");
+        setIsLoading(false);
+        return;
+      }
+
+      // Check password requirements
+      if (!hasMinLength || !hasSpecialChar || !hasCapital || !hasNumber) {
+        setError("Your password must meet all the requirements listed below");
+        setIsLoading(false);
+        return;
+      }
+
+      if (passwordStrength < 2) {
+        setError("Password is too weak. Please choose a stronger password.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if email already exists
+      const emailExists = await checkEmailExists(email);
+      if (emailExists) {
+        setError("This email is already registered. Please log in instead.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Show loading toast while signing up
+      const loadingToast = toast.loading("Creating your account...");
+      
       // Sign up the user with Supabase
       const { error } = await supabase.auth.signUp({
         email,
@@ -127,6 +192,7 @@ export default function SignupForm() {
         toast.dismiss(loadingToast);
         console.error("Signup error:", error);
         setError(error.message);
+        setIsLoading(false);
         return;
       }
 
@@ -137,9 +203,9 @@ export default function SignupForm() {
       // Redirect to confirmation page
       router.push("/auth/confirmation?email=" + encodeURIComponent(email));
     } catch (err) {
-      toast.dismiss(loadingToast);
       console.error("Unexpected error during signup:", err);
       setError("An unexpected error occurred. Please try again.");
+      setIsLoading(false);
     }
   };
 
@@ -234,18 +300,38 @@ export default function SignupForm() {
           >
             Email Address
           </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={`w-full px-4 py-2 border ${!emailValid && email ? "border-red-500" : "border-gray-300"} rounded-md focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:border-transparent`}
-            placeholder="Enter your email"
-            required
-          />
+          <div className="relative">
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={`w-full px-4 py-2 border ${
+                (!emailValid && email) || emailExists ? "border-red-500" : "border-gray-300"
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:border-transparent`}
+              placeholder="Enter your email"
+              required
+            />
+            {checkingEmail && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-gray-400 border-r-transparent"></span>
+              </div>
+            )}
+          </div>
           {!emailValid && email && (
             <p className="text-xs text-red-600 mt-1">
               Please enter a valid email address
+            </p>
+          )}
+          {emailValid && emailExists && email && (
+            <p className="text-xs text-red-600 mt-1">
+              This email is already registered. <button
+                type="button"
+                onClick={() => router.push("/login")}
+                className="text-[#4DA9FF] hover:text-[#3D89FF] underline"
+              >
+                Log in instead
+              </button>
             </p>
           )}
         </div>
@@ -392,9 +478,17 @@ export default function SignupForm() {
 
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center"
+          disabled={isLoading || emailExists || checkingEmail}
+          className="w-full bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          Sign Up
+          {isLoading ? (
+            <>
+              <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em]"></span>
+              Processing...
+            </>
+          ) : (
+            "Sign Up"
+          )}
         </button>
 
         <div className="text-center mt-4">

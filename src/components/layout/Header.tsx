@@ -127,6 +127,9 @@ export default function Header() {
     swipeDuration: 500, // maximum time in ms to detect a swipe
   });
 
+  // Debugging: Log swipeHandlers to verify its structure
+  console.log('swipeHandlers:', swipeHandlers);
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -437,7 +440,6 @@ export default function Header() {
           className={`lg:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-sm shadow-lg border-t border-gray-200 overflow-hidden transition-all duration-300 ${
             isMobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
           }`}
-          {...swipeHandlers}
         >
           {/* Swipe indicator when menu is open */}
           {isMobileMenuOpen && (

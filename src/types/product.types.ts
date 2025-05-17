@@ -54,6 +54,7 @@ export interface Product {
   brand: string;
   created_at: string;
   updated_at: string;
+  price: number; // Added price property
   ratings: ProductRating;
   categories: Category[];
   images: ProductImage[];
@@ -120,3 +121,9 @@ export const brands = [
   "MechWorks",
   "QuantumBots",
 ];
+
+export interface CartItem {
+  id?: number; // Optional to align with cartContext
+  quantity: number;
+  product: Product;
+}

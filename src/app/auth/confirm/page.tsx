@@ -150,7 +150,7 @@ export default function EmailConfirmPage() {
                     Verification Failed
                   </h2>
                   <p className="text-gray-600 mb-2">
-                    We couldn't verify your email address.
+                    {"We couldn't verify your email address."}
                   </p>
                   {error && (
                     <p className="text-red-600 mb-6 text-sm">

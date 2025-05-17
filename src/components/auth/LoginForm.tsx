@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { createClient } from "@/supabase/client";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -13,16 +16,95 @@ export default function LoginForm({
   onSuccess,
   onHideModal,
 }: LoginFormProps = {}) {
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [emailValid, setEmailValid] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const saved = localStorage.getItem("rememberMe") === "true";
+    if (saved) setRememberMe(true);
+    emailInputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (!email) return setEmailValid(true);
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    setEmailValid(regex.test(email));
+  }, [email]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login form submitted:", { email, password, rememberMe });
+    setError(null);
+
+    if (!email.trim()) {
+      setError("Email address is required");
+      return;
+    }
+    if (!emailValid) {
+      setError("Please enter a valid email address");
+      return;
+    }
+    if (!password.trim()) {
+      setError("Password is required");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
+    const loadingToast = toast.loading("Signing in...");
+
+    try {
+      const { data, error: supabaseError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (supabaseError) {
+        toast.dismiss(loadingToast);
+        throw supabaseError;
+      }
+
+      if (data?.user) {
+        if (rememberMe) {
+          localStorage.setItem("rememberMe", "true");
+        } else {
+          localStorage.removeItem("rememberMe");
+        }
+
+        toast.dismiss(loadingToast);
+        toast.success("Login successful!");
+
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.replace("/");
+        }
+      }
+    } catch (err: unknown) {
+      console.error("Login error:", err);
+      toast.dismiss(loadingToast);
+      
+      // Type guard to check if err is an Error object
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : "Failed to sign in. Please check your credentials and try again.";
+      
+      toast.error(errorMessage || "Failed to sign in");
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -44,10 +126,7 @@ export default function LoginForm({
         )}
 
         <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
             Email address
           </label>
           <input
@@ -56,22 +135,24 @@ export default function LoginForm({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email address"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4DA9FF] focus:border-[#4DA9FF] text-gray-800 text-sm"
+            className={`w-full px-4 py-2 border ${!emailValid ? "border-red-400" : "border-gray-300"} rounded-lg focus:ring-[#4DA9FF] focus:border-[#4DA9FF] text-gray-800 text-sm`}
             required
+            ref={emailInputRef}
           />
+          {!emailValid && (
+            <p className="mt-1 text-xs text-red-500">Please enter a valid email address.</p>
+          )}
         </div>
 
         <div>
           <div className="flex justify-between items-center mb-1">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
             </label>
             <button
               type="button"
               className="text-xs text-[#4DA9FF] hover:text-[#3D89FF]"
+              onClick={() => router.push("/auth/reset-password")}
             >
               Forgot password?
             </button>
@@ -85,6 +166,12 @@ export default function LoginForm({
               placeholder="Enter your password"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4DA9FF] focus:border-[#4DA9FF] text-gray-800 text-sm"
               required
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
             />
             <button
               type="button"
@@ -104,55 +191,39 @@ export default function LoginForm({
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 accent-[#4DA9FF] rounded border-gray-300 text-[#4DA9FF] focus:ring-[#4DA9FF]"
+              className="h-4 w-4 accent-[#4DA9FF] rounded border-gray-300 focus:ring-[#4DA9FF]"
             />
-            <label
-              htmlFor="remember-me"
-              className="ml-2 block text-sm text-gray-700"
-            >
+            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
               Remember my credentials
             </label>
           </div>
         </div>
 
-        {/* Terms and Privacy Policy links */}
         <div className="text-xs text-gray-600 mb-4 text-center">
           By logging in you agree to our{" "}
-          <Link
-            href="/terms"
-            className="text-[#4DA9FF] hover:text-[#3D89FF]"
-            onClick={onHideModal}
-          >
+          <Link href="/terms" className="text-[#4DA9FF] hover:text-[#3D89FF]" onClick={onHideModal}>
             Terms of Service
           </Link>{" "}
           and{" "}
-          <Link
-            href="/privacy"
-            className="text-[#4DA9FF] hover:text-[#3D89FF]"
-            onClick={onHideModal}
-          >
+          <Link href="/privacy" className="text-[#4DA9FF] hover:text-[#3D89FF]" onClick={onHideModal}>
             Privacy Policy
           </Link>
         </div>
 
         <button
           type="submit"
-          disabled={loading}
-          className={`w-full bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center ${
-            loading ? "opacity-70 cursor-not-allowed" : ""
+          disabled={loading || !emailValid}
+          className={`w-full bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg ${
+            loading || !emailValid ? "opacity-70 cursor-not-allowed" : ""
           }`}
         >
-          {loading ? "Please wait..." : "Log In"}
+          {loading ? "Signing in..." : "Log In"}
         </button>
 
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
             {"Don't have an account?"}{" "}
-            <Link
-              href="/signup"
-              className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium"
-              onClick={onHideModal}
-            >
+            <Link href="/signup" className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium" onClick={onHideModal}>
               Sign up
             </Link>
           </p>

@@ -1,40 +1,39 @@
 // providers/AuthProvider.tsx
 "use client";
-import { useEffect } from "react";
+
+import { useEffect, useMemo } from "react";
 import { createClient } from "@/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
 import { Toaster } from "react-hot-toast";
 import type { User } from "@supabase/supabase-js";
 
 interface AuthProviderProps {
-  children: React.ReactNode;
   initialUser: User | null;
+  children: React.ReactNode;
 }
 
-export function AuthProvider({ children, initialUser }: AuthProviderProps) {
-  const supabaseBrowser = createClient();
-  const setUser = useAuthStore(
-    (s: { setUser: (user: User | null) => void }) => s.setUser,
-  );
-  const setLoading = useAuthStore(
-    (s: { setLoading: (loading: boolean) => void }) => s.setLoading,
-  );
+export function AuthProvider({ initialUser, children }: AuthProviderProps) {
+  // Memoize the client so it's the same instance across renders
+  const supabase = useMemo(() => createClient(), []);
 
-  // On first render, hydrate from the server-passed user
+  const setUser = useAuthStore((s) => s.setUser);
+  const setLoading = useAuthStore((s) => s.setLoading);
+
+  // Hydrate from the server-provided user exactly once
   useEffect(() => {
     setUser(initialUser);
     setLoading(false);
   }, [initialUser, setUser, setLoading]);
 
-  // Then subscribe to any auth changes client-side
+  // Subscribe once to auth changes
   useEffect(() => {
-    const { data: sub } = supabaseBrowser.auth.onAuthStateChange(
+    const { data: sub } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user ?? null);
-      },
+      }
     );
     return () => sub.subscription.unsubscribe();
-  }, [setUser]);
+  }, [supabase, setUser]);
 
   return (
     <>
