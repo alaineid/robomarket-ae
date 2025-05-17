@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FaShoppingCart, FaCheck } from "react-icons/fa";
-import { useCart } from "@/store/cartContext";
+import { useCart } from "@/stores/cartContext";
 import { Product } from "@/types/product.types";
 import { fetchWithAuth } from "@/utils/fetchWithAuth";
 

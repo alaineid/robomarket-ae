@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
-import { useWishlist } from "@/store/wishlistContext";
+import { useWishlist } from "@/stores/wishlistContext";
 import { motion } from "framer-motion";
 import { Product } from "@/types/product.types";
 

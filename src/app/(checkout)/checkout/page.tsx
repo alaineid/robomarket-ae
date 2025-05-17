@@ -19,7 +19,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import { commonButtonStyles } from "@/styles/commonStyles";
-import { useCart } from "@/store/cartContext";
+import { useCart } from "@/stores/cartContext";
 
 // Initialize i18n-iso-countries with English locale
 

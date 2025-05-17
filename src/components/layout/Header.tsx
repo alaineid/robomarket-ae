@@ -24,7 +24,7 @@ import {
   FaChevronDown,
   FaTrash,
 } from "react-icons/fa";
-import { useCart } from "@/store/cartContext";
+import { useCart } from "@/stores/cartContext";
 
 export default function Header() {
   const { cartCount, cartItems, removeFromCart } = useCart();

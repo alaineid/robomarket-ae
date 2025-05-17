@@ -2,8 +2,8 @@
 
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { CartProvider } from "@/store/cartContext";
-import { WishlistProvider } from "@/store/wishlistContext";
+import { CartProvider } from "@/stores/cartContext";
+import { WishlistProvider } from "@/stores/wishlistContext";
 
 // Create a client
 const queryClient = new QueryClient({

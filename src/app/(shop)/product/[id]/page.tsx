@@ -24,7 +24,7 @@ import Footer from "@/components/layout/Footer";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import CategoryTag from "@/components/ui/CategoryTag";
 import { commonButtonStyles } from "@/styles/commonStyles";
-import { useCart } from "@/store/cartContext";
+import { useCart } from "@/stores/cartContext";
 import { useProduct, useProducts } from "@/hooks/queryHooks";
 import { useQueryClient } from "@tanstack/react-query";
 import {

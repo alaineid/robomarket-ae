@@ -15,7 +15,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import { commonButtonStyles } from "@/styles/commonStyles";
-import { useCart } from "@/store/cartContext";
+import { useCart } from "@/stores/cartContext";
 
 // Fix the function name destructuring from useCart()
 export default function CartPage() {
