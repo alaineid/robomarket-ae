@@ -105,5 +105,18 @@ export interface LegacyProduct {
 }
 
 // Sample categories and brands for filters (from former productData.ts)
-export const categories = ["Companion", "Utility", "Security", "Education", "Healthcare", "Industrial"];
-export const brands = ["RoboTech", "AIMasters", "Synthia", "MechWorks", "QuantumBots"];
+export const categories = [
+  "Companion",
+  "Utility",
+  "Security",
+  "Education",
+  "Healthcare",
+  "Industrial",
+];
+export const brands = [
+  "RoboTech",
+  "AIMasters",
+  "Synthia",
+  "MechWorks",
+  "QuantumBots",
+];

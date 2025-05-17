@@ -1,17 +1,20 @@
 "use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useState } from "react";
+import Link from "next/link";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 interface LoginFormProps {
   onSuccess?: () => void;
   onHideModal?: () => void;
 }
 
-export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {}) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+export default function LoginForm({
+  onSuccess,
+  onHideModal,
+}: LoginFormProps = {}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -19,7 +22,7 @@ export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login form submitted:', { email, password, rememberMe });
+    console.log("Login form submitted:", { email, password, rememberMe });
   };
 
   return (
@@ -32,16 +35,19 @@ export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {
           </div>
         </div>
       )}
-      
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
             {error}
           </div>
         )}
-        
+
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Email address
           </label>
           <input
@@ -54,10 +60,13 @@ export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {
             required
           />
         </div>
-        
+
         <div>
           <div className="flex justify-between items-center mb-1">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
               Password
             </label>
             <button
@@ -70,7 +79,7 @@ export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {
           <div className="relative">
             <input
               id="password"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
@@ -87,7 +96,7 @@ export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {
             </button>
           </div>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <input
@@ -97,47 +106,50 @@ export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {
               onChange={(e) => setRememberMe(e.target.checked)}
               className="h-4 w-4 accent-[#4DA9FF] rounded border-gray-300 text-[#4DA9FF] focus:ring-[#4DA9FF]"
             />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+            <label
+              htmlFor="remember-me"
+              className="ml-2 block text-sm text-gray-700"
+            >
               Remember my credentials
             </label>
           </div>
         </div>
-        
+
         {/* Terms and Privacy Policy links */}
         <div className="text-xs text-gray-600 mb-4 text-center">
-          By logging in you agree to our{' '}
-          <Link 
-            href="/terms" 
+          By logging in you agree to our{" "}
+          <Link
+            href="/terms"
             className="text-[#4DA9FF] hover:text-[#3D89FF]"
             onClick={onHideModal}
           >
             Terms of Service
-          </Link>
-          {' '}and{' '}
-          <Link 
-            href="/privacy" 
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/privacy"
             className="text-[#4DA9FF] hover:text-[#3D89FF]"
             onClick={onHideModal}
           >
             Privacy Policy
           </Link>
         </div>
-        
+
         <button
           type="submit"
           disabled={loading}
           className={`w-full bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center ${
-            loading ? 'opacity-70 cursor-not-allowed' : ''
+            loading ? "opacity-70 cursor-not-allowed" : ""
           }`}
         >
-          {loading ? 'Please wait...' : 'Log In'}
+          {loading ? "Please wait..." : "Log In"}
         </button>
-        
+
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
-            {"Don't have an account?"}{' '}
-            <Link 
-              href="/signup" 
+            {"Don't have an account?"}{" "}
+            <Link
+              href="/signup"
               className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium"
               onClick={onHideModal}
             >

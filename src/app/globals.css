@@ -46,11 +46,11 @@ body {
 
 /* Hide scrollbar but keep scrolling */
 .no-scrollbar {
-  -ms-overflow-style: none;     /* IE/Edge */
-  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
 }
 .no-scrollbar::-webkit-scrollbar {
-  display: none;                /* Chrome/Safari */
+  display: none; /* Chrome/Safari */
 }
 
 /* Custom scrollbars */
@@ -66,7 +66,7 @@ body {
   border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #4DA9FF;
+  background: #4da9ff;
 }
 .custom-scrollbar {
   scrollbar-width: thin;

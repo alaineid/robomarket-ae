@@ -1,33 +1,31 @@
 "use client";
 
-import React from 'react';
-import Link from 'next/link';
+import React from "react";
+import Link from "next/link";
 
 export default function HeroSection() {
   return (
-    <section 
+    <section
       className="relative overflow-hidden text-white bg-gray-900"
       style={{
-        position: 'relative',
-        overflow: 'hidden'
+        position: "relative",
+        overflow: "hidden",
       }}
     >
       {/* Digital Wave Pattern overlay - positioned absolutely */}
-      <div
-        className="wave-overlay"
-        aria-hidden="true"
-      />
-      
+      <div className="wave-overlay" aria-hidden="true" />
+
       <div className="relative z-20 container mx-auto px-4 lg:px-6 py-8 md:py-12 lg:py-16 max-w-[2400px]">
         <div className="max-w-4xl">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 sm:mb-6 leading-tight tracking-tight">
             Meet <span className="text-[#4A8FE7]">Your</span> Companion
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-gray-200 max-w-3xl mb-5 sm:mb-6">
-            Intelligent robots that assist, entertain, and transform the way you live and work.
+            Intelligent robots that assist, entertain, and transform the way you
+            live and work.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link 
+            <Link
               href="/shop"
               className="bg-[#4A8FE7] hover:bg-[#3B8CD9] text-white font-bold py-2 sm:py-3 px-6 sm:px-8 rounded-lg text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
             >
@@ -41,7 +39,7 @@ export default function HeroSection() {
       {/* Add the wave animation styles */}
       <style jsx global>{`
         .wave-overlay {
-          content: '';
+          content: "";
           position: absolute;
           top: 0;
           right: 0;
@@ -54,11 +52,17 @@ export default function HeroSection() {
           z-index: 1;
           animation: waveMove 30s linear infinite;
         }
-        
+
         @keyframes waveMove {
-          0% { background-position: 0% 0%; }
-          50% { background-position: 100% 100%; }
-          100% { background-position: 0% 0%; }
+          0% {
+            background-position: 0% 0%;
+          }
+          50% {
+            background-position: 100% 100%;
+          }
+          100% {
+            background-position: 0% 0%;
+          }
         }
       `}</style>
     </section>

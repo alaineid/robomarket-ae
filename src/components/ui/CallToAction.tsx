@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 type CallToActionProps = {
   headline?: string;
@@ -11,7 +11,7 @@ export default function CallToAction({
   headline = "Ready to Welcome a Robot Into Your Life?",
   description = "Browse our collection of premium humanoid robots and find the perfect assistant for your needs.",
   buttonText = "Shop Now",
-  buttonLink = "/shop"
+  buttonLink = "/shop",
 }: CallToActionProps) {
   return (
     <section className="py-20 bg-gradient-to-r from-gray-800 to-gray-900 text-white">
@@ -20,8 +20,8 @@ export default function CallToAction({
         <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
           {description}
         </p>
-        <Link 
-          href={buttonLink} 
+        <Link
+          href={buttonLink}
           className="bg-[#4DA9FF] hover:bg-[#3B8CD9] text-white font-bold py-3 px-10 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all duration-300"
         >
           {buttonText}

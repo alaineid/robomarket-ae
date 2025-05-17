@@ -1,9 +1,9 @@
 "use client";
 
-import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { CartProvider } from '@/store/cartContext';
-import { WishlistProvider } from '@/store/wishlistContext';
+import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { CartProvider } from "@/store/cartContext";
+import { WishlistProvider } from "@/store/wishlistContext";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -16,21 +16,19 @@ const queryClient = new QueryClient({
   },
 });
 
-export default function ClientProviders({ 
-  children 
-}: { 
-  children: React.ReactNode 
+export default function ClientProviders({
+  children,
+}: {
+  children: React.ReactNode;
 }) {
   // Return children directly to ensure consistent server/client rendering
   // The providers themselves handle their initialization logic
   return (
     <>
       <QueryClientProvider client={queryClient}>
-          <CartProvider>
-            <WishlistProvider>
-              {children}
-            </WishlistProvider>
-          </CartProvider>
+        <CartProvider>
+          <WishlistProvider>{children}</WishlistProvider>
+        </CartProvider>
       </QueryClientProvider>
     </>
   );

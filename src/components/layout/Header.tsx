@@ -1,38 +1,37 @@
 "use client";
 
-import { useState, useEffect, useRef, Fragment } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import Logo from '@/components/ui/Logo';
-import { 
-  Menu, 
-  MenuButton, 
-  MenuItems, 
-  MenuItem, 
-  Transition 
-} from '@headlessui/react';
-import { 
-  FaUserCircle, 
-  FaShoppingCart, 
-  FaBars, 
-  FaTimes, 
-  FaSignInAlt, 
-  FaUserPlus, 
-  FaSignOutAlt, 
-  FaUser, 
+import { useState, useEffect, useRef, Fragment } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import Logo from "@/components/ui/Logo";
+import {
+  Menu,
+  MenuButton,
+  MenuItems,
+  MenuItem,
+  Transition,
+} from "@headlessui/react";
+import {
+  FaUserCircle,
+  FaShoppingCart,
+  FaBars,
+  FaTimes,
+  FaSignInAlt,
+  FaUserPlus,
+  FaSignOutAlt,
+  FaUser,
   FaHeart,
   FaChevronDown,
-  FaTrash
-} from 'react-icons/fa';
-import { useCart } from '@/store/cartContext';
+  FaTrash,
+} from "react-icons/fa";
+import { useCart } from "@/store/cartContext";
 
 export default function Header() {
   const { cartCount, cartItems, removeFromCart } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  
-  
+
   // Touch gesture handling
   const touchStartRef = useRef<number | null>(null);
   const touchEndRef = useRef<number | null>(null);
@@ -46,12 +45,12 @@ export default function Header() {
     const handleResize = () => {
       setIsMobileView(window.innerWidth < 640);
     };
-    
+
     // Improved scroll handler with debouncing and state tracking
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       lastScrollY.current = currentScrollY;
-      
+
       if (!ticking.current) {
         window.requestAnimationFrame(() => {
           // Only update state if we've crossed the threshold by a significant amount
@@ -61,114 +60,124 @@ export default function Header() {
             ticking.current = false;
             return;
           }
-          
+
           const shouldBeScrolled = lastScrollY.current > scrollThreshold;
-          
+
           if (shouldBeScrolled !== isScrolled) {
             // Set a flag to prevent multiple state updates during transition
             transitionInProgress.current = true;
-            
+
             setIsScrolled(shouldBeScrolled);
-            
+
             // Clear the flag after the transition duration
             setTimeout(() => {
               transitionInProgress.current = false;
             }, 200); // Slightly longer than the transition duration
           }
-          
+
           ticking.current = false;
         });
-        
+
         ticking.current = true;
       }
     };
-    
+
     // Set initial values
     handleResize();
     window.requestAnimationFrame(() => {
       setIsScrolled(window.scrollY > scrollThreshold);
     });
-    
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
+
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, [isScrolled]);
 
   // Use a dedicated effect for touch event handling
   useEffect(() => {
     if (!isMobileMenuOpen || !mobileMenuRef.current) return;
-    
+
     let initialY = 0;
     let isSwiping = false;
-    
+
     // Using window-level event listeners instead of React's passive events
     const handleTouchStart = (e: TouchEvent) => {
       if (!mobileMenuRef.current?.contains(e.target as Node)) return;
-      
+
       initialY = e.touches[0].clientY;
       touchStartRef.current = initialY;
       isSwiping = false;
     };
-    
+
     const handleTouchMove = (e: TouchEvent) => {
       // Only track touches that started inside our menu
-      if (!touchStartRef.current || !mobileMenuRef.current?.contains(e.target as Node)) return;
-      
+      if (
+        !touchStartRef.current ||
+        !mobileMenuRef.current?.contains(e.target as Node)
+      )
+        return;
+
       const currentY = e.touches[0].clientY;
       const touchDiff = touchStartRef.current - currentY;
-      
+
       // Start detecting swipe at the beginning of the gesture
       if (Math.abs(touchDiff) > 10 && !isSwiping) {
         isSwiping = true;
       }
-      
+
       // Only try to prevent default if we've detected a clear upward swipe gesture
       // and if the event is still cancelable (not already scrolling)
       if (touchDiff > 10 && isSwiping && e.cancelable) {
         e.preventDefault();
       }
     };
-    
+
     const handleTouchEnd = (e: TouchEvent) => {
-      if (!touchStartRef.current || !mobileMenuRef.current?.contains(e.target as Node)) return;
-      
+      if (
+        !touchStartRef.current ||
+        !mobileMenuRef.current?.contains(e.target as Node)
+      )
+        return;
+
       touchEndRef.current = e.changedTouches[0].clientY;
-      
+
       // Calculate the distance of the swipe
       const touchDiff = touchStartRef.current - touchEndRef.current;
-      
+
       // If swipe distance is significant and direction is upward, close the menu
       if (touchDiff > 30) {
         setIsMobileMenuOpen(false);
       }
-      
+
       // Reset touch coordinates
       touchStartRef.current = null;
       touchEndRef.current = null;
       isSwiping = false;
     };
-    
+
     // Add event listeners with the non-passive option for touchmove
-    document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd, { passive: true });
-    
+    document.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+    document.addEventListener("touchend", handleTouchEnd, { passive: true });
+
     // Clean up
     return () => {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
     };
   }, [isMobileMenuOpen]);
 
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: 'auto'
+      behavior: "auto",
     });
   };
 
@@ -178,44 +187,53 @@ export default function Header() {
 
   // Calculate cart subtotal
   const cartSubtotal = cartItems.reduce((sum, item) => {
-    return sum + ((item.product?.best_vendor?.price || 0) * item.quantity);
+    return sum + (item.product?.best_vendor?.price || 0) * item.quantity;
   }, 0);
 
   return (
-    <header 
-      id="header" 
+    <header
+      id="header"
       className="sticky top-0 z-50 will-change-transform transform-gpu"
       style={{
-        backgroundColor: isScrolled ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.9)',
-        boxShadow: isScrolled ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none',
-        padding: isScrolled ? '0.5rem 0' : '1rem 0',
-        transition: 'padding 0.15s ease-in-out, background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
+        backgroundColor: isScrolled
+          ? "rgba(255, 255, 255, 0.95)"
+          : "rgba(255, 255, 255, 0.9)",
+        boxShadow: isScrolled ? "0 1px 3px rgba(0, 0, 0, 0.1)" : "none",
+        padding: isScrolled ? "0.5rem 0" : "1rem 0",
+        transition:
+          "padding 0.15s ease-in-out, background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out",
       }}
     >
       <div className="absolute top-0 left-0 w-full h-1 bg-[#4DA9FF]"></div>
       <nav className="container mx-auto px-4 lg:px-6 max-w-[2400px]">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Logo 
-            href="/" 
+          <Logo
+            href="/"
             onClick={scrollToTop}
-            variant={isMobileView ? 'compact' : 'default'}
-            className={`transition-all duration-300 ${isScrolled ? 'scale-95' : ''}`}
+            variant={isMobileView ? "compact" : "default"}
+            className={`transition-all duration-300 ${isScrolled ? "scale-95" : ""}`}
           />
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-          <Link
+            <Link
               href="/shop"
               className="px-3 py-1.5 bg-gradient-to-r from-blue-400 to-[#4DA9FF] text-white rounded-md font-medium tracking-wide text-sm shadow hover:brightness-110 transition"
             >
               Shop Robots
-            </Link>            
-            <Link href="/about" className="text-gray-700 hover:text-[#4DA9FF] font-medium relative group transition duration-200">
+            </Link>
+            <Link
+              href="/about"
+              className="text-gray-700 hover:text-[#4DA9FF] font-medium relative group transition duration-200"
+            >
               About Us
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full transition-all duration-300"></span>
             </Link>
-            <Link href="/support" className="text-gray-700 hover:text-[#4DA9FF] font-medium relative group transition duration-200">
+            <Link
+              href="/support"
+              className="text-gray-700 hover:text-[#4DA9FF] font-medium relative group transition duration-200"
+            >
               Support
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#4DA9FF] group-hover:w-full transition-all duration-300"></span>
             </Link>
@@ -306,7 +324,7 @@ export default function Header() {
                   </MenuItems> */}
                 </Transition>
               </Menu>
-              
+
               {/* Cart Dropdown */}
               <Menu as="div" className="relative">
                 <MenuButton className="text-gray-700 hover:text-[#4DA9FF] transition-colors duration-200 group">
@@ -325,24 +343,30 @@ export default function Header() {
                   enter="transition ease-out duration-100"
                   enterFrom="transform opacity-0 scale-95"
                   enterTo="transform opacity-100 scale-100"
-                  leave="transition ease-in duration-75"  
+                  leave="transition ease-in duration-75"
                   leaveFrom="transform opacity-100 scale-100"
                   leaveTo="transform opacity-0 scale-95"
                 >
                   <MenuItems className="absolute right-0 mt-2 w-80 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none z-50">
                     <div className="px-4 py-3 border-b border-gray-100">
-                      <h3 className="text-lg font-medium text-gray-900">Your Cart</h3>
+                      <h3 className="text-lg font-medium text-gray-900">
+                        Your Cart
+                      </h3>
                     </div>
-                    
+
                     {cartItems.length > 0 ? (
                       <>
                         <div className="py-2 max-h-[320px] overflow-y-auto custom-scrollbar">
                           {cartItems.map((item) => (
-                            <div key={item.productId} className="hover:bg-gray-50 px-4 py-3 border-b border-gray-100 last:border-0">
+                            <div
+                              key={item.productId}
+                              className="hover:bg-gray-50 px-4 py-3 border-b border-gray-100 last:border-0"
+                            >
                               <div className="flex items-center">
                                 {/* Product Image */}
                                 <div className="w-16 h-16 relative rounded-md overflow-hidden bg-gray-50 flex-shrink-0">
-                                  {item.product?.images && item.product.images[0] ? (
+                                  {item.product?.images &&
+                                  item.product.images[0] ? (
                                     <Image
                                       src={item.product.images[0].url}
                                       alt={item.product?.name || "Product"}
@@ -355,23 +379,30 @@ export default function Header() {
                                     </div>
                                   )}
                                 </div>
-                                
+
                                 {/* Product Info */}
                                 <div className="flex-1 min-w-0 ml-3">
-                                  <Link href={`/product/${item.productId}`} className="text-sm font-medium text-gray-800 hover:text-[#4DA9FF] truncate block">
+                                  <Link
+                                    href={`/product/${item.productId}`}
+                                    className="text-sm font-medium text-gray-800 hover:text-[#4DA9FF] truncate block"
+                                  >
                                     {item.product?.name || "Product"}
                                   </Link>
-                                  
+
                                   <div className="flex justify-between items-center mt-1">
                                     <span className="text-sm text-gray-500">
                                       Qty: {item.quantity}
                                     </span>
                                     <span className="text-sm font-medium text-[#4DA9FF]">
-                                      ${((item.product?.best_vendor?.price || 0) * item.quantity).toLocaleString()}
+                                      $
+                                      {(
+                                        (item.product?.best_vendor?.price ||
+                                          0) * item.quantity
+                                      ).toLocaleString()}
                                     </span>
                                   </div>
                                 </div>
-                                
+
                                 {/* Remove Button */}
                                 <button
                                   onClick={() => removeFromCart(item.productId)}
@@ -384,21 +415,23 @@ export default function Header() {
                             </div>
                           ))}
                         </div>
-                        
+
                         <div className="p-4 bg-gray-50">
                           <div className="flex justify-between font-medium mb-4">
                             <span className="text-gray-700">Subtotal:</span>
-                            <span className="text-[#4DA9FF]">${cartSubtotal.toLocaleString()}</span>
+                            <span className="text-[#4DA9FF]">
+                              ${cartSubtotal.toLocaleString()}
+                            </span>
                           </div>
                           <div className="flex flex-col space-y-2">
-                            <Link 
-                              href="/cart" 
+                            <Link
+                              href="/cart"
                               className="w-full text-center py-2.5 px-4 border border-[#4DA9FF] text-[#4DA9FF] rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium"
                             >
                               View Cart
                             </Link>
-                            <Link 
-                              href="/checkout" 
+                            <Link
+                              href="/checkout"
                               className="w-full text-center py-2.5 px-4 bg-[#4DA9FF] hover:bg-blue-500 text-white rounded-lg transition-colors text-sm font-medium"
                             >
                               Checkout
@@ -412,7 +445,10 @@ export default function Header() {
                           <FaShoppingCart className="text-gray-400" size={24} />
                         </div>
                         <p className="text-gray-600 mb-4">Your cart is empty</p>
-                        <Link href="/shop" className="inline-block text-center text-sm py-2.5 px-6 border border-[#4DA9FF] text-[#4DA9FF] rounded-lg hover:bg-blue-50 transition-colors font-medium">
+                        <Link
+                          href="/shop"
+                          className="inline-block text-center text-sm py-2.5 px-6 border border-[#4DA9FF] text-[#4DA9FF] rounded-lg hover:bg-blue-50 transition-colors font-medium"
+                        >
                           Continue Shopping
                         </Link>
                       </div>
@@ -425,9 +461,9 @@ export default function Header() {
 
           {/* Mobile Menu Button */}
           <div className="lg:hidden">
-            <button 
-              className="text-gray-700 hover:text-[#4DA9FF] focus:outline-none p-2 rounded-md transition-transform duration-200 hover:scale-110" 
-              aria-label="Toggle Menu" 
+            <button
+              className="text-gray-700 hover:text-[#4DA9FF] focus:outline-none p-2 rounded-md transition-transform duration-200 hover:scale-110"
+              aria-label="Toggle Menu"
               aria-expanded={isMobileMenuOpen}
               onClick={toggleMobileMenu}
             >
@@ -441,30 +477,40 @@ export default function Header() {
         </div>
 
         {/* Mobile Menu Panel with swipe gesture support */}
-        <div 
+        <div
           ref={mobileMenuRef}
           className={`lg:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-sm shadow-lg border-t border-gray-200 overflow-hidden transition-all duration-300 ${
-            isMobileMenuOpen 
-              ? 'max-h-[500px] opacity-100' 
-              : 'max-h-0 opacity-0'
+            isMobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
           }`}
         >
           {/* Swipe indicator when menu is open */}
           {isMobileMenuOpen && (
-            <div className="w-20 h-1.5 bg-gray-300 rounded-full mx-auto mt-3 mb-3 animate-pulse" aria-hidden="true"></div>
+            <div
+              className="w-20 h-1.5 bg-gray-300 rounded-full mx-auto mt-3 mb-3 animate-pulse"
+              aria-hidden="true"
+            ></div>
           )}
-          
+
           <div className="flex flex-col space-y-4 px-4 pt-4 pb-5">
-            <Link href="/shop" className="block text-gray-700 hover:text-[#4DA9FF] py-2 font-medium border-b border-gray-100">
+            <Link
+              href="/shop"
+              className="block text-gray-700 hover:text-[#4DA9FF] py-2 font-medium border-b border-gray-100"
+            >
               Shop Robots
             </Link>
-            <Link href="/about" className="block text-gray-700 hover:text-[#4DA9FF] py-2 font-medium border-b border-gray-100">
+            <Link
+              href="/about"
+              className="block text-gray-700 hover:text-[#4DA9FF] py-2 font-medium border-b border-gray-100"
+            >
               About Us
             </Link>
-            <Link href="/support" className="block text-gray-700 hover:text-[#4DA9FF] py-2 font-medium border-b border-gray-100">
+            <Link
+              href="/support"
+              className="block text-gray-700 hover:text-[#4DA9FF] py-2 font-medium border-b border-gray-100"
+            >
               Support
             </Link>
-            
+
             {/* Mobile Login/Account section */}
             <div className="py-2 border-b border-gray-100">
               <div className="mb-2 font-medium text-gray-700">Account</div>
@@ -502,9 +548,12 @@ export default function Header() {
                 </div>
               )} */}
             </div>
-            
+
             <div className="pt-2">
-              <Link href="/cart" className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors px-3 py-2 rounded-full hover:bg-blue-50">
+              <Link
+                href="/cart"
+                className="flex items-center text-gray-700 hover:text-[#4DA9FF] transition-colors px-3 py-2 rounded-full hover:bg-blue-50"
+              >
                 <div className="relative mr-2">
                   <FaShoppingCart />
                   {cartCount > 0 && (
@@ -516,13 +565,22 @@ export default function Header() {
                 Cart
               </Link>
             </div>
-            
+
             {/* Swipe Up Indicator */}
             {isMobileMenuOpen && (
               <div className="flex flex-col items-center mt-6 pt-4 border-t border-gray-100">
                 <div className="flex items-center justify-center text-gray-500 text-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   <span>Swipe up to close menu</span>
                 </div>

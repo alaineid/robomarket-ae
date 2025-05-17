@@ -1,10 +1,18 @@
 "use client";
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaMapMarkerAlt, FaPhone, FaEnvelope } from "react-icons/fa";
-import Logo from '@/components/ui/Logo';
+import React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  FaFacebookF,
+  FaTwitter,
+  FaInstagram,
+  FaLinkedinIn,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaEnvelope,
+} from "react-icons/fa";
+import Logo from "@/components/ui/Logo";
 
 export default function Footer() {
   return (
@@ -16,7 +24,8 @@ export default function Footer() {
           <div>
             <Logo inFooter={true} className="mb-4" />
             <p className="text-gray-400 mb-4">
-              Your trusted marketplace for premium humanoid robots and accessories.
+              Your trusted marketplace for premium humanoid robots and
+              accessories.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-white">
@@ -33,28 +42,62 @@ export default function Footer() {
               </a>
             </div>
           </div>
-          
+
           {/* Quick Links */}
           <div>
             <h3 className="text-xl font-bold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><Link href="/shop" className="text-gray-400 hover:text-white">Shop</Link></li>
-              <li><Link href="/signup" className="text-gray-400 hover:text-white">Sign Up</Link></li>
-              <li><button className="text-gray-400 hover:text-white">Account Login</button></li>
+              <li>
+                <Link href="/shop" className="text-gray-400 hover:text-white">
+                  Shop
+                </Link>
+              </li>
+              <li>
+                <Link href="/signup" className="text-gray-400 hover:text-white">
+                  Sign Up
+                </Link>
+              </li>
+              <li>
+                <button className="text-gray-400 hover:text-white">
+                  Account Login
+                </button>
+              </li>
             </ul>
           </div>
-          
+
           {/* Company */}
           <div>
             <h3 className="text-xl font-bold mb-4">Company</h3>
             <ul className="space-y-2">
-              <li><Link href="/about" className="text-gray-400 hover:text-white">About Us</Link></li>
-              <li><Link href="/terms" className="text-gray-400 hover:text-white">Terms of Service</Link></li>
-              <li><Link href="/privacy" className="text-gray-400 hover:text-white">Privacy Policy</Link></li>
-              <li><Link href="/support" className="text-gray-400 hover:text-white">Support</Link></li>
+              <li>
+                <Link href="/about" className="text-gray-400 hover:text-white">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-gray-400 hover:text-white">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/privacy"
+                  className="text-gray-400 hover:text-white"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/support"
+                  className="text-gray-400 hover:text-white"
+                >
+                  Support
+                </Link>
+              </li>
             </ul>
           </div>
-          
+
           {/* Contact Info */}
           <div>
             <h3 className="text-xl font-bold mb-4">Contact Us</h3>
@@ -74,25 +117,27 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        
+
         <div className="border-t border-gray-800 mt-12 pt-6 flex flex-col items-center justify-center">
-          <p className="text-gray-400 mb-6">© {new Date().getFullYear()} RoboMarket. All rights reserved.</p>
-          
+          <p className="text-gray-400 mb-6">
+            © {new Date().getFullYear()} RoboMarket. All rights reserved.
+          </p>
+
           {/* Powered by Algorythm - repositioned to bottom center */}
           <div className="flex flex-col items-center mt-2">
             <p className="text-gray-400 mb-2">Powered by</p>
-            <a 
-              href="https://algorythm.ca" 
-              target="_blank" 
+            <a
+              href="https://algorythm.ca"
+              target="_blank"
               rel="noopener noreferrer"
               className="hover:opacity-80 transition-opacity"
             >
               <div className="relative h-10 w-36">
-                <Image 
-                  src="/images/Algorythm.png" 
-                  alt="Algorythm Logo" 
+                <Image
+                  src="/images/Algorythm.png"
+                  alt="Algorythm Logo"
                   fill
-                  style={{ objectFit: 'contain' }}
+                  style={{ objectFit: "contain" }}
                   priority
                   sizes="(max-width: 768px) 144px, 144px"
                 />

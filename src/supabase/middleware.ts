@@ -1,5 +1,5 @@
-import { createServerClient } from '@supabase/ssr';
-import { type NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from "@supabase/ssr";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * Middleware utility to update the user's session.
@@ -16,8 +16,13 @@ export async function updateSession(request: NextRequest) {
   });
 
   // Ensure environment variables are defined
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    console.error("Supabase URL or Anon Key is not defined in environment variables for middleware.");
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    console.error(
+      "Supabase URL or Anon Key is not defined in environment variables for middleware.",
+    );
     // Potentially redirect to an error page or return a specific error response
     // For now, we'll let it proceed, but Supabase client creation will fail.
     // It's better to throw or handle this explicitly in a production app.
@@ -34,22 +39,24 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          );
           supabaseResponse = NextResponse.next({
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   // IMPORTANT: DO NOT REMOVE auth.getUser()
   // Get the user without redirecting - the auth flow will handle redirections
   await supabase.auth.getUser();
-  
+
   // Don't redirect in middleware - let the auth flow handle redirections
   return supabaseResponse;
 }

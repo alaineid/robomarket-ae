@@ -1,5 +1,5 @@
-import { type NextRequest } from 'next/server';
-import { updateSession } from '@/supabase/middleware'; // Adjust path if your project structure differs
+import { type NextRequest } from "next/server";
+import { updateSession } from "@/supabase/middleware"; // Adjust path if your project structure differs
 
 /**
  * The main middleware function for the Next.js application.
@@ -29,6 +29,6 @@ export const config = {
      * - Any files with common image extensions (svg, png, jpg, jpeg, gif, webp)
      * This helps to ensure the middleware only runs on actual pages and API routes.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

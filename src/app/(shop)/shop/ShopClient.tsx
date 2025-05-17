@@ -1,23 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import {
-  FaSearch, FaTimes, 
-  FaSpinner, FaRobot
-} from 'react-icons/fa';
-import { debounce } from 'lodash-es';
-import PageHero from '@/components/layout/PageHero';
-import ProductCard from '@/components/products/ProductCard';
-import { commonButtonStyles, commonLayoutStyles } from '@/styles/commonStyles';
-import {
-  categories,
-  brands,
-  ApiResponse
-} from '@/types/product.types';
-import { useProducts } from '@/hooks/queryHooks';
-import { useQueryClient } from '@tanstack/react-query';
-import AmazonStyleFilter from '@/components/shop/AmazonStyleFilter';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { motion } from "framer-motion";
+import { FaSearch, FaTimes, FaSpinner, FaRobot } from "react-icons/fa";
+import { debounce } from "lodash-es";
+import PageHero from "@/components/layout/PageHero";
+import ProductCard from "@/components/products/ProductCard";
+import { commonButtonStyles, commonLayoutStyles } from "@/styles/commonStyles";
+import { categories, brands, ApiResponse } from "@/types/product.types";
+import { useProducts } from "@/hooks/queryHooks";
+import { useQueryClient } from "@tanstack/react-query";
+import AmazonStyleFilter from "@/components/shop/AmazonStyleFilter";
 
 interface ShopClientProps {
   initialData: ApiResponse;
@@ -25,110 +18,140 @@ interface ShopClientProps {
 
 export default function ShopClient({ initialData }: ShopClientProps) {
   const queryClient = useQueryClient();
-  
+
   // State for filters
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState('newest');
+  const [sortBy, setSortBy] = useState("newest");
   const [ratingFilter, setRatingFilter] = useState(0);
-  
+
   // Pagination state
   const [, setOffset] = useState(initialData.products?.length || 0);
-  
+
   // State for UI
   const [, setIsFilterDirty] = useState(false);
   const [isInfiniteScrollEnabled] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
-  
+
   // Create filter object for React Query
   const filters = {
     search: searchTerm,
-    category: selectedCategories.length > 0 ? selectedCategories.join(',') : undefined,
-    brand: selectedBrands.length > 0 ? selectedBrands.join(',') : undefined,
+    category:
+      selectedCategories.length > 0 ? selectedCategories.join(",") : undefined,
+    brand: selectedBrands.length > 0 ? selectedBrands.join(",") : undefined,
     price_min: priceRange[0] > 0 ? priceRange[0] : undefined,
     price_max: priceRange[1] < 10000 ? priceRange[1] : undefined,
     rating: ratingFilter > 0 ? ratingFilter : undefined,
     sort_by: sortBy,
     limit: 20,
-    offset: 0
+    offset: 0,
   };
 
   // Use React Query for product fetching, hydrate first page with initialData
-  const { 
-    data, 
-    isLoading, 
-    fetchNextPage,
-    isFetchingNextPage,
-    refetch 
-  } = useProducts(filters, initialData);
+  const { data, isLoading, fetchNextPage, isFetchingNextPage, refetch } =
+    useProducts(filters, initialData);
 
   // Extract products from query data - Always prioritize fetched data over initialData when filters are applied
-  const products = selectedCategories.length > 0 || selectedBrands.length > 0 || 
-    searchTerm || ratingFilter > 0 || priceRange[0] > 0 || priceRange[1] < 10000 ||
-    sortBy !== 'newest' ? 
-    data?.products || [] : 
-    data?.products || initialData.products || [];
-    
+  const products =
+    selectedCategories.length > 0 ||
+    selectedBrands.length > 0 ||
+    searchTerm ||
+    ratingFilter > 0 ||
+    priceRange[0] > 0 ||
+    priceRange[1] < 10000 ||
+    sortBy !== "newest"
+      ? data?.products || []
+      : data?.products || initialData.products || [];
+
   const hasMore = data?.hasMore ?? initialData.hasMore ?? false;
 
   // Load more products
   const fetchMoreProducts = useCallback(async () => {
     if (isFetchingNextPage || !hasMore) return;
-    
+
     // Update offset for the next page
-    setOffset(prev => prev + 4);
-    
+    setOffset((prev) => prev + 4);
+
     // Fetch next page with updated offset
     await fetchNextPage();
   }, [fetchNextPage, hasMore, isFetchingNextPage]);
 
   // Handle infinite scroll
-  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
-    const [entry] = entries;
-    if (entry?.isIntersecting && hasMore && !isLoading && !isFetchingNextPage && isInfiniteScrollEnabled) {
-      fetchMoreProducts();
-    }
-  }, [hasMore, isLoading, isFetchingNextPage, isInfiniteScrollEnabled, fetchMoreProducts]);
-  
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries;
+      if (
+        entry?.isIntersecting &&
+        hasMore &&
+        !isLoading &&
+        !isFetchingNextPage &&
+        isInfiniteScrollEnabled
+      ) {
+        fetchMoreProducts();
+      }
+    },
+    [
+      hasMore,
+      isLoading,
+      isFetchingNextPage,
+      isInfiniteScrollEnabled,
+      fetchMoreProducts,
+    ],
+  );
+
   // No longer needed - Recently viewed functionality removed
-  
+
   // Set up intersection observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(handleObserver, {
-      rootMargin: '0px 0px 300px 0px', // Start loading when loader is 300px from viewport
+      rootMargin: "0px 0px 300px 0px", // Start loading when loader is 300px from viewport
     });
-    
+
     if (loaderRef.current) {
       observer.observe(loaderRef.current);
     }
-    
+
     return () => {
       observer.disconnect();
     };
   }, [handleObserver]);
-  
+
   // No longer needed - Recently viewed functionality removed
-  
+
   // Force refetch when filters change
   useEffect(() => {
     // Only trigger this after initial mount
-    if (selectedCategories.length > 0 || selectedBrands.length > 0 || 
-        searchTerm || ratingFilter > 0 || priceRange[0] > 0 || priceRange[1] < 10000 ||
-        sortBy !== 'newest') {
+    if (
+      selectedCategories.length > 0 ||
+      selectedBrands.length > 0 ||
+      searchTerm ||
+      ratingFilter > 0 ||
+      priceRange[0] > 0 ||
+      priceRange[1] < 10000 ||
+      sortBy !== "newest"
+    ) {
       refetch();
     }
-  }, [selectedCategories, selectedBrands, searchTerm, ratingFilter, priceRange, sortBy, refetch]);
-  
+  }, [
+    selectedCategories,
+    selectedBrands,
+    searchTerm,
+    ratingFilter,
+    priceRange,
+    sortBy,
+    refetch,
+  ]);
+
   // Toggle a category selection
   const toggleCategory = (newCategories: string[]) => {
     setSelectedCategories(newCategories);
     setIsFilterDirty(true);
     setOffset(0); // Reset pagination when filters change
-    
+
     // Refetch with new filters
-    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ["products"] });
   };
 
   // Toggle a brand selection
@@ -136,9 +159,9 @@ export default function ShopClient({ initialData }: ShopClientProps) {
     setSelectedBrands(newBrands);
     setIsFilterDirty(true);
     setOffset(0); // Reset pagination when filters change
-    
+
     // Refetch with new filters
-    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ["products"] });
   };
 
   // Handle price range changes
@@ -146,10 +169,10 @@ export default function ShopClient({ initialData }: ShopClientProps) {
     setPriceRange([min, max]);
     setIsFilterDirty(true);
     setOffset(0); // Reset pagination when filters change
-    
+
     // Debounce for slider dragging
     debounce(() => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     }, 300)();
   };
 
@@ -160,9 +183,9 @@ export default function ShopClient({ initialData }: ShopClientProps) {
     setRatingFilter(newRating);
     setIsFilterDirty(true);
     setOffset(0); // Reset pagination when filters change
-    
+
     // Refetch with new filters
-    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ["products"] });
   };
 
   // Handle sort order change
@@ -170,20 +193,20 @@ export default function ShopClient({ initialData }: ShopClientProps) {
     setSortBy(value);
     setIsFilterDirty(true);
     setOffset(0); // Reset pagination when filters change
-    
+
     // Refetch with new filters
-    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ["products"] });
   };
-  
+
   // Handle search input change
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setIsFilterDirty(true);
     setOffset(0); // Reset pagination when filters change
-    
+
     // Debounce search input
     debounce(() => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     }, 500)();
   };
 
@@ -192,14 +215,14 @@ export default function ShopClient({ initialData }: ShopClientProps) {
     setSelectedCategories([]);
     setSelectedBrands([]);
     setPriceRange([0, 10000]);
-    setRatingFilter(0); 
-    setSearchTerm('');
-    setSortBy('newest');
-    setIsFilterDirty(true); 
+    setRatingFilter(0);
+    setSearchTerm("");
+    setSortBy("newest");
+    setIsFilterDirty(true);
     setOffset(0);
-    
+
     // Refetch with cleared filters
-    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ["products"] });
   };
 
   // Function to render a category icon
@@ -211,11 +234,11 @@ export default function ShopClient({ initialData }: ShopClientProps) {
         title="Discover Amazing Robots"
         description="Find the perfect robotic companion or utility assistant for your home or business."
         breadcrumbItems={[
-          { label: 'Home', href: '/' },
-          { label: 'Shop', href: '/shop', active: true }
+          { label: "Home", href: "/" },
+          { label: "Shop", href: "/shop", active: true },
         ]}
       />
-        
+
       <div className={commonLayoutStyles.section}>
         {/* Search Bar - Moved above filter bar */}
         <div className="bg-white rounded-2xl shadow-sm p-5 mb-6 border border-gray-100">
@@ -231,15 +254,15 @@ export default function ShopClient({ initialData }: ShopClientProps) {
               <FaSearch size={16} />
             </div>
             {searchTerm && (
-              <button 
-                onClick={() => handleSearchChange('')} // Clear search term
+              <button
+                onClick={() => handleSearchChange("")} // Clear search term
                 className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <FaTimes size={16} />
               </button>
             )}
           </div>
-          
+
           {/* Amazon-Style Filter Bar - Now inside search container */}
           <AmazonStyleFilter
             categories={categories}
@@ -257,17 +280,19 @@ export default function ShopClient({ initialData }: ShopClientProps) {
             onClearFilters={clearFilters}
           />
         </div>
-        
+
         {/* Recently Viewed Section removed */}
-        
+
         {/* Products Grid */}
         {isLoading && products.length === 0 ? (
           <div className="flex flex-col justify-center items-center py-20">
             <div className="w-16 h-16 border-4 border-t-4 border-[#4DA9FF] border-t-transparent rounded-full animate-spin mb-4"></div>
-            <span className="text-gray-600 font-medium">Finding the perfect robots for you...</span>
+            <span className="text-gray-600 font-medium">
+              Finding the perfect robots for you...
+            </span>
           </div>
         ) : products.length > 0 ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
@@ -278,7 +303,7 @@ export default function ShopClient({ initialData }: ShopClientProps) {
             ))}
           </motion.div>
         ) : (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
@@ -288,11 +313,15 @@ export default function ShopClient({ initialData }: ShopClientProps) {
               <div className="text-6xl text-gray-200 mb-4">
                 <FaRobot />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">No Robots Found</h3>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                No Robots Found
+              </h3>
               <p className="text-gray-500 mb-6">
-                {"We couldn't find any robots matching your filters. Try adjusting your search or filters to see more products."}
+                {
+                  "We couldn't find any robots matching your filters. Try adjusting your search or filters to see more products."
+                }
               </p>
-              <motion.button 
+              <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={clearFilters}
@@ -303,13 +332,10 @@ export default function ShopClient({ initialData }: ShopClientProps) {
             </div>
           </motion.div>
         )}
-        
+
         {/* Loading indicator for infinite scroll */}
         {products.length > 0 && (
-          <div 
-            ref={loaderRef} 
-            className="py-8 text-center"
-          >
+          <div ref={loaderRef} className="py-8 text-center">
             {isFetchingNextPage && (
               <div className="flex justify-center">
                 <FaSpinner className="animate-spin text-[#4DA9FF]" size={24} />
