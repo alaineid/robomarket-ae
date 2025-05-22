@@ -37,7 +37,7 @@ const ProfileDropdown: React.FC = () => {
       toast.dismiss(loadingToast);
       toast.success("Successfully logged out!");
       router.push("/");
-    } catch (err) {
+    } catch {
       toast.dismiss(loadingToast);
       toast.error("An unexpected error occurred");
     }
