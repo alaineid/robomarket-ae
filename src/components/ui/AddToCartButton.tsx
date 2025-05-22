@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaShoppingCart, FaCheck } from "react-icons/fa";
+import { FiShoppingCart, FiCheck } from "react-icons/fi";
 import { useCart } from "@/stores/cartContext";
 import { Product } from "@/types/product.types";
 import { fetchWithAuth } from "@/utils/fetchWithAuth";
@@ -112,12 +112,12 @@ export default function AddToCartButton({
     >
       {isAdded ? (
         <>
-          <FaCheck size={16} className={buttonStyle === "icon" ? "" : "mr-2"} />
+          <FiCheck size={16} className={buttonStyle === "icon" ? "" : "mr-2"} />
           {showText && "Added to cart!"}
         </>
       ) : (
         <>
-          <FaShoppingCart size={16} className={showText ? "mr-2" : ""} />
+          <FiShoppingCart size={16} className={showText ? "mr-2" : ""} />
           {showText && (isInStock ? "Add to cart" : "Out of stock")}
         </>
       )}

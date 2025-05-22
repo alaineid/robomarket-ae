@@ -19,9 +19,9 @@ const Logo: React.FC<LogoProps> = ({
 }) => {
   const renderLogoContent = () => (
     <div className={`flex items-center ${className}`}>
-      <span className="text-[#4DA9FF] font-bold text-xl">Robo</span>
+      <span className="text-[#4DA9FF] font-bold text-2xl">Robo</span>
       <span
-        className={`text-xl font-bold ${inFooter ? "text-white" : "text-gray-800"}`}
+        className={`text-2xl font-bold ${inFooter ? "text-white" : "text-gray-800"}`}
       >
         Market
       </span>

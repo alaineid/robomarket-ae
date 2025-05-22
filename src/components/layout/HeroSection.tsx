@@ -1,41 +1,40 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
+import Container from "./Container";
+import { FiArrowRight } from "react-icons/fi";
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  title?: string;
+  subtitle?: string;
+  ctaText?: string;
+  ctaLink?: string;
+}
+
+export default function HeroSection({
+  subtitle = "Intelligent robots that assist, entertain, and transform the way you live and work.",
+  ctaText = "Explore Our Robots",
+  ctaLink = "/shop",
+}: HeroSectionProps) {
   return (
-    <section
-      className="relative overflow-hidden text-white bg-gray-900"
-      style={{
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      {/* Digital Wave Pattern overlay - positioned absolutely */}
+    <section className="relative text-white bg-gray-900 py-8 md:py-10 lg:py-14 overflow-hidden">
       <div className="wave-overlay" aria-hidden="true" />
 
-      <div className="relative z-20 container mx-auto px-4 lg:px-6 py-8 md:py-12 lg:py-16 max-w-[2400px]">
-        <div className="max-w-4xl">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 sm:mb-6 leading-tight tracking-tight">
-            Meet <span className="text-[#4A8FE7]">Your</span> Companion
+      <Container>
+        <div className="relative z-10 max-w-4xl">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            Meet <span className="text-[#4DA9FF]">Your</span> Companion
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-gray-200 max-w-3xl mb-5 sm:mb-6">
-            Intelligent robots that assist, entertain, and transform the way you
-            live and work.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link
-              href="/shop"
-              className="bg-[#4A8FE7] hover:bg-[#3B8CD9] text-white font-bold py-2 sm:py-3 px-6 sm:px-8 rounded-lg text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
-            >
-              Explore Our Robots
-              <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-            </Link>
-          </div>
+          <p className="text-xl text-gray-200 mb-8 max-w-2xl">{subtitle}</p>
+          <Link
+            href={ctaLink}
+            className="inline-flex items-center px-6 py-3 bg-[#4DA9FF] text-white font-bold rounded-lg hover:bg-[#3d97e8] transition-all duration-300"
+          >
+            {ctaText}
+            <FiArrowRight className="ml-2" />
+          </Link>
         </div>
-      </div>
-
+      </Container>
       {/* Add the wave animation styles */}
       <style jsx global>{`
         .wave-overlay {

@@ -23,13 +23,13 @@ export default function ConfirmationPage() {
           description="Please verify your email to complete your RoboMarket registration"
           breadcrumbItems={[
             { label: "Home", href: "/" },
-            { label: "Sign Up", href: "/signup" },
+            { label: "Sign Up", href: "/auth/signup" },
             { label: "Confirmation", href: "/auth/confirmation" },
           ]}
         />
 
         <div className="container mx-auto px-4 py-12 mb-16">
-          <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
+          <div className="max-w-md mx-auto  rounded-2xl shadow-xl p-8">
             <div className="flex flex-col items-center">
               <div className="mb-6">
                 <Image
@@ -50,28 +50,27 @@ export default function ConfirmationPage() {
               </h2>
 
               <div className="mt-4 text-center">
-                <p className="text-gray-600">
-                  We sent a verification link to:
-                </p>
+                <p className="text-gray-600">We sent a verification link to:</p>
                 <p className="font-medium text-gray-800 mt-1">{email}</p>
               </div>
 
               <div className="mt-6 text-center text-sm">
                 <p className="text-gray-600">
-                  Click the link in the email to verify your account and complete the
-                  registration process.
+                  Click the link in the email to verify your account and
+                  complete the registration process.
                 </p>
               </div>
 
               <div className="mt-8 text-center text-sm">
                 <p className="text-gray-600">
-                  {"Didn't receive an email? "}<ResendVerification email={email} />
+                  {"Didn't receive an email? "}
+                  <ResendVerification email={email} />
                 </p>
               </div>
 
               <div className="mt-8 w-full">
                 <Link
-                  href="/login"
+                  href="/auth/login"
                   className="w-full inline-flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4DA9FF]"
                 >
                   Go to login

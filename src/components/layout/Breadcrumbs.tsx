@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Script from "next/script";
-import { FaChevronRight, FaHome } from "react-icons/fa";
+import { FiChevronRight, FiHome } from "react-icons/fi";
 
 export type BreadcrumbItem = {
   label: string;
@@ -100,7 +100,7 @@ export default function Breadcrumbs({
               {/* Add separator between items */}
               {index > 0 && (
                 <span className="mx-2 text-gray-400">
-                  <FaChevronRight size={10} aria-hidden="true" />
+                  <FiChevronRight size={10} aria-hidden="true" />
                 </span>
               )}
 
@@ -111,7 +111,7 @@ export default function Breadcrumbs({
                   className="text-gray-500 hover:text-[#4DA9FF] transition-colors flex items-center"
                   aria-label="Home"
                 >
-                  <FaHome className="mr-1" />
+                  <FiHome className="mr-1" />
                   <span>Home</span>
                 </Link>
               )}

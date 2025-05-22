@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/supabase/server";
 
-const MATVIEW_SELECT = "*";
-
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const limit = Math.min(Number(url.searchParams.get("limit") || "20"), 50);
@@ -14,7 +12,7 @@ export async function GET(request: Request) {
   const search = url.searchParams.get("search") || "";
 
   const supabase = await createClient();
-  let query = supabase.from("product_full").select(MATVIEW_SELECT);
+  let query = supabase.from("product_full").select("*");
   let countQuery = supabase
     .from("product_full")
     .select("id", { count: "exact" });

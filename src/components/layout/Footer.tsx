@@ -3,149 +3,168 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  FaFacebookF,
-  FaTwitter,
-  FaInstagram,
-  FaLinkedinIn,
-  FaMapMarkerAlt,
-  FaPhone,
-  FaEnvelope,
-} from "react-icons/fa";
-import Logo from "@/components/ui/Logo";
+import { FiTwitter, FiInstagram, FiFacebook, FiLinkedin } from "react-icons/fi";
+import Container from "./Container";
+import Logo from "../ui/Logo";
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="bg-gray-900 text-white">
-      {/* Footer content with React Icons instead of Font Awesome */}
-      <div className="container mx-auto px-4 py-12 max-w-[2400px]">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div>
-            <Logo inFooter={true} className="mb-4" />
-            <p className="text-gray-400 mb-4">
-              Your trusted marketplace for premium humanoid robots and
-              accessories.
-            </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white">
-                <FaFacebookF />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white">
-                <FaTwitter />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white">
-                <FaInstagram />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white">
-                <FaLinkedinIn />
-              </a>
+      <Container>
+        <div className="py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Company Info Column */}
+            <div>
+              <Logo inFooter={true} />
+              <p className="text-gray-400 mb-4">
+                Your trusted marketplace for premium humanoid robots and
+                accessories.
+              </p>
+              <div className="flex space-x-4">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                  aria-label="Facebook"
+                >
+                  <FiFacebook />
+                </a>
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                  aria-label="Twitter"
+                >
+                  <FiTwitter />
+                </a>
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                  aria-label="Instagram"
+                >
+                  <FiInstagram />
+                </a>
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                  aria-label="LinkedIn"
+                >
+                  <FiLinkedin />
+                </a>
+              </div>
             </div>
-          </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-xl font-bold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/shop" className="text-gray-400 hover:text-white">
-                  Shop
-                </Link>
-              </li>
-              <li>
-                <Link href="/signup" className="text-gray-400 hover:text-white">
-                  Sign Up
-                </Link>
-              </li>
-              <li>
-                <button className="text-gray-400 hover:text-white">
-                  Account Login
-                </button>
-              </li>
-            </ul>
-          </div>
+            {/* Quick Links Column */}
+            <div>
+              <h3 className="text-xl font-bold mb-4">Quick Links</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="/shop"
+                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                  >
+                    Shop
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/auth/signup"
+                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                  >
+                    Sign Up
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/auth/login"
+                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                  >
+                    Login
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* Company */}
-          <div>
-            <h3 className="text-xl font-bold mb-4">Company</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/about" className="text-gray-400 hover:text-white">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="text-gray-400 hover:text-white">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-gray-400 hover:text-white"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/support"
-                  className="text-gray-400 hover:text-white"
-                >
-                  Support
-                </Link>
-              </li>
-            </ul>
-          </div>
+            {/* Company Column */}
+            <div>
+              <h3 className="text-xl font-bold mb-4">Company</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="/about-us"
+                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                  >
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/terms-of-service"
+                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/privacy-policy"
+                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/support"
+                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                  >
+                    Support
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* Contact Info */}
-          <div>
-            <h3 className="text-xl font-bold mb-4">Contact Us</h3>
-            <ul className="space-y-2">
-              <li className="flex items-center">
-                <FaMapMarkerAlt className="mr-2 text-[#4DA9FF]" />
-                <span className="text-gray-400">Dubai, UAE</span>
-              </li>
-              <li className="flex items-center">
-                <FaPhone className="mr-2 text-[#4DA9FF]" />
-                <span className="text-gray-400">+971 58 563 6277</span>
-              </li>
-              <li className="flex items-center">
-                <FaEnvelope className="mr-2 text-[#4DA9FF]" />
-                <span className="text-gray-400">hello@robomarket.ae</span>
-              </li>
-            </ul>
+            {/* Contact Us Column */}
+            <div>
+              <h3 className="text-xl font-bold mb-4">Contact Us</h3>
+              <address className="not-italic text-gray-400">
+                <p className="mb-2">Dubai, UAE</p>
+                <p className="mb-2">+971 58 583 6777</p>
+                <p className="mb-2">
+                  <a
+                    href="mailto:info@robomarket.ae"
+                    className="hover:text-white transition-colors duration-300"
+                  >
+                    info@robomarket.ae
+                  </a>
+                </p>
+              </address>
+            </div>
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-12 pt-6 flex flex-col items-center justify-center">
-          <p className="text-gray-400 mb-6">
-            © {new Date().getFullYear()} RoboMarket. All rights reserved.
-          </p>
-
-          {/* Powered by Algorythm - repositioned to bottom center */}
-          <div className="flex flex-col items-center mt-2">
-            <p className="text-gray-400 mb-2">Powered by</p>
+        {/* Copyright Bar */}
+        <div className="border-t border-gray-800 py-6 text-sm text-center text-gray-500">
+          <p>© {currentYear} RoboMarket. All rights reserved.</p>
+          <div className="mt-2 text-xs flex items-center justify-center">
+            Powered by{" "}
             <a
               href="https://algorythm.ca"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:opacity-80 transition-opacity"
+              className="ml-1"
             >
-              <div className="relative h-10 w-36">
-                <Image
-                  src="/images/Algorythm.png"
-                  alt="Algorythm Logo"
-                  fill
-                  style={{ objectFit: "contain" }}
-                  priority
-                  sizes="(max-width: 768px) 144px, 144px"
-                />
-              </div>
+              <Image
+                src="/images/Algorythm.png"
+                alt="Algorythm"
+                width={80}
+                height={20}
+                className="inline-block"
+              />
             </a>
           </div>
         </div>
-      </div>
+      </Container>
     </footer>
   );
 }

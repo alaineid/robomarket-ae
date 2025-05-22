@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  FaStar,
-  FaChevronDown,
-  FaCheck,
-  FaTimes,
-  FaFilter,
-} from "react-icons/fa";
+import { FiStar, FiChevronDown, FiCheck, FiX, FiFilter } from "react-icons/fi";
 
 interface FilterOption {
   label: string;
@@ -132,7 +126,7 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
           rounded-md shadow-sm hover:bg-gray-50 focus:outline-none`}
       >
         <span className="truncate">{buttonLabel}</span>
-        <FaChevronDown
+        <FiChevronDown
           className={`ml-1 sm:ml-2 transition-transform flex-shrink-0 ${isOpen ? "transform rotate-180" : ""}`}
           size={10}
         />
@@ -152,7 +146,7 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
               className="text-gray-400 hover:text-gray-600 p-1 -mr-1 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
               aria-label="Close filter"
             >
-              <FaTimes size={20} />
+              <FiX size={20} />
             </button>
           </div>
 
@@ -181,7 +175,7 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
               onClick={() => setShowAll(!showAll)}
               className="text-sm text-[#4DA9FF] hover:text-blue-700 hover:underline mb-4 focus:outline-none flex items-center"
             >
-              <FaChevronDown
+              <FiChevronDown
                 className={`inline-block mr-1 transition-transform ${showAll ? "transform rotate-180" : ""}`}
                 size={12}
               />
@@ -262,7 +256,7 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
           rounded-md shadow-sm hover:bg-gray-50 focus:outline-none`}
       >
         <span className="truncate">{displayValue}</span>
-        <FaChevronDown
+        <FiChevronDown
           className={`ml-1 sm:ml-2 transition-transform flex-shrink-0 ${isOpen ? "transform rotate-180" : ""}`}
           size={10}
         />
@@ -282,7 +276,7 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
               className="text-gray-400 hover:text-gray-600 p-1 -mr-1 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
               aria-label="Close filter"
             >
-              <FaTimes size={20} />
+              <FiX size={20} />
             </button>
           </div>
           <div className="flex items-center justify-between mb-4">
@@ -391,7 +385,7 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
           rounded-md shadow-sm hover:bg-gray-50 focus:outline-none`}
       >
         <span className="truncate">{displayValue}</span>
-        <FaChevronDown
+        <FiChevronDown
           className={`ml-1 sm:ml-2 transition-transform flex-shrink-0 ${isOpen ? "transform rotate-180" : ""}`}
           size={10}
         />
@@ -411,7 +405,7 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
               className="text-gray-400 hover:text-gray-600 p-1 -mr-1 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
               aria-label="Close filter"
             >
-              <FaTimes size={20} />
+              <FiX size={20} />
             </button>
           </div>
           <div className="flex flex-wrap gap-2 mb-3">
@@ -430,14 +424,14 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
                 >
                   <span className="flex">
                     {[...Array(option.value)].map((_, i) => (
-                      <FaStar
+                      <FiStar
                         key={`star-filled-${i}`}
                         className="text-yellow-400"
                         size={14}
                       />
                     ))}
                     {[...Array(5 - option.value)].map((_, i) => (
-                      <FaStar
+                      <FiStar
                         key={`star-empty-${i}`}
                         className="text-gray-300"
                         size={14}
@@ -446,7 +440,7 @@ const RatingFilter: React.FC<RatingFilterProps> = ({
                     <span className="ml-2 text-gray-700">& Up</span>
                   </span>
                   {isSelected && (
-                    <FaCheck size={14} className="text-[#007AFF]" />
+                    <FiCheck size={14} className="text-[#007AFF]" />
                   )}
                 </button>
               );
@@ -519,7 +513,7 @@ const SortFilter: React.FC<SortFilterProps> = ({
         <span className="truncate">
           Sort by: {selectedOption?.label || "Featured"}
         </span>
-        <FaChevronDown
+        <FiChevronDown
           className={`ml-1 sm:ml-2 transition-transform flex-shrink-0 ${isOpen ? "transform rotate-180" : ""}`}
           size={10}
         />
@@ -539,7 +533,7 @@ const SortFilter: React.FC<SortFilterProps> = ({
               className="text-gray-400 hover:text-gray-600 p-1 -mr-1 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
               aria-label="Close filter"
             >
-              <FaTimes size={20} />
+              <FiX size={20} />
             </button>
           </div>
           <div className="space-y-1">
@@ -558,7 +552,7 @@ const SortFilter: React.FC<SortFilterProps> = ({
                 >
                   <span>{option.label}</span>
                   {isSelected && (
-                    <FaCheck size={14} className="text-[#007AFF]" />
+                    <FiCheck size={14} className="text-[#007AFF]" />
                   )}
                 </button>
               );
@@ -661,7 +655,7 @@ const AmazonStyleFilter: React.FC<AmazonStyleFilterProps> = ({
                 ${showMobileFilters ? "ring-2 ring-blue-300" : ""}`}
               aria-label="Toggle filters"
             >
-              <FaFilter
+              <FiFilter
                 size={12}
                 className={
                   hasActiveFilters ? "text-[#007AFF]" : "text-gray-600"

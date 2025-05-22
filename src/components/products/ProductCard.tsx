@@ -10,7 +10,6 @@ import AddToCartButton from "@/components/ui/AddToCartButton";
 import WishlistButton from "@/components/ui/WishlistButton";
 import QuickView from "@/components/ui/QuickView";
 import CategoryTag from "@/components/ui/CategoryTag";
-import { commonCardStyles } from "@/styles/commonStyles";
 
 export default function ProductCard({ product }: { product: Product }) {
   const [showQuickView, setShowQuickView] = useState(false);
@@ -54,9 +53,9 @@ export default function ProductCard({ product }: { product: Product }) {
     <>
       <motion.div
         whileHover={{ y: -3 }}
-        className={`${commonCardStyles.container} h-full flex flex-col`}
+        className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden h-full flex flex-col hover:shadow-md transition-all duration-300"
       >
-        <div className={`${commonCardStyles.imageContainer} group`}>
+        <div className="relative h-48 md:h-52 w-full overflow-hidden bg-gray-50 group">
           {/* Product Images Thumbnails Row */}
           {Array.isArray(product.images) && product.images.length > 1 && (
             <div className="absolute top-2 left-2 z-20 flex gap-1 overflow-x-auto max-w-[90%]">
@@ -79,7 +78,7 @@ export default function ProductCard({ product }: { product: Product }) {
             href={`/product/${product.id}`}
             className="block absolute inset-0 z-10"
           >
-            <div className={`${commonCardStyles.imagePlaceholder} bg-white`}>
+            <div className="absolute inset-0 bg-white flex items-center justify-center">
               {product.images && product.images.length > 0 ? (
                 <Image
                   src={product.images[0].url}
@@ -120,9 +119,7 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
 
         {/* Product Content - Optimized for mobile */}
-        <div
-          className={`${commonCardStyles.content} flex flex-col flex-grow p-3 sm:p-4`}
-        >
+        <div className="p-4 flex flex-col flex-grow">
           <div className="flex justify-between items-start">
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-sm sm:text-base text-gray-800 hover:text-[#4DA9FF] transition-colors truncate">

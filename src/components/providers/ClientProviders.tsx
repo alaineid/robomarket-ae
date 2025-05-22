@@ -32,9 +32,7 @@ export default function ClientProviders({
       <CartProvider>
         <WishlistProvider>
           {/* hydrate auth store on first paint */}
-          <AuthProvider initialUser={initialUser}>
-            {children}
-          </AuthProvider>
+          <AuthProvider initialUser={initialUser}>{children}</AuthProvider>
         </WishlistProvider>
       </CartProvider>
     </QueryClientProvider>

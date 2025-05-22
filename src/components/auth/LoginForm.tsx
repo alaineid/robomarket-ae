@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import { createClient } from "@/supabase/client";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -65,10 +66,11 @@ export default function LoginForm({
     const loadingToast = toast.loading("Signing in...");
 
     try {
-      const { data, error: supabaseError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error: supabaseError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
       if (supabaseError) {
         toast.dismiss(loadingToast);
@@ -94,12 +96,13 @@ export default function LoginForm({
     } catch (err: unknown) {
       console.error("Login error:", err);
       toast.dismiss(loadingToast);
-      
+
       // Type guard to check if err is an Error object
-      const errorMessage = err instanceof Error 
-        ? err.message 
-        : "Failed to sign in. Please check your credentials and try again.";
-      
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to sign in. Please check your credentials and try again.";
+
       toast.error(errorMessage || "Failed to sign in");
       setError(errorMessage);
     } finally {
@@ -108,25 +111,33 @@ export default function LoginForm({
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-md relative">
+    <div>
       {loading && (
-        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
-          <div className="bg-white p-4 rounded-xl shadow-lg flex flex-col items-center">
+        <div className="fixed inset-0 /80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className=" p-4 rounded-xl shadow-lg flex flex-col items-center">
             <div className="w-12 h-12 border-4 border-t-[#4DA9FF] border-r-[#4DA9FF]/30 border-b-[#4DA9FF]/70 border-l-[#4DA9FF]/50 rounded-full animate-spin"></div>
             <p className="mt-4 text-gray-700">Signing in...</p>
           </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <h2 className="text-2xl font-bold mb-6">Sign In to Your Account</h2>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-            {error}
+          <div
+            className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4"
+            role="alert"
+          >
+            <p>{error}</p>
           </div>
         )}
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Email address
           </label>
           <input
@@ -140,13 +151,18 @@ export default function LoginForm({
             ref={emailInputRef}
           />
           {!emailValid && (
-            <p className="mt-1 text-xs text-red-500">Please enter a valid email address.</p>
+            <p className="mt-1 text-xs text-red-500">
+              Please enter a valid email address.
+            </p>
           )}
         </div>
 
         <div>
           <div className="flex justify-between items-center mb-1">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
               Password
             </label>
             <button
@@ -179,7 +195,7 @@ export default function LoginForm({
               onClick={() => setShowPassword(!showPassword)}
               tabIndex={-1}
             >
-              {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+              {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
             </button>
           </div>
         </div>
@@ -193,7 +209,10 @@ export default function LoginForm({
               onChange={(e) => setRememberMe(e.target.checked)}
               className="h-4 w-4 accent-[#4DA9FF] rounded border-gray-300 focus:ring-[#4DA9FF]"
             />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+            <label
+              htmlFor="remember-me"
+              className="ml-2 block text-sm text-gray-700"
+            >
               Remember my credentials
             </label>
           </div>
@@ -201,33 +220,88 @@ export default function LoginForm({
 
         <div className="text-xs text-gray-600 mb-4 text-center">
           By logging in you agree to our{" "}
-          <Link href="/terms" className="text-[#4DA9FF] hover:text-[#3D89FF]" onClick={onHideModal}>
+          <Link
+            href="/terms-of-service"
+            className="text-[#4DA9FF] hover:text-[#3D89FF]"
+            onClick={onHideModal}
+          >
             Terms of Service
           </Link>{" "}
           and{" "}
-          <Link href="/privacy" className="text-[#4DA9FF] hover:text-[#3D89FF]" onClick={onHideModal}>
+          <Link
+            href="/privacy-policy"
+            className="text-[#4DA9FF] hover:text-[#3D89FF]"
+            onClick={onHideModal}
+          >
             Privacy Policy
           </Link>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading || !emailValid}
-          className={`w-full bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg ${
-            loading || !emailValid ? "opacity-70 cursor-not-allowed" : ""
-          }`}
-        >
-          {loading ? "Signing in..." : "Log In"}
-        </button>
+        <div className="pt-2">
+          <button
+            type="submit"
+            disabled={loading || !emailValid}
+            className={`w-full bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-2.5 px-4 rounded-lg transition-all shadow-md hover:shadow-lg ${
+              loading || !emailValid ? "opacity-70 cursor-not-allowed" : ""
+            }`}
+          >
+            {loading ? "Signing in..." : "Log In"}
+          </button>
+        </div>
 
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
             {"Don't have an account?"}{" "}
-            <Link href="/signup" className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium" onClick={onHideModal}>
+            <Link
+              href="/auth/signup"
+              className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium"
+              onClick={onHideModal}
+            >
               Sign up
             </Link>
           </p>
         </div>
+
+        <div className="flex items-center my-4">
+          <div className="flex-grow border-t border-gray-200"></div>
+          <div className="mx-4 text-gray-500 text-sm">or</div>
+          <div className="flex-grow border-t border-gray-200"></div>
+        </div>
+
+        <button
+          type="button"
+          onClick={async () => {
+            const loadingToast = toast.loading("Signing in with Google...");
+            try {
+              const { error } = await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: {
+                  redirectTo: `${window.location.origin}`,
+                },
+              });
+
+              if (error) {
+                toast.dismiss(loadingToast);
+                toast.error(error.message);
+                console.error("Google sign-in error:", error);
+              }
+            } catch (err) {
+              toast.dismiss(loadingToast);
+              toast.error("Failed to sign in with Google");
+              console.error("Unexpected Google sign-in error:", err);
+            }
+          }}
+          className="w-full flex items-center justify-center  border border-gray-300 rounded-lg px-4 py-2.5 text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
+        >
+          <Image
+            src="https://cdn.cdnlogo.com/logos/g/35/google-icon.svg"
+            alt="Google logo"
+            className="w-5 h-5 mr-2"
+            width={16} // Add width
+            height={16} // Add height
+          />
+          Continue with Google
+        </button>
       </form>
     </div>
   );

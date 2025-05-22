@@ -3,38 +3,42 @@
 import { useState, useEffect, FormEvent, useCallback } from "react";
 import * as EmailValidator from "email-validator";
 import zxcvbn from "zxcvbn";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import { createClient } from "@/supabase/client";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 export default function SignupForm() {
   const router = useRouter();
   const supabase = createClient();
-  
+
   // Define the checkEmailExists function at the very beginning to avoid reference issues
-  const checkEmailExists = useCallback(async (emailToCheck: string): Promise<boolean> => {
-    try {
-      const response = await fetch('/api/check-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: emailToCheck }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to check email');
+  const checkEmailExists = useCallback(
+    async (emailToCheck: string): Promise<boolean> => {
+      try {
+        const response = await fetch("/api/check-mail", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: emailToCheck }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to check email");
+        }
+
+        const { exists } = await response.json();
+        return exists;
+      } catch (err) {
+        console.error("Error checking email:", err);
+        return false; // Default to not existing in case of error
       }
-      
-      const { exists } = await response.json();
-      return exists;
-    } catch (err) {
-      console.error('Error checking email:', err);
-      return false; // Default to not existing in case of error
-    }
-  }, []);
-  
+    },
+    [],
+  );
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -63,10 +67,10 @@ export default function SignupForm() {
   // Check email validity and existence on change
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    
+
     if (email) {
       setEmailValid(EmailValidator.validate(email));
-      
+
       // Only check with API if email format is valid
       if (EmailValidator.validate(email)) {
         // Debounce the API call - only check after 500ms of no typing
@@ -86,7 +90,7 @@ export default function SignupForm() {
       setEmailValid(true); // Don't show error when field is empty
       setEmailExists(false);
     }
-    
+
     // Cleanup function to clear the timeout
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -98,7 +102,7 @@ export default function SignupForm() {
     if (password) {
       // Check zxcvbn strength
       const result = zxcvbn(password);
-      setPasswordStrength(result.score); // 0-4 (0=weak, 4=strong)
+      setPasswordStrength(result.score); // (0=weak, 4=strong)
 
       // Prepare feedback for user
       const feedback = [];
@@ -173,7 +177,7 @@ export default function SignupForm() {
 
       // Show loading toast while signing up
       const loadingToast = toast.loading("Creating your account...");
-      
+
       // Sign up the user with Supabase
       const { error } = await supabase.auth.signUp({
         email,
@@ -182,8 +186,9 @@ export default function SignupForm() {
           data: {
             first_name: firstName,
             last_name: lastName,
+            full_name: `${firstName} ${lastName}`.trim(),
           },
-          emailRedirectTo: `${window.location.origin}/auth/confirm`
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
         },
       });
 
@@ -198,8 +203,10 @@ export default function SignupForm() {
 
       // Success! Show confirmation message and redirect
       toast.dismiss(loadingToast);
-      toast.success("Account created successfully! Please check your email for verification.");
-      
+      toast.success(
+        "Account created successfully! Please check your email for verification.",
+      );
+
       // Redirect to confirmation page
       router.push("/auth/confirmation?email=" + encodeURIComponent(email));
     } catch (err) {
@@ -246,7 +253,9 @@ export default function SignupForm() {
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-md">
+    <div>
+      <h2 className="text-2xl font-bold mb-6">Register Your Account</h2>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div
@@ -257,42 +266,48 @@ export default function SignupForm() {
           </div>
         )}
 
-        <div>
-          <label
-            htmlFor="firstName"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            First Name
-          </label>
-          <input
-            id="firstName"
-            type="text"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:border-transparent"
-            placeholder="Enter your first name"
-            required
-          />
+        {/* Name Fields */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label
+              htmlFor="firstName"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              First Name
+            </label>
+            <input
+              id="firstName"
+              name="firstName"
+              type="text"
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4DA9FF] focus:border-[#4DA9FF] "
+              placeholder="First Name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="lastName"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Last Name
+            </label>
+            <input
+              id="lastName"
+              name="lastName"
+              type="text"
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4DA9FF] focus:border-[#4DA9FF] "
+              placeholder="Last Name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+          </div>
         </div>
 
-        <div>
-          <label
-            htmlFor="lastName"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Last Name
-          </label>
-          <input
-            id="lastName"
-            type="text"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:border-transparent"
-            placeholder="Enter your last name"
-            required
-          />
-        </div>
-
+        {/* Email */}
         <div>
           <label
             htmlFor="email"
@@ -303,14 +318,17 @@ export default function SignupForm() {
           <div className="relative">
             <input
               id="email"
+              name="email"
               type="email"
+              required
+              className={`w-full px-4 py-2 border ${
+                (!emailValid && email) || emailExists
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-lg focus:ring-[#4DA9FF] focus:border-[#4DA9FF] `}
+              placeholder="Email Address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`w-full px-4 py-2 border ${
-                (!emailValid && email) || emailExists ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:border-transparent`}
-              placeholder="Enter your email"
-              required
             />
             {checkingEmail && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -325,9 +343,10 @@ export default function SignupForm() {
           )}
           {emailValid && emailExists && email && (
             <p className="text-xs text-red-600 mt-1">
-              This email is already registered. <button
+              This email is already registered.{" "}
+              <button
                 type="button"
-                onClick={() => router.push("/login")}
+                onClick={() => router.push("/auth/login")}
                 className="text-[#4DA9FF] hover:text-[#3D89FF] underline"
               >
                 Log in instead
@@ -336,6 +355,7 @@ export default function SignupForm() {
           )}
         </div>
 
+        {/* Password */}
         <div>
           <label
             htmlFor="password"
@@ -346,21 +366,25 @@ export default function SignupForm() {
           <div className="relative">
             <input
               id="password"
+              name="password"
               type={showPassword ? "text" : "password"}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4DA9FF] focus:border-[#4DA9FF]  pr-10"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:border-transparent"
-              placeholder="Create a password"
-              required
               minLength={8}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute inset-y-0 right-0 flex items-center pr-3"
             >
-              {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+              {showPassword ? (
+                <FiEyeOff className="text-gray-400 hover:text-gray-500" />
+              ) : (
+                <FiEye className="text-gray-400 hover:text-gray-500" />
+              )}
             </button>
           </div>
 
@@ -387,7 +411,7 @@ export default function SignupForm() {
                 <ul className="text-xs space-y-1">
                   <li className="flex items-center">
                     <span
-                      className={`mr-2 text-${hasMinLength ? "green" : "gray"}-500`}
+                      className={`mr-2 ${hasMinLength ? "text-green-500" : "text-gray-500"}`}
                     >
                       {hasMinLength ? "✓" : "○"}
                     </span>
@@ -395,7 +419,7 @@ export default function SignupForm() {
                   </li>
                   <li className="flex items-center">
                     <span
-                      className={`mr-2 text-${hasCapital ? "green" : "gray"}-500`}
+                      className={`mr-2 ${hasCapital ? "text-green-500" : "text-gray-500"}`}
                     >
                       {hasCapital ? "✓" : "○"}
                     </span>
@@ -403,7 +427,7 @@ export default function SignupForm() {
                   </li>
                   <li className="flex items-center">
                     <span
-                      className={`mr-2 text-${hasNumber ? "green" : "gray"}-500`}
+                      className={`mr-2 ${hasNumber ? "text-green-500" : "text-gray-500"}`}
                     >
                       {hasNumber ? "✓" : "○"}
                     </span>
@@ -411,7 +435,7 @@ export default function SignupForm() {
                   </li>
                   <li className="flex items-center">
                     <span
-                      className={`mr-2 text-${hasSpecialChar ? "green" : "gray"}-500`}
+                      className={`mr-2 ${hasSpecialChar ? "text-green-500" : "text-gray-500"}`}
                     >
                       {hasSpecialChar ? "✓" : "○"}
                     </span>
@@ -434,6 +458,7 @@ export default function SignupForm() {
           )}
         </div>
 
+        {/* Confirm Password */}
         <div>
           <label
             htmlFor="confirmPassword"
@@ -444,30 +469,28 @@ export default function SignupForm() {
           <div className="relative">
             <input
               id="confirmPassword"
+              name="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
               className={`w-full px-4 py-2 border ${
                 confirmPassword && password !== confirmPassword
                   ? "border-red-500"
                   : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-[#4DA9FF] focus:border-transparent`}
-              placeholder="Confirm your password"
-              required
+              } rounded-lg focus:ring-[#4DA9FF] focus:border-[#4DA9FF]  pr-10`}
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               minLength={8}
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              aria-label={
-                showConfirmPassword ? "Hide password" : "Show password"
-              }
+              className="absolute inset-y-0 right-0 flex items-center pr-3"
             >
               {showConfirmPassword ? (
-                <FaEyeSlash size={18} />
+                <FiEyeOff className="text-gray-400 hover:text-gray-500" />
               ) : (
-                <FaEye size={18} />
+                <FiEye className="text-gray-400 hover:text-gray-500" />
               )}
             </button>
           </div>
@@ -476,32 +499,76 @@ export default function SignupForm() {
           )}
         </div>
 
-        <button
-          type="submit"
-          disabled={isLoading || emailExists || checkingEmail}
-          className="w-full bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
-        >
-          {isLoading ? (
-            <>
-              <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em]"></span>
-              Processing...
-            </>
-          ) : (
-            "Sign Up"
-          )}
-        </button>
+        <div className="pt-2">
+          <button
+            type="submit"
+            disabled={isLoading || emailExists || checkingEmail}
+            className="w-full bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-2.5 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <>
+                <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em]"></span>
+                Processing...
+              </>
+            ) : (
+              "Create Account"
+            )}
+          </button>
+        </div>
 
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
             Already have an account?{" "}
-            <button 
+            <button
               type="button"
-              onClick={() => router.push("/login")}
-              className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium">
-              Log In
+              onClick={() => router.push("/auth/login")}
+              className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium"
+            >
+              Sign in
             </button>
           </p>
         </div>
+
+        <div className="flex items-center my-4">
+          <div className="flex-grow border-t border-gray-200"></div>
+          <div className="mx-4 text-gray-500 text-sm">or</div>
+          <div className="flex-grow border-t border-gray-200"></div>
+        </div>
+
+        <button
+          type="button"
+          onClick={async () => {
+            const loadingToast = toast.loading("Signing in with Google...");
+            try {
+              const { error } = await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: {
+                  redirectTo: `${window.location.origin}`,
+                },
+              });
+
+              if (error) {
+                toast.dismiss(loadingToast);
+                toast.error(error.message);
+                console.error("Google sign-in error:", error);
+              }
+            } catch (err) {
+              toast.dismiss(loadingToast);
+              toast.error("Failed to sign in with Google");
+              console.error("Unexpected Google sign-in error:", err);
+            }
+          }}
+          className="w-full flex items-center justify-center  border border-gray-300 rounded-lg px-4 py-2.5 text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
+        >
+          <Image
+            src="https://cdn.cdnlogo.com/logos/g/35/google-icon.svg"
+            alt="Google logo"
+            className="w-5 h-5 mr-2"
+            width={16} // Add width
+            height={16} // Add height
+          />
+          Continue with Google
+        </button>
       </form>
     </div>
   );

@@ -24,8 +24,8 @@ const ResendVerification: FC<ResendVerificationProps> = ({ email }) => {
         type: "signup",
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`
-        }
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+        },
       });
 
       if (error) {

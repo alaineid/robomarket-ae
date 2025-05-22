@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FaRegHeart, FaHeart } from "react-icons/fa";
+import { FiHeart } from "react-icons/fi";
 import { useWishlist } from "@/stores/wishlistContext";
 import { motion } from "framer-motion";
 import { Product } from "@/types/product.types";
@@ -84,12 +84,15 @@ export default function WishlistButton({
     >
       {isWishlisted ? (
         <>
-          <FaHeart size={16} className={showText ? "mr-2" : ""} />
+          <FiHeart
+            size={16}
+            className={`${showText ? "mr-2" : ""} fill-current`}
+          />
           {showText && "Saved"}
         </>
       ) : (
         <>
-          <FaRegHeart size={16} className={showText ? "mr-2" : ""} />
+          <FiHeart size={16} className={showText ? "mr-2" : ""} />
           {showText && "Save"}
         </>
       )}

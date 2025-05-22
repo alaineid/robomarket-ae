@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTimes, FaStar, FaStarHalfAlt } from "react-icons/fa";
+import { FiX, FiStar } from "react-icons/fi";
 import { Product } from "@/types/product.types";
 import WishlistButton from "@/components/ui/WishlistButton";
 import AddToCartButton from "@/components/ui/AddToCartButton";
@@ -45,23 +45,28 @@ export default function QuickView({
     };
   }, [isOpen, onClose]);
 
-  // Function to render star ratings - memoized to prevent unnecessary re-renders
+  // Updated star rating renderer for Feather icons
   const renderRatingStars = useCallback((rating: number) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
 
+    // Add filled stars
     for (let i = 0; i < fullStars; i++) {
-      stars.push(<FaStar key={`full-${i}`} className="text-yellow-400" />);
+      stars.push(
+        <FiStar key={`full-${i}`} className="text-yellow-400 fill-current" />,
+      );
     }
 
+    // Add half-star (using fill-[50%] for a half-filled appearance)
     if (hasHalfStar) {
-      stars.push(<FaStarHalfAlt key="half" className="text-yellow-400" />);
+      stars.push(<FiStar key="half" className="text-yellow-400 fill-[50%]" />);
     }
 
+    // Add empty stars
     const remainingStars = 5 - stars.length;
     for (let i = 0; i < remainingStars; i++) {
-      stars.push(<FaStar key={`empty-${i}`} className="text-gray-300" />);
+      stars.push(<FiStar key={`empty-${i}`} className="text-gray-300" />);
     }
 
     return stars;
@@ -108,7 +113,7 @@ export default function QuickView({
                 className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 hover:bg-gray-100 transition-colors text-gray-500"
                 aria-label="Close modal"
               >
-                <FaTimes size={14} />
+                <FiX size={14} />
               </button>
 
               <div className="p-7 pt-9 pb-8">

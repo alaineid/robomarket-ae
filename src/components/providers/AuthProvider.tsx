@@ -1,4 +1,3 @@
-// providers/AuthProvider.tsx
 "use client";
 
 import { useEffect, useMemo } from "react";
@@ -27,11 +26,9 @@ export function AuthProvider({ initialUser, children }: AuthProviderProps) {
 
   // Subscribe once to auth changes
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
     return () => sub.subscription.unsubscribe();
   }, [supabase, setUser]);
 
