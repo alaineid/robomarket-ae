@@ -54,6 +54,7 @@ export interface Product {
   brand: string;
   created_at: string;
   updated_at: string;
+  price: number; // Added price property
   ratings: ProductRating;
   categories: Category[];
   images: ProductImage[];
@@ -105,5 +106,24 @@ export interface LegacyProduct {
 }
 
 // Sample categories and brands for filters (from former productData.ts)
-export const categories = ["Companion", "Utility", "Security", "Education", "Healthcare", "Industrial"];
-export const brands = ["RoboTech", "AIMasters", "Synthia", "MechWorks", "QuantumBots"];
+export const categories = [
+  "Companion",
+  "Utility",
+  "Security",
+  "Education",
+  "Healthcare",
+  "Industrial",
+];
+export const brands = [
+  "RoboTech",
+  "AIMasters",
+  "Synthia",
+  "MechWorks",
+  "QuantumBots",
+];
+
+export interface CartItem {
+  id?: number; // Optional to align with cartContext
+  quantity: number;
+  product: Product;
+}

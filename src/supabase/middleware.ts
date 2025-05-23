@@ -1,55 +1,28 @@
-import { createServerClient } from '@supabase/ssr';
-import { type NextRequest, NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from "next/server";
+import { createClient } from "@/supabase/server";
 
 /**
- * Middleware utility to update the user's session.
- * This function is called by the main `middleware.ts` file.
- * It refreshes the Supabase session token if necessary and ensures
- * cookies are correctly passed between the browser and server.
- *
- * @param request - The incoming NextRequest object.
- * @returns A NextResponse object, potentially with updated cookies.
+ * Refreshes the Supabase session and sets updated cookies.
  */
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function updateSession(_request?: NextRequest) {
+  try {
+    // reads cookies via `cookies()` in supabaseServer,
+    // refreshes tokens if needed, and writes new cookies.
+    const supabaseServer = await createClient();
+    const {
+      data: { user },
+    } = await supabaseServer.auth.getUser();
 
-  // Ensure environment variables are defined
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    console.error("Supabase URL or Anon Key is not defined in environment variables for middleware.");
-    // Potentially redirect to an error page or return a specific error response
-    // For now, we'll let it proceed, but Supabase client creation will fail.
-    // It's better to throw or handle this explicitly in a production app.
-    return supabaseResponse; // Or throw new Error(...)
+    // Log for debugging
+    console.log(
+      "Middleware user check:",
+      user ? "Authenticated" : "Not authenticated",
+    );
+
+    return NextResponse.next();
+  } catch (error) {
+    console.error("Auth middleware error:", error);
+    return NextResponse.next();
   }
-
-  // Create a Supabase client specifically for middleware context
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  // IMPORTANT: DO NOT REMOVE auth.getUser()
-  // Get the user without redirecting - the auth flow will handle redirections
-  await supabase.auth.getUser();
-  
-  // Don't redirect in middleware - let the auth flow handle redirections
-  return supabaseResponse;
 }

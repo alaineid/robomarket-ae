@@ -1,206 +1,143 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { loginAction } from '@/components/actions/authActions'; // Adjust the import based on your project structure
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { createClient } from '@/supabase/client'; // Import the Supabase client
-import { useAuthStore } from '@/store/authStore'; // Import auth store
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import Link from "next/link";
+import { FiEye, FiEyeOff } from "react-icons/fi";
+import { createClient } from "@/supabase/client";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import Image from "next/image";
 
 interface LoginFormProps {
   onSuccess?: () => void;
   onHideModal?: () => void;
 }
 
-export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {}) {
-  const { synchronizeAuthState } = useAuthStore();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export default function LoginForm({
+  onSuccess,
+  onHideModal,
+}: LoginFormProps = {}) {
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [loginComplete, setLoginComplete] = useState(false);
+  const [emailValid, setEmailValid] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Simple effect to load saved credentials and reset loading state
   useEffect(() => {
-    // Load saved credentials if they exist
-    const savedEmail = localStorage.getItem('rememberedEmail');
-    const savedPassword = localStorage.getItem('rememberedPassword');
-    
-    if (savedEmail && savedPassword) {
-      setEmail(savedEmail);
-      setPassword(savedPassword);
-      setRememberMe(true);
-    }
-
-    // Reset loading state
-    setLoading(false);
-    useAuthStore.setState({ isLoading: false });
+    const saved = localStorage.getItem("rememberMe") === "true";
+    if (saved) setRememberMe(true);
+    emailInputRef.current?.focus();
   }, []);
 
-  // Effect to handle post-login UI updates
   useEffect(() => {
-    // This effect handles closing the modal after successful login
-    if (loginComplete) {
-      console.log('LoginForm: Detected login complete state, cleaning up');
-      
-      // Delay to ensure other processes complete
-      const timer = setTimeout(() => {
-        try {
-          // Close the modal if we have a handler
-          if (onHideModal) {
-            console.log('LoginForm: Calling onHideModal from useEffect');
-            onHideModal();
-          }
-        } catch (error) {
-          console.error('Error closing modal:', error);
-        } finally {
-          // Always reset the login complete flag
-          setLoginComplete(false);
-        }
-      }, 500); // Longer timeout to ensure state updates complete
-      
-      return () => clearTimeout(timer);
-    }
-  }, [loginComplete, onHideModal]);
+    if (!email) return setEmailValid(true);
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    setEmailValid(regex.test(email));
+  }, [email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!email || !password) {
-      setError('Email and password are required');
+    if (!email.trim()) {
+      setError("Email address is required");
       return;
     }
-    
-    try {
-      // Start loading state
-      setLoading(true);
-      useAuthStore.setState({ isLoading: true });
-      
-      // Handle remember me functionality
-      if (rememberMe) {
-        localStorage.setItem('rememberedEmail', email);
-        localStorage.setItem('rememberedPassword', password);
-      } else {
-        localStorage.removeItem('rememberedEmail');
-        localStorage.removeItem('rememberedPassword');
-      }
-      
-      // Create FormData for server action
-      const formData = new FormData();
-      formData.append('email', email);
-      formData.append('password', password);
+    if (!emailValid) {
+      setError("Please enter a valid email address");
+      return;
+    }
+    if (!password.trim()) {
+      setError("Password is required");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
 
-      // Call the login action
-      console.log('LoginForm: Calling loginAction');
-      const result = await loginAction(formData);
-      console.log('LoginForm: loginAction result:', result);
-      
-      if (result?.error) {
-        // Handle error without throwing (to prevent redirection)
-        setError(result.error.message);
-        // Reset loading states
-        setLoading(false);
-        useAuthStore.setState({ isLoading: false });
-        return;
+    setLoading(true);
+    const loadingToast = toast.loading("Signing in...");
+
+    try {
+      const { data, error: supabaseError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+      if (supabaseError) {
+        toast.dismiss(loadingToast);
+        throw supabaseError;
       }
-      
-      if (result?.success) {
-        console.log('LoginForm: Login successful');
-        try {
-            // Reset loading states immediately
-            setLoading(false);
-            useAuthStore.setState({ isLoading: false });
-            console.log('LoginForm: Loading states reset');
-            
-            // Sync auth state
-            console.log('LoginForm: Synchronizing auth state');
-            await synchronizeAuthState();
-            
-            // Mark login as complete to trigger useEffect
-            console.log('LoginForm: Setting loginComplete to true');
-            setLoginComplete(true);
-            
-            // Call onSuccess callback if provided (for any post-login actions)
-            if (onSuccess) {
-              console.log('LoginForm: Calling onSuccess callback');
-              onSuccess();
-            }
-        } catch (syncError) {
-          console.error('Error during auth synchronization:', syncError);
-          // Reset loading states in case of error
-          setLoading(false);
-          useAuthStore.setState({ isLoading: false });
-          
-          // Still try to close the modal
-          if (onHideModal) {
-            onHideModal();
-          }
+
+      if (data?.user) {
+        if (rememberMe) {
+          localStorage.setItem("rememberMe", "true");
+        } else {
+          localStorage.removeItem("rememberMe");
         }
-      } else {
-        setError('Login failed. Please try again.');
-        // Reset loading states
-        setLoading(false);
-        useAuthStore.setState({ isLoading: false });
+
+        toast.dismiss(loadingToast);
+        toast.success("Login successful!");
+
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.replace("/");
+        }
       }
     } catch (err: unknown) {
-      console.error('Login error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to sign in. Please check your credentials.');
-      // Reset loading states
-      setLoading(false);
-      useAuthStore.setState({ isLoading: false });
-    }
-  };
+      console.error("Login error:", err);
+      toast.dismiss(loadingToast);
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      setError('Please enter your email address');
-      return;
-    }
+      // Type guard to check if err is an Error object
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to sign in. Please check your credentials and try again.";
 
-    try {
-      setLoading(true);
-      
-      const supabase = createClient();
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (resetError) {
-        throw resetError;
-      }
-
-      alert('Password reset link sent to your email');
-    } catch (err: unknown) {
-      console.error('Reset password error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to send reset password email.');
+      toast.error(errorMessage || "Failed to sign in");
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-md relative">
+    <div>
       {loading && (
-        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
-          <div className="bg-white p-4 rounded-xl shadow-lg flex flex-col items-center">
+        <div className="fixed inset-0 /80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className=" p-4 rounded-xl shadow-lg flex flex-col items-center">
             <div className="w-12 h-12 border-4 border-t-[#4DA9FF] border-r-[#4DA9FF]/30 border-b-[#4DA9FF]/70 border-l-[#4DA9FF]/50 rounded-full animate-spin"></div>
             <p className="mt-4 text-gray-700">Signing in...</p>
           </div>
         </div>
       )}
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
+
+      <h2 className="text-2xl font-bold mb-6">Sign In to Your Account</h2>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-            {error}
+          <div
+            className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4"
+            role="alert"
+          >
+            <p>{error}</p>
           </div>
         )}
-        
+
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Email address
           </label>
           <input
@@ -209,20 +146,29 @@ export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email address"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4DA9FF] focus:border-[#4DA9FF] text-gray-800 text-sm"
+            className={`w-full px-4 py-2 border ${!emailValid ? "border-red-400" : "border-gray-300"} rounded-lg focus:ring-[#4DA9FF] focus:border-[#4DA9FF] text-gray-800 text-sm`}
             required
+            ref={emailInputRef}
           />
+          {!emailValid && (
+            <p className="mt-1 text-xs text-red-500">
+              Please enter a valid email address.
+            </p>
+          )}
         </div>
-        
+
         <div>
           <div className="flex justify-between items-center mb-1">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
               Password
             </label>
             <button
               type="button"
-              onClick={handleForgotPassword}
               className="text-xs text-[#4DA9FF] hover:text-[#3D89FF]"
+              onClick={() => router.push("/auth/reset-password")}
             >
               Forgot password?
             </button>
@@ -230,12 +176,18 @@ export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {
           <div className="relative">
             <input
               id="password"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4DA9FF] focus:border-[#4DA9FF] text-gray-800 text-sm"
               required
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
             />
             <button
               type="button"
@@ -243,11 +195,11 @@ export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {
               onClick={() => setShowPassword(!showPassword)}
               tabIndex={-1}
             >
-              {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+              {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
             </button>
           </div>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <input
@@ -255,49 +207,53 @@ export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 accent-[#4DA9FF] rounded border-gray-300 text-[#4DA9FF] focus:ring-[#4DA9FF]"
+              className="h-4 w-4 accent-[#4DA9FF] rounded border-gray-300 focus:ring-[#4DA9FF]"
             />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+            <label
+              htmlFor="remember-me"
+              className="ml-2 block text-sm text-gray-700"
+            >
               Remember my credentials
             </label>
           </div>
         </div>
-        
-        {/* Terms and Privacy Policy links */}
+
         <div className="text-xs text-gray-600 mb-4 text-center">
-          By logging in you agree to our{' '}
-          <Link 
-            href="/terms" 
+          By logging in you agree to our{" "}
+          <Link
+            href="/terms-of-service"
             className="text-[#4DA9FF] hover:text-[#3D89FF]"
             onClick={onHideModal}
           >
             Terms of Service
-          </Link>
-          {' '}and{' '}
-          <Link 
-            href="/privacy" 
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/privacy-policy"
             className="text-[#4DA9FF] hover:text-[#3D89FF]"
             onClick={onHideModal}
           >
             Privacy Policy
           </Link>
         </div>
-        
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center ${
-            loading ? 'opacity-70 cursor-not-allowed' : ''
-          }`}
-        >
-          {loading ? 'Please wait...' : 'Log In'}
-        </button>
-        
+
+        <div className="pt-2">
+          <button
+            type="submit"
+            disabled={loading || !emailValid}
+            className={`w-full bg-gradient-to-r from-[#4DA9FF] to-[#3D89FF] hover:from-[#3D89FF] hover:to-[#4DA9FF] text-white font-bold py-2.5 px-4 rounded-lg transition-all shadow-md hover:shadow-lg ${
+              loading || !emailValid ? "opacity-70 cursor-not-allowed" : ""
+            }`}
+          >
+            {loading ? "Signing in..." : "Log In"}
+          </button>
+        </div>
+
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
-            {"Don't have an account?"}{' '}
-            <Link 
-              href="/signup" 
+            {"Don't have an account?"}{" "}
+            <Link
+              href="/auth/signup"
               className="text-[#4DA9FF] hover:text-[#3D89FF] font-medium"
               onClick={onHideModal}
             >
@@ -305,6 +261,47 @@ export default function LoginForm({ onSuccess, onHideModal }: LoginFormProps = {
             </Link>
           </p>
         </div>
+
+        <div className="flex items-center my-4">
+          <div className="flex-grow border-t border-gray-200"></div>
+          <div className="mx-4 text-gray-500 text-sm">or</div>
+          <div className="flex-grow border-t border-gray-200"></div>
+        </div>
+
+        <button
+          type="button"
+          onClick={async () => {
+            const loadingToast = toast.loading("Signing in with Google...");
+            try {
+              const { error } = await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: {
+                  redirectTo: `${window.location.origin}`,
+                },
+              });
+
+              if (error) {
+                toast.dismiss(loadingToast);
+                toast.error(error.message);
+                console.error("Google sign-in error:", error);
+              }
+            } catch (err) {
+              toast.dismiss(loadingToast);
+              toast.error("Failed to sign in with Google");
+              console.error("Unexpected Google sign-in error:", err);
+            }
+          }}
+          className="w-full flex items-center justify-center  border border-gray-300 rounded-lg px-4 py-2.5 text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
+        >
+          <Image
+            src="https://cdn.cdnlogo.com/logos/g/35/google-icon.svg"
+            alt="Google logo"
+            className="w-5 h-5 mr-2"
+            width={16} // Add width
+            height={16} // Add height
+          />
+          Continue with Google
+        </button>
       </form>
     </div>
   );

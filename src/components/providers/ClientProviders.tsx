@@ -1,37 +1,43 @@
 "use client";
 
-import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { CartProvider } from '@/store/cartContext';
-import { WishlistProvider } from '@/store/wishlistContext';
+import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { CartProvider } from "@/stores/cartContext";
+import { WishlistProvider } from "@/stores/wishlistContext";
+import { PaymentProvider } from "@/stores/paymentContext";
+import { AuthProvider } from "@/components/providers/AuthProvider";
+import type { User } from "@supabase/supabase-js";
 
-// Create a client
+// configure React Query
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false, // default: true
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 5,
       retry: 1,
     },
   },
 });
 
-export default function ClientProviders({ 
-  children 
-}: { 
-  children: React.ReactNode 
-}) {
-  // Return children directly to ensure consistent server/client rendering
-  // The providers themselves handle their initialization logic
+interface ClientProvidersProps {
+  children: React.ReactNode;
+  initialUser: User | null;
+}
+
+export default function ClientProviders({
+  children,
+  initialUser,
+}: ClientProvidersProps) {
   return (
-    <>
-      <QueryClientProvider client={queryClient}>
-          <CartProvider>
-            <WishlistProvider>
-              {children}
-            </WishlistProvider>
-          </CartProvider>
-      </QueryClientProvider>
-    </>
+    <QueryClientProvider client={queryClient}>
+      <CartProvider>
+        <PaymentProvider>
+          <WishlistProvider>
+            {/* hydrate auth store on first paint */}
+            <AuthProvider initialUser={initialUser}>{children}</AuthProvider>
+          </WishlistProvider>
+        </PaymentProvider>
+      </CartProvider>
+    </QueryClientProvider>
   );
 }
